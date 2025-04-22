@@ -200,7 +200,7 @@ export default function CartPage() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 mr-4 bg-white shadow-sm hover:bg-white/90"
+            className="h-10 w-10 mr-4 bg-white shadow-sm hover:bg-white/90 rounded-2xl"
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-6 w-6 text-lacapke-charcoal" />
@@ -221,7 +221,7 @@ export default function CartPage() {
                 <ShoppingBag className="h-16 w-16 text-lacapke-charcoal/30 mb-4" />
                 <p className="text-lacapke-charcoal/70 text-lg">Tu carrito está vacío</p>
                 <Button
-                  className="mt-6 bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal"
+                  className="mt-6 bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal rounded-2xl"
                   onClick={() => router.push("/menu")}
                 >
                   Ver menú
@@ -238,15 +238,27 @@ export default function CartPage() {
                         <motion.div
                           key={`${item.id}-${item.variant}-${index}`}
                           variants={slideUp}
-                          className="bg-white rounded-lg p-2 sm:p-3 flex items-center shadow-sm"
+                          className="bg-white rounded-2xl p-2 sm:p-3 flex items-center shadow-sm"
                         >
-                          <div className="h-12 w-12 sm:h-16 sm:w-16 relative rounded-lg overflow-hidden mr-2 sm:mr-3 flex-shrink-0">
-                            <Image
-                              src={item.image || "/placeholder.svg"}
-                              alt={item.name}
-                              fill
-                              className="object-cover"
-                            />
+                          <div className="h-12 w-12 sm:h-16 sm:w-16 relative rounded-xl overflow-hidden mr-2 sm:mr-3 flex-shrink-0">
+                            {item.image && item.image !== "" ? (
+                              <Image
+                                src={item.image || "/placeholder.svg"}
+                                alt={item.name}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              // Usar la misma imagen por defecto que en la página de detalle del producto
+                              <div className="w-full h-full flex items-center justify-center bg-white">
+                                <Image
+                                  src="/default-product-icon.png"
+                                  alt={item.name}
+                                  fill
+                                  className="object-contain p-1"
+                                />
+                              </div>
+                            )}
                             {productInfo?.isVegetarian && (
                               <div className="absolute bottom-0 left-0 bg-white/80 p-0.5 rounded-tr-md">
                                 <LeafIcon className="h-3 w-3 text-green-600" />
@@ -264,7 +276,7 @@ export default function CartPage() {
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg border-0 bg-[#f8e1e1] text-lacapke-charcoal hover:bg-[#f5d4d4]"
+                                  className="h-6 w-6 sm:h-8 sm:w-8 rounded-full border-0 bg-[#f8e1e1] text-lacapke-charcoal hover:bg-[#f5d4d4]"
                                   onClick={() => updateQuantity(item.id, item.variant, item.quantity - 1)}
                                 >
                                   <Minus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -275,7 +287,7 @@ export default function CartPage() {
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg border-0 bg-[#e0f0e9] text-lacapke-charcoal hover:bg-[#d3e8df]"
+                                  className="h-6 w-6 sm:h-8 sm:w-8 rounded-full border-0 bg-[#e0f0e9] text-lacapke-charcoal hover:bg-[#d3e8df]"
                                   onClick={() => updateQuantity(item.id, item.variant, item.quantity + 1)}
                                 >
                                   <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -283,7 +295,7 @@ export default function CartPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-6 w-6 sm:h-8 sm:w-8 ml-1 sm:ml-2 text-red-500 hover:bg-red-50"
+                                  className="h-6 w-6 sm:h-8 sm:w-8 ml-1 sm:ml-2 text-red-500 hover:bg-red-50 rounded-full"
                                   onClick={() => removeItem(item.id, item.variant)}
                                 >
                                   <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -299,7 +311,7 @@ export default function CartPage() {
 
                 {/* Resumen del pedido */}
                 <motion.div
-                  className="bg-white rounded-lg p-3 sm:p-4 mb-3 sm:mb-4 shadow-sm"
+                  className="bg-white rounded-2xl p-3 sm:p-4 mb-3 sm:mb-4 shadow-sm"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
@@ -331,7 +343,7 @@ export default function CartPage() {
 
                 {/* Botón de finalizar pedido */}
                 <motion.button
-                  className="w-full bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal py-6 text-lg font-medium"
+                  className="w-full bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal py-4 text-lg font-medium rounded-2xl"
                   onClick={checkout}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -356,7 +368,7 @@ export default function CartPage() {
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="bg-white rounded-lg p-6 max-w-xs w-full shadow-lg"
+                className="bg-white rounded-2xl p-6 max-w-xs w-full shadow-lg"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
@@ -372,12 +384,12 @@ export default function CartPage() {
                 <div className="flex justify-end gap-3">
                   <Button
                     variant="outline"
-                    className="border-lacapke-charcoal/20 text-lacapke-charcoal"
+                    className="border-lacapke-charcoal/20 text-lacapke-charcoal rounded-xl"
                     onClick={cancelRemove}
                   >
                     Cancelar
                   </Button>
-                  <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={confirmRemove}>
+                  <Button className="bg-red-500 hover:bg-red-600 text-white rounded-xl" onClick={confirmRemove}>
                     Eliminar
                   </Button>
                 </div>
@@ -396,7 +408,7 @@ export default function CartPage() {
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg my-8"
+                className="bg-white rounded-2xl p-6 max-w-md w-full shadow-lg my-8"
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -412,7 +424,7 @@ export default function CartPage() {
                   </Button>
                 </div>
 
-                <div className="bg-green-50 p-4 rounded-lg mb-4">
+                <div className="bg-green-50 p-4 rounded-xl mb-4">
                   <div className="flex justify-between mb-2">
                     <span className="text-sm text-green-700">Número de pedido:</span>
                     <span className="font-bold text-green-700">{orderDetails.orderNumber}</span>
@@ -440,12 +452,12 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <div className="bg-[#f8f5d7] p-4 rounded-lg mb-6">
+                <div className="bg-[#f8f5d7] p-4 rounded-xl mb-6">
                   <p className="text-sm text-lacapke-charcoal">Tu pedido ha sido recibido y está siendo preparado.</p>
                 </div>
 
                 <Button
-                  className="w-full bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal py-4 font-medium"
+                  className="w-full bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal py-4 font-medium rounded-2xl"
                   onClick={closeOrderConfirmation}
                 >
                   Volver al menú

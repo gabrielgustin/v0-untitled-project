@@ -70,7 +70,7 @@ const initialProducts: Product[] = [
     category: "breakfast",
   },
   {
-    id: "budin-con-crema",
+    id: "budin",
     name: "Budín",
     description: "Delicioso budín casero con crema de amapola y frutas frescas de estación.",
     price: 5300,
@@ -291,7 +291,7 @@ export function getDisplayOrder(category: ProductCategory): string[] {
       "me-lo-merezco",
       "plato-de-tostadas",
       "plato-de-huevos-revueltos",
-      "budin-con-crema",
+      "budin",
       "querido-bowl",
       "pop-cake",
       "chipa-prensado",

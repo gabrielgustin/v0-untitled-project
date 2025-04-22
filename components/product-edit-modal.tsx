@@ -136,7 +136,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader className="pb-3">
             <div className="flex justify-between items-center">
               <CardTitle className="text-xl font-bold text-lacapke-charcoal">Editar Producto</CardTitle>
@@ -175,7 +175,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   onValueChange={handleCategoryChange}
                   defaultValue={editedProduct.category || ""}
                 >
-                  <SelectTrigger className="border-lacapke-charcoal/20">
+                  <SelectTrigger className="border-lacapke-charcoal/20 rounded-xl">
                     <SelectValue
                       placeholder={
                         editedProduct.category === "breakfast"
@@ -194,7 +194,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                       }
                     />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl">
                     <SelectItem value="breakfast">Desayuno & Merienda</SelectItem>
                     <SelectItem value="brunch">Brunchear</SelectItem>
                     <SelectItem value="lunch">Almuerzo & Cena</SelectItem>
@@ -214,7 +214,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   name="description"
                   value={editedProduct.description}
                   onChange={handleChange}
-                  className="border-lacapke-charcoal/20 min-h-[80px]"
+                  className="border-lacapke-charcoal/20 min-h-[80px] rounded-xl"
                 />
               </div>
 
@@ -266,7 +266,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-8 text-xs border-lacapke-charcoal/20"
+                    className="h-8 text-xs border-lacapke-charcoal/20 rounded-xl"
                     onClick={addVariant}
                   >
                     <Plus className="h-3.5 w-3.5 mr-1" />
@@ -279,7 +279,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                     {editedProduct.variants.map((variant, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-2 border p-2 rounded-md border-lacapke-charcoal/20"
+                        className="flex items-center gap-2 border p-2 rounded-xl border-lacapke-charcoal/20"
                       >
                         <div className="flex-1">
                           <Input
@@ -300,7 +300,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-red-500"
+                          className="h-8 w-8 text-red-500 rounded-full"
                           onClick={() => removeVariant(index)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -318,7 +318,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-red-200 text-red-500 hover:bg-red-50"
+                    className="border-red-200 text-red-500 hover:bg-red-50 rounded-xl"
                     onClick={handleDelete}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
@@ -326,10 +326,18 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   </Button>
                 )}
                 <div className="flex gap-2 ml-auto">
-                  <Button type="button" variant="outline" className="border-lacapke-charcoal/20" onClick={onClose}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-lacapke-charcoal/20 rounded-xl"
+                    onClick={onClose}
+                  >
                     Cancelar
                   </Button>
-                  <Button type="submit" className="bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal font-medium">
+                  <Button
+                    type="submit"
+                    className="bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal font-medium rounded-xl"
+                  >
                     Guardar cambios
                   </Button>
                 </div>

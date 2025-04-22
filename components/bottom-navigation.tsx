@@ -82,18 +82,22 @@ export function BottomNavigation({ cartItemCount = 0, cartAnimation = false }: B
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 w-full bg-white border-t border-lacapke-charcoal/10 flex justify-around items-center py-3 z-20 transition-all duration-300"
+      className="fixed bottom-0 left-0 right-0 w-full bg-white border-t border-lacapke-charcoal/10 flex justify-around items-center py-3 z-50 transition-all duration-300"
       style={{
         ...navStyles,
       }}
     >
       <Link href="/menu">
-        <Button variant="ghost" size="icon" className="text-lacapke-charcoal hover:bg-lacapke-background">
+        <Button variant="ghost" size="icon" className="text-lacapke-charcoal hover:bg-lacapke-background rounded-2xl">
           <Home className="h-5 w-5" />
         </Button>
       </Link>
       <Link href="/cart">
-        <Button variant="ghost" size="icon" className="text-lacapke-charcoal hover:bg-lacapke-background relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-lacapke-charcoal hover:bg-lacapke-background rounded-2xl relative"
+        >
           <div className={`relative ${animateCart ? "animate-bounce" : ""}`}>
             <ShoppingBag className="h-5 w-5" />
             {showCartBadge && (

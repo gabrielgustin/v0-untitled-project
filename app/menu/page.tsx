@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Search, X, Home, ShoppingBag, LogOut, PlusCircle, Edit, ChevronRight, ChevronLeft } from "lucide-react"
+import { Search, X, Home, ShoppingBag, LogOut, PlusCircle, Edit } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -43,13 +43,7 @@ import { RefreshDataButton } from "@/components/refresh-data-button"
 
 // Importar motion y las utilidades de animación
 import { motion, AnimatePresence } from "framer-motion"
-import {
-  fadeIn,
-  staggerContainer,
-  categoryAnimation,
-  mobileMenuAnimation,
-  menuItemAnimation,
-} from "@/lib/animation-utils"
+import { categoryAnimation, mobileMenuAnimation, menuItemAnimation } from "@/lib/animation-utils"
 
 // Definir el tipo para un item del carrito
 interface CartItem {
@@ -61,13 +55,24 @@ interface CartItem {
   variant?: string
 }
 
-// Componente personalizado para el icono de hamburguesa
+// Buscar el componente HamburgerIcon y reemplazarlo con este nuevo diseño
+// Reemplazar el componente HamburgerIcon actual por este nuevo:
+
 const HamburgerIcon = (props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <rect y="5" width="24" height="3" rx="1.5" fill="currentColor" />
-      <rect y="11" width="24" height="3" rx="1.5" fill="currentColor" />
-      <rect y="17" width="24" height="3" rx="1.5" fill="currentColor" />
+      <path
+        d="M4 6C4 5.44772 4.44772 5 5 5H19C19.5523 5 20 5.44772 20 6C20 6.55228 19.5523 7 19 7H5C4.44772 7 4 6.55228 4 6Z"
+        fill="currentColor"
+      />
+      <path
+        d="M4 12C4 11.4477 4.44772 11 5 11H19C19.5523 11 20 11.4477 20 12C20 12.5523 19.5523 13 19 13H5C4.44772 13 4 12.5523 4 12Z"
+        fill="currentColor"
+      />
+      <path
+        d="M5 17C4.44772 17 4 17.4477 4 18C4 18.5523 4.44772 19 5 19H19C19.5523 19 20 18.5523 20 18C20 17.4477 19.5523 17 19 17H5Z"
+        fill="currentColor"
+      />
     </svg>
   )
 }
@@ -90,6 +95,9 @@ function AnimatedFoodCategory({ title, iconType, isActive, onClick }) {
 
 // Importar el componente
 import { ScrollToTopButton } from "@/components/scroll-to-top-button"
+
+// Importar el nuevo componente
+import { StickyCategoryCarousel } from "@/components/sticky-category-carousel"
 
 export default function MenuPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -628,7 +636,7 @@ export default function MenuPage() {
           <Button
             variant="ghost"
             size="icon"
-            className={`h-14 w-14 z-20 -ml-2 text-lacapke-charcoal ${isMenuOpen ? "opacity-0" : "opacity-100"} transition-opacity`}
+            className={`h-14 w-14 z-50 -ml-2 text-lacapke-charcoal ${isMenuOpen ? "opacity-0" : "opacity-100"} transition-opacity`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             <HamburgerIcon className="h-10 w-10" />
@@ -678,7 +686,7 @@ export default function MenuPage() {
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
-              className="fixed inset-0 bg-black/50 z-10"
+              className="fixed inset-0 bg-black/50 z-50"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -688,7 +696,7 @@ export default function MenuPage() {
         </AnimatePresence>
 
         <motion.div
-          className="fixed top-0 left-0 bottom-0 w-64 bg-white z-10 shadow-xl"
+          className="fixed top-0 left-0 bottom-0 w-64 bg-white z-50 shadow-xl"
           variants={mobileMenuAnimation}
           initial="closed"
           animate={isMenuOpen ? "open" : "closed"}
@@ -874,172 +882,59 @@ export default function MenuPage() {
         )}
 
         {/* Categories Carousel */}
-        <div className="mb-8 relative">
-          <motion.div
-            className="mb-4 flex justify-between items-center"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <h2 className="text-lg font-bold text-lacapke-charcoal">Categories</h2>
-            <div className="text-xs text-lacapke-charcoal/60 flex items-center">
-              <span></span>
-              <motion.svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                animate={{ x: [0, 5, 0] }}
-                transition={{
-                  repeat: Number.POSITIVE_INFINITY,
-                  repeatType: "loop",
-                  duration: 1.5,
-                  ease: "easeInOut",
-                }}
-              >
-                <path
-                  d="M13 17L18 12L13 7"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M6 17L11 12L6 7"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </motion.svg>
-            </div>
-          </motion.div>
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          {/* Este div está vacío pero mantiene el espaciado */}
+        </motion.div>
 
-          {/* Botones de navegación del carrusel */}
-          <div className="relative">
-            <motion.button
-              onClick={scrollLeft}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-1 shadow-sm hidden md:flex items-center justify-center"
-              aria-label="Desplazar categorías a la izquierda"
-              whileHover={{ scale: 1.1, backgroundColor: "rgba(255, 255, 255, 1)" }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
+        {/* Usar el componente StickyCategoryCarousel */}
+        <StickyCategoryCarousel
+          categories={[
+            { id: "breakfast", name: "Desayuno & Merienda" },
+            { id: "brunch", name: "Brunchear" },
+            { id: "lunch", name: "Almorzar & Cenar" },
+            { id: "desserts", name: "Postres" },
+            { id: "bakery", name: "Pastelería & Panadería" },
+            { id: "coffee", name: "Cafetería" },
+          ]}
+          activeCategory={activeCategory}
+          onCategoryChange={scrollToCategory}
+          rightIcon={
+            <motion.svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              animate={{ x: [0, 5, 0] }}
+              transition={{
+                repeat: Number.POSITIVE_INFINITY,
+                repeatType: "loop",
+                duration: 1.5,
+                ease: "easeInOut",
+              }}
             >
-              <ChevronLeft className="h-5 w-5 text-lacapke-charcoal" />
-            </motion.button>
-
-            <motion.div
-              className="overflow-x-auto pb-4 hide-scrollbar carousel-container px-1"
-              id="categories-carousel"
-              ref={carouselRef}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <motion.div
-                className="flex space-x-4 min-w-max px-2"
-                variants={staggerContainer}
-                initial="hidden"
-                animate="visible"
-              >
-                <motion.button
-                  onClick={() => scrollToCategory("breakfast")}
-                  className={`category-carousel-item focus:outline-none focus:ring-2 focus:ring-lacapke-charcoal/30 focus:ring-offset-2 rounded-xl transition-all ${
-                    activeCategory === "breakfast" ? "category-carousel-item active" : ""
-                  }`}
-                  aria-label="Seleccionar categoría Desayuno y Merienda"
-                  aria-pressed={activeCategory === "breakfast"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory title="Desayuno & Merienda" iconType="breakfast" />
-                </motion.button>
-                <motion.button
-                  onClick={() => scrollToCategory("brunch")}
-                  className={`category-carousel-item focus:outline-none focus:ring-2 focus:ring-lacapke-charcoal/30 focus:ring-offset-2 rounded-xl transition-all ${
-                    activeCategory === "brunch" ? "category-carousel-item active" : ""
-                  }`}
-                  aria-label="Seleccionar categoría Brunchear"
-                  aria-pressed={activeCategory === "brunch"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory title="Brunchear" iconType="brunch" />
-                </motion.button>
-                <motion.button
-                  onClick={() => scrollToCategory("lunch")}
-                  className={`category-carousel-item focus:outline-none focus:ring-2 focus:ring-lacapke-charcoal/30 focus:ring-offset-2 rounded-xl transition-all ${
-                    activeCategory === "lunch" ? "category-carousel-item active" : ""
-                  }`}
-                  aria-label="Seleccionar categoría Almorzar y Cenar"
-                  aria-pressed={activeCategory === "lunch"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory title="Almorzar & Cenar" iconType="lunch" />
-                </motion.button>
-                <motion.button
-                  onClick={() => scrollToCategory("desserts")}
-                  className={`category-carousel-item focus:outline-none focus:ring-2 focus:ring-lacapke-charcoal/30 focus:ring-offset-2 rounded-xl transition-all ${
-                    activeCategory === "desserts" ? "category-carousel-item active" : ""
-                  }`}
-                  aria-label="Seleccionar categoría Postres"
-                  aria-pressed={activeCategory === "desserts"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory title="Postres" iconType="desserts" />
-                </motion.button>
-                <motion.button
-                  onClick={() => scrollToCategory("bakery")}
-                  className={`category-carousel-item focus:outline-none focus:ring-2 focus:ring-lacapke-charcoal/30 focus:ring-offset-2 rounded-xl transition-all ${
-                    activeCategory === "bakery" ? "category-carousel-item active" : ""
-                  }`}
-                  aria-label="Seleccionar categoría Pastelería y Panadería"
-                  aria-pressed={activeCategory === "bakery"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory title="Pastelería & Panadería" iconType="bakery" />
-                </motion.button>
-                <motion.button
-                  onClick={() => scrollToCategory("coffee")}
-                  className={`category-carousel-item focus:outline-none focus:ring-2 focus:ring-lacapke-charcoal/30 focus:ring-offset-2 rounded-xl transition-all ${
-                    activeCategory === "coffee" ? "category-carousel-item active" : ""
-                  }`}
-                  aria-label="Seleccionar categoría Cafetería"
-                  aria-pressed={activeCategory === "coffee"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory title="Cafetería" iconType="coffee" />
-                </motion.button>
-              </motion.div>
-            </motion.div>
-
-            <motion.button
-              onClick={scrollRight}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-1 shadow-sm hidden md:flex items-center justify-center"
-              aria-label="Desplazar categorías a la derecha"
-              whileHover={{ scale: 1.1, backgroundColor: "rgba(255, 255, 255, 1)" }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <ChevronRight className="h-5 w-5 text-lacapke-charcoal" />
-            </motion.button>
-          </div>
-        </div>
+              <path
+                d="M13 17L18 12L13 7"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M6 17L11 12L6 7"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </motion.svg>
+          }
+        />
 
         {/* Sección Desayuno y Merienda */}
         <div ref={breakfastRef} className="mb-16 scroll-mt-24">

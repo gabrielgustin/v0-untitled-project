@@ -333,30 +333,60 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               </motion.div>
             </div>
           ) : (
-            // Diseño alternativo para productos sin imagen
+            // Diseño alternativo para productos sin imagen - Ahora con la imagen por defecto
             <div className="w-full flex justify-center px-4 lg:px-0">
-              <div className="w-full max-w-xs lg:max-w-md aspect-square bg-white rounded-lg overflow-hidden shadow-sm relative flex flex-col items-center justify-center p-6">
+              <motion.div
+                className="w-full max-w-xs lg:max-w-md aspect-square bg-white rounded-lg overflow-hidden shadow-sm relative"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                  delay: 0.2,
+                }}
+              >
                 {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 z-10 h-8 w-8 bg-white/80 hover:bg-white text-lacapke-charcoal rounded-full shadow-sm"
-                    onClick={() => router.push(`/menu?edit=${product.id}`)}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.5 }}
                   >
-                    <Edit className="h-4 w-4" />
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 z-10 h-8 w-8 bg-white/80 hover:bg-white text-lacapke-charcoal rounded-full shadow-sm"
+                      onClick={() => router.push(`/menu?edit=${product.id}`)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </motion.div>
                 )}
-                <div className="bg-lacapke-cream/50 rounded-full p-8 mb-4">{getProductIcon()}</div>
-                <h2 className="text-xl font-bold text-lacapke-charcoal text-center">{product.name}</h2>
-                <p className="text-sm text-lacapke-charcoal/70 text-center mt-2 max-w-xs">
-                  {product.description.split("•")[0]}
-                </p>
+                <div className="flex items-center justify-center h-full">
+                  <Image
+                    src="/default-product-icon.png"
+                    alt={product.name}
+                    width={250}
+                    height={250}
+                    className="object-contain"
+                  />
+                </div>
                 {product.isVegetarian && (
-                  <div className="mt-4">
-                    <VegetarianBadge className="h-6 w-6" />
-                  </div>
+                  <motion.div
+                    className="absolute bottom-2 left-2 bg-white/80 p-1 rounded-full"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 30,
+                      delay: 0.6,
+                    }}
+                  >
+                    <VegetarianBadge className="h-5 w-5" />
+                  </motion.div>
                 )}
-              </div>
+              </motion.div>
             </div>
           )}
         </div>

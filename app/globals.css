@@ -147,6 +147,21 @@
   flex-shrink: 0;
 }
 
+/* Estilos mejorados para el carrusel */
+.category-carousel-item {
+  margin-right: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.category-carousel-item:last-child {
+  margin-right: 0;
+}
+
+.category-carousel-item.active {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
 @keyframes carousel-hint {
   0% {
     transform: translateX(0);
@@ -180,21 +195,6 @@
   animation: bounce-horizontal 1s infinite;
 }
 
-/* Estilos mejorados para el carrusel */
-.category-carousel-item {
-  margin-right: 10px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.category-carousel-item:last-child {
-  margin-right: 0;
-}
-
-.category-carousel-item.active {
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
 .category-indicator {
   width: 6px;
   height: 6px;
@@ -206,4 +206,90 @@
 .category-indicator.active {
   width: 18px;
   background-color: rgba(74, 74, 74, 0.4);
+}
+
+/* Añadir estos estilos específicos para el carrusel de categorías */
+.category-button {
+  width: 80px; /* Ancho fijo para todos los botones */
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.category-icon-container {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-text {
+  width: 100%;
+  text-align: center;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.2;
+  height: 2.4em; /* Altura para 2 líneas de texto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .food-category-card {
+    width: 120px;
+    height: 90px;
+  }
+  .food-category-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .food-category-text {
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .food-category-card {
+    width: 130px;
+    height: 100px;
+  }
+  .food-category-icon {
+    width: 26px;
+    height: 26px;
+  }
+  .food-category-text {
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .food-category-card {
+    width: 140px;
+    height: 110px;
+  }
+  .food-category-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .food-category-text {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .food-category-card {
+    width: 150px;
+    height: 120px;
+  }
+  .food-category-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .food-category-text {
+    font-size: 14px;
+  }
 }
