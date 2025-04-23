@@ -49,18 +49,18 @@ export function FoodCategory({ title, iconType, isActive = false }: FoodCategory
   }
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center w-16">
       <motion.div
-        className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center ${
+        className={`w-12 h-12 rounded-full flex items-center justify-center ${
           isActive
-            ? "bg-montebello-navy border-2 border-montebello-gold shadow-[0_0_15px_rgba(212,180,90,0.5)]"
+            ? "bg-montebello-navy border-2 border-montebello-gold" // Eliminado el efecto de sombra
             : "bg-montebello-navy border border-montebello-gold/40"
         }`}
         animate={
           isActive
             ? {
-                scale: 1.05,
-                boxShadow: "0 0 15px rgba(212, 180, 90, 0.5)",
+                scale: 1.1,
+                // Eliminado el boxShadow para quitar el efecto iluminado
               }
             : {
                 scale: 1,
@@ -72,9 +72,9 @@ export function FoodCategory({ title, iconType, isActive = false }: FoodCategory
         {renderIcon()}
       </motion.div>
 
-      <div className="mt-2 text-center w-full">
+      <div className="mt-1 text-center w-full h-8 flex items-center justify-center">
         <motion.span
-          className={`text-xs md:text-sm leading-tight block text-montebello-gold ${isActive ? "font-bold" : "font-medium"}`}
+          className={`text-[10px] leading-tight block text-montebello-gold ${isActive ? "font-bold" : "font-medium"}`}
           animate={isActive ? { fontWeight: 700 } : { fontWeight: 500 }}
         >
           {formatTitle(title)}

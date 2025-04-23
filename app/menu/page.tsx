@@ -80,15 +80,6 @@ const filterExcludedProducts = (products: Product[]): Product[] => {
 // Productos iniciales filtrados
 const filteredInitialProducts = filterExcludedProducts(initialProducts)
 
-// Modificar la función loadProductsFromStorage para que siempre devuelva productos
-// Buscar la función loadProductsFromStorage y reemplazarla con esta versión:
-
-const loadProductsFromStorage = () => {
-  console.log("Cargando productos iniciales filtrados")
-  // Siempre devolver los productos iniciales filtrados para garantizar que haya datos
-  return filteredInitialProducts
-}
-
 export default function MenuPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -99,12 +90,14 @@ export default function MenuPage() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [activeCategory, setActiveCategory] = useState<ProductCategory>("entradas")
   const [cartItemCount, setCartItemCount] = useState(0)
+  // Reemplazar las referencias y estados relacionados con el carrusel
   const carouselRef = useRef<HTMLDivElement>(null)
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>(
-    filteredInitialProducts.filter((p) => p.featured === true),
-  )
+  const carouselWrapperRef = useRef<HTMLDivElement>(null)
   const [showScrollIndicator, setShowScrollIndicator] = useState(false)
+  const [isCarouselSticky, setIsCarouselSticky] = useState(false)
+  const [carouselHeight, setCarouselHeight] = useState(0)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
 
   // Añadir después de la declaración de carouselRef
   const searchParams = useSearchParams()
@@ -117,13 +110,6 @@ export default function MenuPage() {
   const bebidasRef = useRef<HTMLDivElement>(null)
   const vinosRef = useRef<HTMLDivElement>(null)
   const cocktailsRef = useRef<HTMLDivElement>(null)
-
-  // Función para cargar productos desde localStorage
-
-  // Cargar el estado de autenticación y productos al iniciar
-
-  // Modificar el useEffect que carga los productos para que siempre use los productos iniciales
-  // Buscar el useEffect que contiene setIsLoading(true) y reemplazarlo con:
 
   // Cargar el estado de autenticación y productos al iniciar
   useEffect(() => {
@@ -183,6 +169,40 @@ export default function MenuPage() {
       window.removeEventListener("resize", handleResize)
     }
   }, [])
+
+  // Reemplazar el useEffect para la funcionalidad sticky
+  useEffect(() => {
+    // Guardar la altura original del carrusel
+    if (carouselRef.current) {
+      setCarouselHeight(carouselRef.current.offsetHeight)
+    }
+
+    const handleScroll = () => {
+      if (!carouselWrapperRef.current) return
+
+      const rect = carouselWrapperRef.current.getBoundingClientRect()
+      const isDesktop = window.innerWidth >= 1024
+      const desktopOffset = isDesktop ? 72 : 0 // 72px es la altura de la barra de navegación de escritorio
+
+      // Determinar si el carrusel debe ser sticky
+      const shouldBeSticky = rect.top <= desktopOffset
+
+      if (shouldBeSticky !== isCarouselSticky) {
+        setIsCarouselSticky(shouldBeSticky)
+
+        // Actualizar el espaciador
+        const spacer = document.querySelector(".categories-spacer")
+        if (spacer) {
+          ;(spacer as HTMLElement).style.height = shouldBeSticky ? `${carouselHeight}px` : "0px"
+        }
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [isCarouselSticky, carouselHeight])
 
   // Verificar si hay un producto para editar desde la URL
   useEffect(() => {
@@ -733,19 +753,15 @@ export default function MenuPage() {
           <AnimatePresence>
             {showScrollIndicator && (
               <motion.div
-                className="text-sm text-montebello-light/60 flex items-center relative"
+                className="text-sm text-montebello-light/60 flex items-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <motion.svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  animate={{ x: [0, 5, 0] }}
+                <motion.span
+                  className="text-2xl"
+                  animate={{ x: [0, 3, 0] }}
                   transition={{
                     repeat: Number.POSITIVE_INFINITY,
                     repeatType: "loop",
@@ -753,132 +769,197 @@ export default function MenuPage() {
                     ease: "easeInOut",
                   }}
                 >
-                  <path
-                    d="M13 17L18 12L13 7"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M6 17L11 12L6 7"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </motion.svg>
+                  »
+                </motion.span>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Categories Carousel - Implementación con position: sticky */}
-        <div className="sticky-carousel-wrapper">
-          <div className="sticky-carousel">
-            <div
-              className="overflow-x-auto pb-4 hide-scrollbar sticky-carousel-container px-1 pt-4"
-              id="categories-carousel"
-              ref={carouselRef}
-              onScroll={() => {
-                // Verificar si el usuario ha llegado al final del carrusel
-                if (carouselRef.current) {
-                  const isAtEnd =
-                    carouselRef.current.scrollLeft + carouselRef.current.clientWidth >=
-                    carouselRef.current.scrollWidth - 10
-                  if (isAtEnd) {
-                    setShowScrollIndicator(false)
-                  } else {
-                    setShowScrollIndicator(true)
+        {/* Categories Carousel - Nueva implementación sticky */}
+        <div className="categories-wrapper" ref={carouselWrapperRef}>
+          {/* Espaciador para mantener el flujo del documento cuando el carrusel está fijo */}
+          <div className="categories-spacer"></div>
+
+          <div
+            className={`categories-carousel ${isCarouselSticky ? "sticky" : ""}`}
+            ref={carouselRef}
+            style={{
+              padding: "0.35rem 0",
+              borderBottom: "1px solid #121628",
+              minHeight: "auto",
+            }}
+          >
+            <div className="relative">
+              {/* Añadir el título "Categorías" cuando está en modo sticky */}
+              {isCarouselSticky && (
+                <div className="text-center mb-2 pt-1">
+                  <h2 className="text-montebello-gold font-bold text-lg inline-flex items-center">
+                    Categorías
+                    {showScrollIndicator && (
+                      <motion.span
+                        className="text-montebello-gold/70 ml-2 text-xl"
+                        animate={{ x: [0, 3, 0] }}
+                        transition={{
+                          repeat: Number.POSITIVE_INFINITY,
+                          repeatType: "loop",
+                          duration: 1.5,
+                          ease: "easeInOut",
+                        }}
+                      >
+                        »
+                      </motion.span>
+                    )}
+                  </h2>
+                </div>
+              )}
+
+              <div
+                className="overflow-x-auto pb-2 hide-scrollbar px-1 pt-2"
+                id="categories-carousel"
+                onScroll={() => {
+                  // Verificar si el usuario ha llegado al final del carrusel
+                  if (carouselRef.current) {
+                    const isAtEnd =
+                      carouselRef.current.scrollLeft + carouselRef.current.clientWidth >=
+                      carouselRef.current.scrollWidth - 10
+                    if (isAtEnd) {
+                      setShowScrollIndicator(false)
+                    } else {
+                      setShowScrollIndicator(true)
+                    }
                   }
-                }
-              }}
-            >
-              <div className="flex space-x-8 min-w-max px-4 container mx-auto">
-                <motion.button
-                  onClick={() => scrollToCategory("entradas")}
-                  className="focus:outline-none"
-                  aria-label="Seleccionar categoría Entradas"
-                  aria-pressed={activeCategory === "entradas"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory title="Entradas" iconType="entradas" isActive={activeCategory === "entradas"} />
-                </motion.button>
+                }}
+              >
+                <div className="flex space-x-6 min-w-max px-4 container mx-auto">
+                  <motion.button
+                    onClick={() => scrollToCategory("entradas")}
+                    className="focus:outline-none"
+                    aria-label="Seleccionar categoría Entradas"
+                    aria-pressed={activeCategory === "entradas"}
+                    variants={fadeIn}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <FoodCategory title="Entradas" iconType="entradas" isActive={activeCategory === "entradas"} />
+                  </motion.button>
 
-                <motion.button
-                  onClick={() => scrollToCategory("principales")}
-                  className="focus:outline-none"
-                  aria-label="Seleccionar categoría Platos Principales"
-                  aria-pressed={activeCategory === "principales"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory
-                    title="Platos & Principales"
-                    iconType="principales"
-                    isActive={activeCategory === "principales"}
-                  />
-                </motion.button>
+                  <motion.button
+                    onClick={() => scrollToCategory("principales")}
+                    className="focus:outline-none"
+                    aria-label="Seleccionar categoría Platos Principales"
+                    aria-pressed={activeCategory === "principales"}
+                    variants={fadeIn}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <FoodCategory
+                      title="Platos & Principales"
+                      iconType="principales"
+                      isActive={activeCategory === "principales"}
+                    />
+                  </motion.button>
 
-                <motion.button
-                  onClick={() => scrollToCategory("postres")}
-                  className="focus:outline-none"
-                  aria-label="Seleccionar categoría Postres"
-                  aria-pressed={activeCategory === "postres"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory title="Postres" iconType="postres" isActive={activeCategory === "postres"} />
-                </motion.button>
+                  <motion.button
+                    onClick={() => scrollToCategory("postres")}
+                    className="focus:outline-none"
+                    aria-label="Seleccionar categoría Postres"
+                    aria-pressed={activeCategory === "postres"}
+                    variants={fadeIn}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <FoodCategory title="Postres" iconType="postres" isActive={activeCategory === "postres"} />
+                  </motion.button>
 
-                <motion.button
-                  onClick={() => scrollToCategory("bebidas")}
-                  className="focus:outline-none"
-                  aria-label="Seleccionar categoría Bebidas"
-                  aria-pressed={activeCategory === "bebidas"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory
-                    title="Bebidas & Refrescos"
-                    iconType="bebidas"
-                    isActive={activeCategory === "bebidas"}
-                  />
-                </motion.button>
+                  <motion.button
+                    onClick={() => scrollToCategory("bebidas")}
+                    className="focus:outline-none"
+                    aria-label="Seleccionar categoría Bebidas"
+                    aria-pressed={activeCategory === "bebidas"}
+                    variants={fadeIn}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <FoodCategory
+                      title="Bebidas & Refrescos"
+                      iconType="bebidas"
+                      isActive={activeCategory === "bebidas"}
+                    />
+                  </motion.button>
 
-                <motion.button
-                  onClick={() => scrollToCategory("vinos")}
-                  className="focus:outline-none"
-                  aria-label="Seleccionar categoría Vinos"
-                  aria-pressed={activeCategory === "vinos"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory title="Vinos & Espumantes" iconType="vinos" isActive={activeCategory === "vinos"} />
-                </motion.button>
+                  <motion.button
+                    onClick={() => scrollToCategory("vinos")}
+                    className="focus:outline-none"
+                    aria-label="Seleccionar categoría Vinos"
+                    aria-pressed={activeCategory === "vinos"}
+                    variants={fadeIn}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <FoodCategory title="Vinos & Espumantes" iconType="vinos" isActive={activeCategory === "vinos"} />
+                  </motion.button>
 
-                <motion.button
-                  onClick={() => scrollToCategory("cocktails")}
-                  className="focus:outline-none"
-                  aria-label="Seleccionar categoría Cocktails"
-                  aria-pressed={activeCategory === "cocktails"}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FoodCategory
-                    title="Cocktails & Tragos"
-                    iconType="cocktails"
-                    isActive={activeCategory === "cocktails"}
-                  />
-                </motion.button>
+                  <motion.button
+                    onClick={() => scrollToCategory("cocktails")}
+                    className="focus:outline-none"
+                    aria-label="Seleccionar categoría Cocktails"
+                    aria-pressed={activeCategory === "cocktails"}
+                    variants={fadeIn}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <FoodCategory
+                      title="Cocktails & Tragos"
+                      iconType="cocktails"
+                      isActive={activeCategory === "cocktails"}
+                    />
+                  </motion.button>
+                </div>
               </div>
+
+              {/* Indicador de scroll mejorado */}
+              <AnimatePresence>
+                {showScrollIndicator && (
+                  <motion.div
+                    className="scroll-indicator"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <motion.svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{
+                        repeat: Number.POSITIVE_INFINITY,
+                        repeatType: "loop",
+                        duration: 1.5,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      <path
+                        d="M13 17L18 12L13 7"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M6 17L11 12L6 7"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </motion.svg>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>

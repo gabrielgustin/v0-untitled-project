@@ -88,94 +88,52 @@
   }
 }
 
+/* Añadir estilos para el título de categorías en modo sticky */
+
 /* Estilos para el carrusel sticky */
-.sticky-carousel-wrapper {
+.categories-wrapper {
   position: relative;
-  margin-bottom: 2rem;
+  z-index: 40;
 }
 
-.sticky-carousel {
-  position: sticky;
-  top: 0;
-  z-index: 30;
+.categories-carousel {
   background-color: #121628; /* montebello-navy */
   border-bottom: 1px solid rgba(212, 180, 90, 0.3);
-}
-
-@media (min-width: 1024px) {
-  .sticky-carousel {
-    top: 72px; /* Altura de la barra de navegación de escritorio */
-  }
-}
-
-.sticky-carousel-container {
-  position: relative;
-  scroll-behavior: smooth;
-  scroll-snap-type: x mandatory;
-  padding: 0.75rem 0;
   width: 100%;
+  padding: 4px 0; /* py-1 */
+  /* Eliminamos la transición de aquí ya que ahora la maneja Framer Motion */
 }
 
-.sticky-carousel-container > div > button {
-  scroll-snap-align: center;
-  flex-shrink: 0;
-}
-
-/* Actualizar los estilos del carrusel para que coincidan con la imagen */
-.carousel-container {
-  position: relative;
-  scroll-behavior: smooth;
-  scroll-snap-type: x mandatory;
-  padding: 0.75rem 0;
-  z-index: 40;
-  background-color: #121628; /* Color sólido montebello-navy */
-  width: 100%;
-  left: 0;
-  right: 0;
-  transition: none;
-}
-
-.carousel-container > div > button {
-  scroll-snap-align: center;
-  flex-shrink: 0;
-}
-
-/* Cuando el carrusel está fijo - sin animaciones */
-.carousel-container.fixed {
+.categories-carousel.sticky {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  background-color: #121628; /* Color sólido montebello-navy */
-  border-bottom: 1px solid rgba(212, 180, 90, 0.3);
-  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.3);
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  z-index: 40; /* Asegurar que sea menor que los modales */
-  transition: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 40;
 }
 
 /* Ajustar para la navegación de escritorio */
 @media (min-width: 1024px) {
-  .carousel-container.fixed {
+  .categories-carousel.sticky {
     top: 72px; /* Altura de la barra de navegación de escritorio */
   }
 }
 
 /* Espaciador para mantener el flujo del documento cuando el carrusel está fijo */
-#carousel-spacer {
-  height: 0;
-  transition: none;
+.categories-spacer {
+  /* Eliminamos la transición de aquí ya que ahora la maneja Framer Motion */
+  will-change: height;
 }
 
-/* Estilos para el carrusel de categorías */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
+/* Ocultar scrollbar pero mantener funcionalidad */
 .hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 /* Ajustar el scroll-margin-top para las secciones de categoría */
@@ -200,16 +158,6 @@
   transition: box-shadow 0.3s ease;
 }
 
-/* Ocultar scrollbar pero mantener funcionalidad */
-.hide-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
 /* Asegurar que el carrusel tenga un fondo sólido cuando está fijo */
 #categories-carousel.fixed::before {
   content: "";
@@ -220,4 +168,43 @@
   bottom: 0;
   background-color: rgb(14, 23, 38); /* bg-montebello-navy */
   z-index: -1;
+}
+
+/* Estilos para el indicador de scroll - ACTUALIZADO para coincidir con la imagen */
+.scroll-indicator {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, rgba(18, 22, 40, 0) 0%, rgba(18, 22, 40, 0.9) 40%, #121628 100%);
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.scroll-indicator svg {
+  color: rgba(212, 180, 90, 0.7);
+}
+
+/* Versión para escritorio */
+@media (min-width: 1024px) {
+  .scroll-indicator {
+    padding: 0.5rem 2rem;
+  }
+}
+
+/* Agregar estilos para el nuevo indicador de scroll en el encabezado */
+.categories-header-indicator {
+  font-size: 1.5rem;
+  color: #888;
+  margin-left: auto;
+}
+
+/* Asegurar que los botones de categoría activos no tengan sombra */
+.categories-carousel button[aria-pressed="true"] > div {
+  box-shadow: none !important;
 }
