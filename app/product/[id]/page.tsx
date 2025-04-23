@@ -216,7 +216,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   // Determinar si el producto tiene imagen
   const hasImage = !!product.image
 
-  // Función para obtener el icono según la categoría o ID del producto
+  // Actualizar la función para obtener la URL de la imagen
+  const imageUrl = product.image || getDefaultImage(product.category, product.name)
+
+  // Asegurarse de que la imagen de fallback sea una URL pública
   const getProductIcon = () => {
     if (product.category === "breakfast") {
       return <Coffee className="h-12 w-12 text-montebello-light/60" />
@@ -226,9 +229,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       return <Coffee className="h-12 w-12 text-montebello-light/60" />
     }
   }
-
-  // Obtener la URL de la imagen
-  const imageUrl = product.image || getDefaultImage(product.category, product.name)
 
   // Reemplazar el div principal por motion.div
   return (
@@ -302,7 +302,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     alt={product.name}
                     className="object-cover w-full h-full"
                     onLoad={() => setIsImageLoading(false)}
-                    onError={() => setIsImageLoading(false)}
+                    onError={(e) => {
+                      setIsImageLoading(false)
+                      // Si la imagen falla, usar una URL pública como fallback
+                      ;(e.currentTarget as HTMLImageElement).src =
+                        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-leaf-restaurant-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png"
+                    }}
                   />
                 </div>
               ) : (

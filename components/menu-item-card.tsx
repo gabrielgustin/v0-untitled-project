@@ -41,15 +41,22 @@ export function MenuItemCard({
 
   // Actualizar la función getDefaultProductImage para eliminar las referencias a los productos eliminados
   const getDefaultProductImage = () => {
-    // Imágenes disponibles en el proyecto
+    // Imágenes disponibles en el proyecto con URLs públicas
     const defaultImages = {
-      entradas: "/artisanal-cheese-selection.png",
-      principales: "/perfectly-seared-ribeye.png",
-      postres: "/classic-tiramisu.png",
-      bebidas: "/refreshing-mojito.png",
-      vinos: "/rich-malbec-glass.png",
-      cocktails: "/classic-negroni.png",
-      default: "/golden-leaf-restaurant.png",
+      entradas:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/artisanal-cheese-selection-RA7eOCiVm8O1M8JEqAo4XnOsrO8PTe.png",
+      principales:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/perfectly-seared-ribeye-JtU4szrCqy283PA90ot5A0vQr9frlk.png",
+      postres:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/classic-tiramisu-SRmdNnRJSpCNQ3IPccaHIxzKSJ0Nfg.png",
+      bebidas:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/refreshing-mojito-UvtuDLxoejLOaOXNfrVeIkyekdgoaH.png",
+      vinos:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/rich-malbec-tasting-gpv7Z2Ei6sSpGMnbahR23yGS9ewTN0.png",
+      cocktails:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/classic-negroni-rlLgUEJfrlu0WBf7jlZpYnhw4G8Iw9.png",
+      default:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-leaf-restaurant-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png",
     }
 
     // Intentar determinar la categoría por el ID o nombre

@@ -819,6 +819,29 @@ export function getDefaultCategory(productId: string, productName: string): Prod
 
 // Añadir una función para obtener la imagen predeterminada según la categoría
 export function getDefaultImage(category: ProductCategory | null, productName: string): string {
-  // Usar la nueva imagen predeterminada para todos los casos
-  return "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Captura%20de%20pantalla%202025-04-21%20a%20la%28s%29%206.59.08%E2%80%AFp.%C2%A0m.-AE0DsWUjrpmw6yz7UGQRuh1eSOYr2X.png"
+  // Usar URLs de imágenes públicas para cada categoría
+  const defaultImages = {
+    entradas:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/artisanal-cheese-selection-RA7eOCiVm8O1M8JEqAo4XnOsrO8PTe.png",
+    principales:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/perfectly-seared-ribeye-JtU4szrCqy283PA90ot5A0vQr9frlk.png",
+    postres:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/classic-tiramisu-SRmdNnRJSpCNQ3IPccaHIxzKSJ0Nfg.png",
+    bebidas:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/refreshing-mojito-UvtuDLxoejLOaOXNfrVeIkyekdgoaH.png",
+    vinos:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/rich-malbec-tasting-gpv7Z2Ei6sSpGMnbahR23yGS9ewTN0.png",
+    cocktails:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/classic-negroni-rlLgUEJfrlu0WBf7jlZpYnhw4G8Iw9.png",
+    default:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-leaf-restaurant-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png",
+  }
+
+  // Determinar la categoría para seleccionar la imagen adecuada
+  if (category && defaultImages[category]) {
+    return defaultImages[category]
+  }
+
+  // Si no se puede determinar la categoría, usar la imagen por defecto
+  return defaultImages.default
 }
