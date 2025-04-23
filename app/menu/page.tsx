@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Search, X, Home, ShoppingBag, LogOut, Utensils } from "lucide-react"
+import { Search, X, Home, ShoppingBag, LogOut, Utensils, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FoodCategory } from "@/components/food-category"
@@ -15,7 +15,7 @@ import { ProductEditModal } from "@/components/product-edit-modal"
 import Link from "next/link"
 import { getAuthState, logout, type User } from "@/lib/auth"
 import {
-  getProducts,
+  initialProducts,
   updateProduct,
   deleteProduct,
   addProduct,
@@ -24,7 +24,6 @@ import {
   getFeaturedProducts,
   type Product,
   type ProductCategory,
-  initialProducts,
 } from "@/lib/products"
 import { DesktopNavigation } from "@/components/desktop-navigation"
 import { toast } from "@/components/ui/use-toast"
@@ -70,19 +69,33 @@ const HamburgerIcon = (props: React.SVGProps<SVGSVGElement>) => {
   )
 }
 
+// Productos a excluir
+const excludedProductIds = ["crumble-de-manzana", "chardonnay", "carpaccio-de-lomo"]
+
+// Función para filtrar productos excluidos
+const filterExcludedProducts = (products: Product[]): Product[] => {
+  return products.filter((product) => !excludedProductIds.includes(product.id))
+}
+
+// Productos iniciales filtrados
+const filteredInitialProducts = filterExcludedProducts(initialProducts)
+
 export default function MenuPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [showLoginForm, setShowLoginForm] = useState(false)
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<Product[]>(filteredInitialProducts) // Inicializar con productos filtrados
   const [isLoading, setIsLoading] = useState(true)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [activeCategory, setActiveCategory] = useState<ProductCategory>("entradas")
   const [cartItemCount, setCartItemCount] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>(
+    filteredInitialProducts.filter((p) => p.featured === true),
+  )
   const [showScrollIndicator, setShowScrollIndicator] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   // Añadir después de la declaración de carouselRef
   const searchParams = useSearchParams()
@@ -96,6 +109,36 @@ export default function MenuPage() {
   const vinosRef = useRef<HTMLDivElement>(null)
   const cocktailsRef = useRef<HTMLDivElement>(null)
 
+  // Función para cargar productos desde localStorage
+  const loadProductsFromStorage = () => {
+    try {
+      if (typeof window === "undefined") {
+        console.log("Ejecutando en el servidor, usando productos iniciales")
+        return filteredInitialProducts
+      }
+
+      const savedProducts = localStorage.getItem("products")
+      if (savedProducts) {
+        try {
+          const parsedProducts = JSON.parse(savedProducts)
+          if (Array.isArray(parsedProducts) && parsedProducts.length > 0) {
+            console.log(`Cargados ${parsedProducts.length} productos desde localStorage`)
+            return filterExcludedProducts(parsedProducts)
+          }
+        } catch (e) {
+          console.error("Error parsing products from localStorage", e)
+        }
+      }
+
+      // Si no hay productos en localStorage o hay un error, guardar los iniciales
+      localStorage.setItem("products", JSON.stringify(filteredInitialProducts))
+      return filteredInitialProducts
+    } catch (e) {
+      console.error("Error accessing localStorage", e)
+      return filteredInitialProducts
+    }
+  }
+
   // Cargar el estado de autenticación y productos al iniciar
   useEffect(() => {
     const authUser = getAuthState()
@@ -105,34 +148,31 @@ export default function MenuPage() {
 
     // Iniciar carga
     setIsLoading(true)
+    setLoadError(null)
 
     try {
-      // Intentar cargar productos
-      console.log("Intentando cargar productos...")
-      let loadedProducts = getProducts()
-      console.log(`Cargados ${loadedProducts.length} productos`)
+      // Intentar cargar productos desde localStorage
+      const loadedProducts = loadProductsFromStorage()
 
-      // Asegurarse de que siempre haya productos
-      if (!loadedProducts || loadedProducts.length === 0) {
-        console.log("No se encontraron productos, usando productos iniciales")
-        loadedProducts = initialProducts.filter(
-          (p) => !["crumble-de-manzana", "chardonnay", "carpaccio-de-lomo"].includes(p.id),
-        )
+      // Verificar si hay productos
+      if (loadedProducts && loadedProducts.length > 0) {
+        console.log(`Cargados ${loadedProducts.length} productos`)
+        setProducts(loadedProducts)
+
+        // Cargar productos destacados
+        const featured = loadedProducts.filter((p) => p.featured === true)
+        setFeaturedProducts(featured.length > 0 ? featured : filteredInitialProducts.filter((p) => p.featured === true))
+      } else {
+        console.warn("No se encontraron productos, usando productos iniciales")
+        setProducts(filteredInitialProducts)
+        setFeaturedProducts(filteredInitialProducts.filter((p) => p.featured === true))
       }
-
-      setProducts(loadedProducts)
-
-      // Cargar productos destacados
-      const featured = loadedProducts.filter((p) => p.featured === true)
-      setFeaturedProducts(featured.length > 0 ? featured : initialProducts.filter((p) => p.featured === true))
     } catch (error) {
       console.error("Error al cargar productos:", error)
+      setLoadError("Error al cargar productos. Por favor, intenta recargar la página.")
       // En caso de error, usar los productos iniciales filtrados
-      const safeProducts = initialProducts.filter(
-        (p) => !["crumble-de-manzana", "chardonnay", "carpaccio-de-lomo"].includes(p.id),
-      )
-      setProducts(safeProducts)
-      setFeaturedProducts(safeProducts.filter((p) => p.featured === true))
+      setProducts(filteredInitialProducts)
+      setFeaturedProducts(filteredInitialProducts.filter((p) => p.featured === true))
     } finally {
       // Finalizar carga
       setIsLoading(false)
@@ -176,15 +216,19 @@ export default function MenuPage() {
 
   // Cargar carrito y calcular cantidad de items
   useEffect(() => {
-    const savedCart = localStorage.getItem("cart")
-    if (savedCart) {
-      try {
-        const parsedCart = JSON.parse(savedCart) as CartItem[]
-        const totalItems = parsedCart.reduce((sum, item) => sum + item.quantity, 0)
-        setCartItemCount(totalItems)
-      } catch (e) {
-        console.error("Error parsing cart from localStorage", e)
+    try {
+      const savedCart = localStorage.getItem("cart")
+      if (savedCart) {
+        try {
+          const parsedCart = JSON.parse(savedCart) as CartItem[]
+          const totalItems = parsedCart.reduce((sum, item) => sum + item.quantity, 0)
+          setCartItemCount(totalItems)
+        } catch (e) {
+          console.error("Error parsing cart from localStorage", e)
+        }
       }
+    } catch (e) {
+      console.error("Error accessing localStorage for cart", e)
     }
   }, [])
 
@@ -257,71 +301,125 @@ export default function MenuPage() {
 
   // Modificar la función handleSaveProduct para actualizar inmediatamente la UI
   const handleSaveProduct = (updatedProduct: Product) => {
-    const updatedProducts = updateProduct(updatedProduct)
-    setProducts(updatedProducts)
-    setShowEditModal(false)
-    setEditingProduct(null)
+    try {
+      const updatedProducts = updateProduct(updatedProduct)
+      setProducts(updatedProducts)
+      setShowEditModal(false)
+      setEditingProduct(null)
 
-    // Actualizar la categoría si ha cambiado
-    if (updatedProduct.category && updatedProduct.category !== activeCategory) {
-      setActiveCategory(updatedProduct.category)
-      scrollToCategory(updatedProduct.category)
+      // Actualizar la categoría si ha cambiado
+      if (updatedProduct.category && updatedProduct.category !== activeCategory) {
+        setActiveCategory(updatedProduct.category)
+        scrollToCategory(updatedProduct.category)
+      }
+
+      // Actualizar productos destacados si es necesario
+      if (updatedProduct.featured) {
+        setFeaturedProducts(getFeaturedProducts())
+      }
+
+      // Mostrar notificación de éxito
+      toast({
+        title: "Cambios guardados",
+        description: "Los cambios han sido guardados correctamente",
+        duration: 3000,
+      })
+    } catch (error) {
+      console.error("Error al guardar producto:", error)
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar los cambios. Intenta nuevamente.",
+        duration: 3000,
+      })
     }
-
-    // Actualizar productos destacados si es necesario
-    if (updatedProduct.featured) {
-      setFeaturedProducts(getFeaturedProducts())
-    }
-
-    // Mostrar notificación de éxito
-    toast({
-      title: "Cambios guardados",
-      description: "Los cambios han sido guardados correctamente",
-      duration: 3000,
-    })
   }
 
   // Función para añadir un nuevo producto
   const handleAddProduct = (newProduct: Product) => {
-    const updatedProducts = addProduct(newProduct)
-    setProducts(updatedProducts)
+    try {
+      const updatedProducts = addProduct(newProduct)
+      setProducts(updatedProducts)
 
-    // Actualizar productos destacados si es necesario
-    if (newProduct.featured) {
-      setFeaturedProducts(getFeaturedProducts())
+      // Actualizar productos destacados si es necesario
+      if (newProduct.featured) {
+        setFeaturedProducts(getFeaturedProducts())
+      }
+
+      // Mostrar notificación de éxito
+      toast({
+        title: "Producto añadido",
+        description: "El nuevo producto ha sido añadido correctamente",
+        duration: 3000,
+      })
+    } catch (error) {
+      console.error("Error al añadir producto:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo añadir el producto. Intenta nuevamente.",
+        duration: 3000,
+      })
     }
-
-    // Mostrar notificación de éxito
-    toast({
-      title: "Producto añadido",
-      description: "El nuevo producto ha sido añadido correctamente",
-      duration: 3000,
-    })
   }
 
   // Función para eliminar un producto
   const handleDeleteProduct = (productId: string) => {
-    const updatedProducts = deleteProduct(productId)
-    setProducts(updatedProducts)
-    setShowEditModal(false)
-    setEditingProduct(null)
+    try {
+      const updatedProducts = deleteProduct(productId)
+      setProducts(updatedProducts)
+      setShowEditModal(false)
+      setEditingProduct(null)
 
-    // Actualizar productos destacados
-    setFeaturedProducts(getFeaturedProducts())
+      // Actualizar productos destacados
+      setFeaturedProducts(getFeaturedProducts())
 
-    // Mostrar notificación de éxito
-    toast({
-      title: "Producto eliminado",
-      description: "El producto ha sido eliminado correctamente",
-      duration: 3000,
-    })
+      // Mostrar notificación de éxito
+      toast({
+        title: "Producto eliminado",
+        description: "El producto ha sido eliminado correctamente",
+        duration: 3000,
+      })
+    } catch (error) {
+      console.error("Error al eliminar producto:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el producto. Intenta nuevamente.",
+        duration: 3000,
+      })
+    }
   }
 
   // Función para restablecer los productos
   const handleResetProducts = () => {
-    const originalProducts = resetProducts()
-    setProducts(originalProducts)
-    setFeaturedProducts(getFeaturedProducts())
+    try {
+      const originalProducts = resetProducts()
+      setProducts(originalProducts)
+      setFeaturedProducts(getFeaturedProducts())
+
+      toast({
+        title: "Productos restablecidos",
+        description: "Los productos han sido restablecidos correctamente",
+        duration: 3000,
+      })
+    } catch (error) {
+      console.error("Error al restablecer productos:", error)
+
+      // En caso de error, intentar establecer los productos iniciales directamente
+      setProducts(filteredInitialProducts)
+      setFeaturedProducts(filteredInitialProducts.filter((p) => p.featured === true))
+
+      // Intentar guardar en localStorage
+      try {
+        localStorage.setItem("products", JSON.stringify(filteredInitialProducts))
+      } catch (e) {
+        console.error("Error saving to localStorage:", e)
+      }
+
+      toast({
+        title: "Productos restablecidos",
+        description: "Los productos han sido restablecidos a los valores predeterminados",
+        duration: 3000,
+      })
+    }
   }
 
   // Función para hacer scroll a la categoría seleccionada
@@ -390,6 +488,30 @@ export default function MenuPage() {
   const vinosProducts = products.filter((product) => product.category === "vinos")
   const cocktailsProducts = products.filter((product) => product.category === "cocktails")
 
+  // Función para recargar los productos
+  const handleReloadProducts = () => {
+    setIsLoading(true)
+    setLoadError(null)
+
+    // Restablecer productos a los valores iniciales
+    try {
+      localStorage.setItem("products", JSON.stringify(filteredInitialProducts))
+      setProducts(filteredInitialProducts)
+      setFeaturedProducts(filteredInitialProducts.filter((p) => p.featured === true))
+
+      toast({
+        title: "Productos cargados",
+        description: "Los productos han sido cargados correctamente",
+        duration: 3000,
+      })
+    } catch (error) {
+      console.error("Error al recargar productos:", error)
+      setLoadError("Error al recargar productos. Por favor, intenta nuevamente.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // Renderizar un estado de carga mientras se cargan los productos
   if (isLoading) {
     return (
@@ -397,6 +519,25 @@ export default function MenuPage() {
         <div className="flex flex-col items-center">
           <div className="h-10 w-10 border-4 border-montebello-gold border-t-transparent rounded-full animate-spin mb-4"></div>
           <p className="text-montebello-light text-lg">Cargando menú...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Si hay un error de carga, mostrar mensaje de error con opción para recargar
+  if (loadError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-montebello-navy">
+        <div className="bg-montebello-navy/80 border border-montebello-gold/20 rounded-lg p-6 max-w-md w-full text-center">
+          <h2 className="text-xl font-bold text-montebello-gold mb-2">Error al cargar productos</h2>
+          <p className="text-montebello-light mb-6">{loadError}</p>
+          <Button
+            className="bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
+            onClick={handleReloadProducts}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Recargar productos
+          </Button>
         </div>
       </div>
     )
@@ -794,16 +935,9 @@ export default function MenuPage() {
                 {!isLoading && (
                   <Button
                     className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
-                    onClick={() => {
-                      const resetProds = resetProducts()
-                      setProducts(resetProds)
-                      toast({
-                        title: "Productos restablecidos",
-                        description: "Se han cargado los productos predeterminados",
-                        duration: 3000,
-                      })
-                    }}
+                    onClick={handleResetProducts}
                   >
+                    <RefreshCw className="h-4 w-4 mr-2" />
                     Restablecer productos
                   </Button>
                 )}
@@ -840,6 +974,13 @@ export default function MenuPage() {
             ) : (
               <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
                 <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+                <Button
+                  className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
+                  onClick={handleResetProducts}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Restablecer productos
+                </Button>
               </div>
             )}
           </div>
@@ -873,6 +1014,13 @@ export default function MenuPage() {
             ) : (
               <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
                 <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+                <Button
+                  className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
+                  onClick={handleResetProducts}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Restablecer productos
+                </Button>
               </div>
             )}
           </div>
@@ -906,6 +1054,13 @@ export default function MenuPage() {
             ) : (
               <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
                 <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+                <Button
+                  className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
+                  onClick={handleResetProducts}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Restablecer productos
+                </Button>
               </div>
             )}
           </div>
@@ -939,6 +1094,13 @@ export default function MenuPage() {
             ) : (
               <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
                 <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+                <Button
+                  className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
+                  onClick={handleResetProducts}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Restablecer productos
+                </Button>
               </div>
             )}
           </div>
@@ -972,6 +1134,13 @@ export default function MenuPage() {
             ) : (
               <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
                 <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+                <Button
+                  className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
+                  onClick={handleResetProducts}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Restablecer productos
+                </Button>
               </div>
             )}
           </div>
