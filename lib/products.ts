@@ -1,7 +1,6 @@
 // Definición de tipos para los productos
 export type ProductCategory = "entradas" | "principales" | "postres" | "bebidas" | "vinos" | "cocktails" | null
 
-// Actualizar la interfaz Product para incluir la propiedad optional
 export interface Product {
   id: string
   name: string
@@ -19,19 +18,9 @@ export interface Product {
   featured?: boolean
 }
 
-// Actualizar los productos existentes para asegurar que tengan la información correcta
+// Lista de productos iniciales
 export const initialProducts: Product[] = [
   // ENTRADAS
-  {
-    id: "carpaccio-de-lomo",
-    name: "Carpaccio de Lomo",
-    description: "Finas láminas de lomo con rúcula, parmesano, alcaparras y aceite de oliva.",
-    price: 4800,
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/thinly-sliced-beef-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png",
-    category: "entradas",
-    featured: true,
-  },
   {
     id: "provoleta-clasica",
     name: "Provoleta Clásica",
@@ -237,16 +226,6 @@ export const initialProducts: Product[] = [
     isVegetarian: true,
   },
   {
-    id: "crumble-de-manzana",
-    name: "Crumble de Manzana",
-    description: "Manzanas caramelizadas con canela, cubiertas de crumble y servidas con helado.",
-    price: 3500,
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/spiced-apple-crumble-scoops-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png",
-    category: "postres",
-    isVegetarian: true,
-  },
-  {
     id: "panqueque-con-dulce-de-leche",
     name: "Panqueque con Dulce de Leche",
     description: "Clásico panqueque relleno de dulce de leche, flambeado con coñac.",
@@ -257,7 +236,7 @@ export const initialProducts: Product[] = [
     isVegetarian: true,
   },
 
-  // BEBIDAS (solo 6)
+  // BEBIDAS
   {
     id: "gaseosas",
     name: "Gaseosas",
@@ -319,7 +298,7 @@ export const initialProducts: Product[] = [
     isVegetarian: true,
   },
 
-  // VINOS (solo 6)
+  // VINOS
   {
     id: "malbec-reserva",
     name: "Malbec Reserva",
@@ -327,15 +306,6 @@ export const initialProducts: Product[] = [
     price: 7500,
     image:
       "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/rich-malbec-tasting-gpv7Z2Ei6sSpGMnbahR23yGS9ewTN0.png",
-    category: "vinos",
-    isVegetarian: true,
-  },
-  {
-    id: "chardonnay",
-    name: "Chardonnay",
-    description: "Bodega Catena Zapata, Mendoza.",
-    price: 6800,
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-chardonnay-still-life-BOqGf.png",
     category: "vinos",
     isVegetarian: true,
   },
@@ -381,7 +351,7 @@ export const initialProducts: Product[] = [
     isVegetarian: true,
   },
 
-  // COCKTAILS (solo 5, eliminamos Aperol Spritz)
+  // COCKTAILS
   {
     id: "negroni",
     name: "Negroni",
@@ -433,10 +403,15 @@ export const initialProducts: Product[] = [
   },
 ]
 
+// Productos a excluir
+const excludedProductIds = ["crumble-de-manzana", "chardonnay", "carpaccio-de-lomo"]
+
 // Función para obtener los productos (desde localStorage si existen, o los iniciales)
-// Corregir la función getProducts para asegurar que filtre correctamente el producto Aperol Spritz
 export function getProducts(): Product[] {
-  if (typeof window === "undefined") return initialProducts.filter((product) => !!product.image)
+  // Si estamos en el servidor, devolver los productos iniciales filtrados
+  if (typeof window === "undefined") {
+    return initialProducts.filter((product) => !excludedProductIds.includes(product.id))
+  }
 
   try {
     const savedProducts = localStorage.getItem("products")
@@ -444,85 +419,38 @@ export function getProducts(): Product[] {
       try {
         const parsedProducts = JSON.parse(savedProducts)
         // Verificar que parsedProducts sea un array
-        if (!Array.isArray(parsedProducts)) {
-          console.error("Saved products is not an array, resetting to initial products")
-          const filteredProducts = initialProducts.filter((product) => !!product.image)
+        if (!Array.isArray(parsedProducts) || parsedProducts.length === 0) {
+          console.error("Saved products is not a valid array, using initial products")
+          const filteredProducts = initialProducts.filter((product) => !excludedProductIds.includes(product.id))
           localStorage.setItem("products", JSON.stringify(filteredProducts))
           return filteredProducts
         }
 
-        // Actualizar las imágenes específicas si existen y eliminar los productos especificados
-        const updatedProducts = parsedProducts.filter(
-          (product) =>
-            product.id !== "aperol-spritz" &&
-            product.id !== "crumble-de-manzana" &&
-            product.id !== "chardonnay" &&
-            product.id !== "carpaccio-de-lomo",
-        ) // Eliminar los productos especificados
-
-        // Guardar los productos actualizados
-        localStorage.setItem("products", JSON.stringify(updatedProducts))
-
-        // Filtrar productos sin imágenes y asegurarse de que todos los productos tengan las propiedades requeridas
-        return updatedProducts.filter((product) => {
-          // Verificar que el producto tenga las propiedades mínimas requeridas
-          if (!product || !product.id || !product.name || product.price === undefined) {
-            console.warn("Invalid product found in localStorage, filtering out:", product)
-            return false
-          }
-          return true
-        })
+        // Filtrar los productos excluidos
+        const filteredProducts = parsedProducts.filter((product) => !excludedProductIds.includes(product.id))
+        return filteredProducts
       } catch (e) {
-        console.error("Error parsing products from localStorage, resetting to initial products", e)
-        const filteredProducts = initialProducts
-          .filter((product) => !!product.image)
-          .filter(
-            (product) =>
-              product.id !== "aperol-spritz" &&
-              product.id !== "crumble-de-manzana" &&
-              product.id !== "chardonnay" &&
-              product.id !== "carpaccio-de-lomo",
-          )
+        console.error("Error parsing products from localStorage, using initial products", e)
+        const filteredProducts = initialProducts.filter((product) => !excludedProductIds.includes(product.id))
         localStorage.setItem("products", JSON.stringify(filteredProducts))
         return filteredProducts
       }
+    } else {
+      // Si no hay productos guardados, guardar los iniciales filtrados
+      const filteredProducts = initialProducts.filter((product) => !excludedProductIds.includes(product.id))
+      localStorage.setItem("products", JSON.stringify(filteredProducts))
+      return filteredProducts
     }
   } catch (e) {
     console.error("Error accessing localStorage, using initial products", e)
-    return initialProducts
-      .filter((product) => !!product.image)
-      .filter(
-        (product) =>
-          product.id !== "aperol-spritz" &&
-          product.id !== "crumble-de-manzana" &&
-          product.id !== "chardonnay" &&
-          product.id !== "carpaccio-de-lomo",
-      )
+    return initialProducts.filter((product) => !excludedProductIds.includes(product.id))
   }
-
-  // Si no hay productos guardados o hay un error, guardar los iniciales (filtrados)
-  const filteredProducts = initialProducts
-    .filter((product) => !!product.image)
-    .filter(
-      (product) =>
-        product.id !== "aperol-spritz" &&
-        product.id !== "crumble-de-manzana" &&
-        product.id !== "chardonnay" &&
-        product.id !== "carpaccio-de-lomo",
-    )
-  try {
-    localStorage.setItem("products", JSON.stringify(filteredProducts))
-  } catch (e) {
-    console.error("Error saving products to localStorage", e)
-  }
-  return filteredProducts
 }
 
 // Función para guardar los productos
 export function saveProducts(products: Product[]): void {
   try {
     localStorage.setItem("products", JSON.stringify(products))
-    // Añadir un timestamp para la sesión actual
     localStorage.setItem("products_last_updated", Date.now().toString())
   } catch (e) {
     console.error("Error saving products to localStorage", e)
@@ -532,23 +460,7 @@ export function saveProducts(products: Product[]): void {
 // Función para actualizar un producto
 export function updateProduct(updatedProduct: Product): Product[] {
   const products = getProducts()
-
-  // Actualizar el producto
-  const updatedProducts = products.map((product) => {
-    if (product.id === updatedProduct.id) {
-      // Si la categoría ha cambiado, actualizar el orden
-      if (product.category !== updatedProduct.category) {
-        // Asignar el producto a la nueva categoría
-        return {
-          ...updatedProduct,
-          // Mantener cualquier otra propiedad que pueda tener
-        }
-      }
-      return updatedProduct
-    }
-    return product
-  })
-
+  const updatedProducts = products.map((product) => (product.id === updatedProduct.id ? updatedProduct : product))
   saveProducts(updatedProducts)
   return updatedProducts
 }
@@ -571,8 +483,9 @@ export function addProduct(newProduct: Product): Product[] {
 
 // Función para resetear los productos a los valores iniciales
 export function resetProducts(): Product[] {
-  saveProducts(initialProducts)
-  return initialProducts
+  const filteredProducts = initialProducts.filter((product) => !excludedProductIds.includes(product.id))
+  saveProducts(filteredProducts)
+  return filteredProducts
 }
 
 // Función para obtener productos por categoría
@@ -587,7 +500,7 @@ export function getFeaturedProducts(): Product[] {
   return products.filter((product) => product.featured === true)
 }
 
-// Añadir una nueva función para verificar si hay cambios pendientes
+// Función para verificar si hay cambios pendientes
 export function hasPendingChanges(): boolean {
   if (typeof window === "undefined") return false
 
@@ -599,45 +512,6 @@ export function hasPendingChanges(): boolean {
   }
 
   return false
-}
-
-// Modificar la función getDisplayOrder para incluir solo los productos que quedan
-export function getDisplayOrder(category: ProductCategory): string[] {
-  // Definir el orden de visualización para cada categoría
-  const displayOrder: Record<ProductCategory, string[]> = {
-    entradas: [
-      "provoleta-clasica",
-      "empanadas-montebello",
-      "tabla-de-quesos",
-      "rabas",
-      "langostinos-empanados",
-      "burrata",
-    ],
-    principales: [
-      "bife-de-chorizo",
-      "ojo-de-bife",
-      "tomahawk",
-      "lomo-al-malbec",
-      "milanesa-napolitana",
-      "pollo-a-la-parrilla",
-      "sorrentinos-de-jamon-y-queso",
-      "risotto-de-hongos",
-      "salmon-grillado",
-      "pescado-del-dia",
-    ],
-    postres: [
-      "flan-casero",
-      "tiramisu",
-      "cheesecake-frutos-rojos",
-      "volcan-de-chocolate",
-      "panqueque-con-dulce-de-leche",
-    ],
-    bebidas: ["gaseosas", "limonada-casera", "jugo-de-naranja", "cafe-espresso", "cafe-con-leche", "frappe-de-cafe"],
-    vinos: ["malbec-reserva", "champagne-extra-brut", "cabernet-sauvignon", "pinot-noir", "sauvignon-blanc"],
-    cocktails: ["negroni", "old-fashioned", "mojito", "margarita", "manhattan"],
-  }
-
-  return displayOrder[category] || []
 }
 
 // Función para determinar la categoría predeterminada de un producto basado en su ID o nombre
@@ -780,16 +654,6 @@ export function getDefaultCategory(productId: string, productName: string): Prod
   }
 
   if (
-    name.includes("agua") ||
-    name.includes("gaseosa") ||
-    name.includes("limonada") ||
-    name.includes("jugo") ||
-    name.includes("cafe")
-  ) {
-    return "bebidas"
-  }
-
-  if (
     name.includes("malbec") ||
     name.includes("chardonnay") ||
     name.includes("champagne") ||
@@ -817,7 +681,7 @@ export function getDefaultCategory(productId: string, productName: string): Prod
   return "entradas"
 }
 
-// Añadir una función para obtener la imagen predeterminada según la categoría
+// Función para obtener la imagen predeterminada según la categoría
 export function getDefaultImage(category: ProductCategory | null, productName: string): string {
   // Usar URLs de imágenes públicas para cada categoría
   const defaultImages = {
@@ -837,31 +701,9 @@ export function getDefaultImage(category: ProductCategory | null, productName: s
       "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-leaf-restaurant-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png",
   }
 
-  // Determinar la categoría para seleccionar la imagen adecuada
   if (category && defaultImages[category]) {
     return defaultImages[category]
   }
 
-  // Si no se puede determinar la categoría, usar la imagen por defecto
   return defaultImages.default
-}
-
-// Función para normalizar las dimensiones de las imágenes
-export function getNormalizedImageUrl(imageUrl: string): string {
-  // Si la imagen ya es una URL pública, devolverla tal cual
-  if (
-    imageUrl.startsWith("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/") ||
-    imageUrl.startsWith("https://v0.blob.com/")
-  ) {
-    return imageUrl
-  }
-
-  // Si es una imagen local, asegurarse de que tenga la ruta correcta
-  if (imageUrl.startsWith("/")) {
-    // Usar la imagen por defecto si no se encuentra la imagen local
-    return getDefaultImage(null, "default")
-  }
-
-  // Si no es una URL válida, usar la imagen por defecto
-  return getDefaultImage(null, "default")
 }

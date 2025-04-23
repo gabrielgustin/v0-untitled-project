@@ -1,13 +1,12 @@
 export const theme = {
   colors: {
-    // Colores extraídos de las imágenes
-    primary: {
-      background: "#fdf5f5", // Fondo rosa original
-      cream: "#f8f5d7", // Fondo amarillo claro/crema del Querido Bowl
-      mint: "#e0ebe5", // Fondo verde menta de la Milanesa
-      charcoal: "#4a4a4a", // Color de texto oscuro
-      accent: "#d1a054", // Color dorado/miel del bowl
-      pink: "#f8d7d7", // Tono rosado sutil
+    // Colores principales del tema Montebello
+    montebello: {
+      navy: "#121628", // Azul marino oscuro (casi negro)
+      gold: "#d4b45a", // Dorado
+      cream: "#f5f0e0", // Crema claro
+      charcoal: "#2a2a2a", // Gris oscuro
+      light: "#f8f8f8", // Blanco hueso
     },
     // Colores de estado
     state: {

@@ -1,4 +1,5 @@
 import type React from "react"
+
 export function TicketIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -20,14 +21,11 @@ export function TicketIcon(props: React.SVGProps<SVGSVGElement>) {
   )
 }
 
-// Asegurarse de que el LeafIcon esté correctamente definido
-// Si es necesario, podemos ajustar su apariencia para que coincida con la imagen proporcionada
-
 export function LeafIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
-      width="16"
-      height="16"
+      width="24"
+      height="24"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -36,12 +34,9 @@ export function LeafIcon(props: React.SVGProps<SVGSVGElement>) {
       strokeLinejoin="round"
       {...props}
     >
-      {/* Reemplazamos el path del SVG con una imagen */}
-      <image
-        href="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Captura%20de%20pantalla%202025-04-19%20a%20la%28s%29%205.38.15%E2%80%AFp.%C2%A0m.-NRjjRyeyl3g5kceKpcZrqunQ1XMJAU.png"
-        width="24"
-        height="24"
-      />
+      <path d="M6 3v12c0 2.5 2.5 4 5 4s5-1.5 5-4V3" />
+      <path d="M11 3v8" />
+      <path d="M11 15v4" />
     </svg>
   )
 }

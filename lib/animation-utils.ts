@@ -29,24 +29,6 @@ export const slideUp = {
   },
 }
 
-export const slideIn = {
-  hidden: { x: -20, opacity: 0 },
-  visible: {
-    x: 0,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 24,
-    },
-  },
-  exit: {
-    x: -20,
-    opacity: 0,
-    transition: { duration: 0.2 },
-  },
-}
-
 export const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
@@ -54,24 +36,6 @@ export const staggerContainer = {
     transition: {
       staggerChildren: 0.1,
     },
-  },
-}
-
-export const scaleUp = {
-  hidden: { scale: 0.8, opacity: 0 },
-  visible: {
-    scale: 1,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 24,
-    },
-  },
-  exit: {
-    scale: 0.8,
-    opacity: 0,
-    transition: { duration: 0.2 },
   },
 }
 
@@ -85,73 +49,6 @@ export const addToCartAnimation = {
       stiffness: 400,
       damping: 10,
     },
-  },
-}
-
-// Animación para tarjetas de productos
-export const cardAnimation = {
-  rest: {
-    scale: 1,
-    y: 0,
-    transition: {
-      duration: 0.2,
-      type: "tween",
-      ease: "easeIn",
-    },
-  },
-  hover: {
-    scale: 1.03,
-    y: -5,
-    transition: {
-      duration: 0.2,
-      type: "tween",
-      ease: "easeOut",
-    },
-  },
-  tap: {
-    scale: 0.98,
-    transition: {
-      duration: 0.2,
-      type: "tween",
-      ease: "easeIn",
-    },
-  },
-}
-
-// Animación para el carrusel de categorías
-export const categoryAnimation = {
-  inactive: {
-    scale: 1,
-    backgroundColor: "rgba(255, 255, 255, 0)",
-    transition: { duration: 0.3 },
-  },
-  active: {
-    scale: 1.05,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 20,
-    },
-  },
-}
-
-// Animación para notificaciones
-export const notificationAnimation = {
-  initial: { opacity: 0, y: -20 },
-  animate: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 500,
-      damping: 30,
-    },
-  },
-  exit: {
-    opacity: 0,
-    y: -20,
-    transition: { duration: 0.2 },
   },
 }
 

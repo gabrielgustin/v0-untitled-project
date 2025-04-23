@@ -23,11 +23,9 @@ const nextConfig = {
       }
     ],
   },
-  // Modified experimental section to remove optimizeCss
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
-  // Keeping the standalone output configuration
   output: 'standalone',
 };
 

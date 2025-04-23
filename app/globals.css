@@ -132,7 +132,6 @@
   width: 100%;
   left: 0;
   right: 0;
-  /* Eliminar cualquier transición para que sea instantáneo */
   transition: none;
 }
 
@@ -153,7 +152,6 @@
   padding-top: 1rem;
   padding-bottom: 1rem;
   z-index: 40; /* Asegurar que sea menor que los modales */
-  /* Asegurar que no haya transición */
   transition: none;
 }
 
@@ -167,7 +165,6 @@
 /* Espaciador para mantener el flujo del documento cuando el carrusel está fijo */
 #carousel-spacer {
   height: 0;
-  /* Eliminar transición para que sea instantáneo */
   transition: none;
 }
 
@@ -191,69 +188,6 @@
     scroll-margin-top: 200px; /* Ajustar para escritorio */
   }
 }
-
-@keyframes carousel-hint {
-  0% {
-    transform: translateX(0);
-  }
-  10% {
-    transform: translateX(-15px);
-  }
-  20% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-
-.animate-carousel-initial {
-  animation: carousel-hint 3s ease-in-out 1s 1;
-}
-
-@keyframes bounce-horizontal {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(3px);
-  }
-}
-
-.animate-bounce-horizontal {
-  animation: bounce-horizontal 1s infinite;
-}
-
-/* Estilos para el texto de categoría con múltiples líneas */
-.text-xs.leading-tight {
-  line-height: 1.2;
-  display: block;
-  max-width: 100%;
-  word-wrap: break-word;
-  hyphens: auto;
-}
-
-/* Estilo para el contenedor del carrusel cuando está fijo */
-.carousel-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-/* Estilo para el contenedor interno del carrusel */
-.carousel-inner {
-  position: relative;
-  width: 100%;
-  background-color: #121628; /* Color sólido montebello-navy */
-}
-
-/* Añadir efecto de brillo para los iconos activos */
-.icon-glow {
-  filter: drop-shadow(0 0 8px rgba(212, 180, 90, 0.7));
-}
-
-/* Añadir una regla para asegurar que el modal de inicio de sesión siempre esté por encima del carrusel */
-/* Añadir al final del archivo */
 
 /* Estilos para modales y ventanas flotantes */
 .modal-overlay {

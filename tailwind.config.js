@@ -21,7 +21,7 @@ const config = {
         sans: ["var(--font-open-sans)", "sans-serif"],
       },
       colors: {
-        // Paleta de colores de Club Montebello (principal)
+        // Paleta de colores de Club Montebello
         montebello: {
           navy: "#121628", // Azul marino oscuro (casi negro)
           gold: "#d4b45a", // Dorado
@@ -29,15 +29,6 @@ const config = {
           charcoal: "#2a2a2a", // Gris oscuro
           light: "#f8f8f8", // Blanco hueso
           accent: "#d4b45a", // Dorado (mismo que gold para consistencia)
-        },
-        // Mantener los colores originales de La Capke para compatibilidad
-        lacapke: {
-          background: "#fdf5f5", // Fondo rosa original
-          cream: "#f8f5d7",
-          mint: "#e0ebe5",
-          charcoal: "#4a4a4a",
-          accent: "#d1a054",
-          pink: "#f8d7d7",
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

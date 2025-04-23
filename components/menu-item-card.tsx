@@ -40,67 +40,13 @@ export function MenuItemCard({
   const [isImageLoading, setIsImageLoading] = useState(true)
   const [imageError, setImageError] = useState(false)
 
-  // Actualizar la función getDefaultProductImage para usar URLs públicas
-  const getDefaultProductImage = () => {
-    // Imágenes disponibles en el proyecto con URLs públicas
-    const defaultImages = {
-      entradas:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/artisanal-cheese-selection-RA7eOCiVm8O1M8JEqAo4XnOsrO8PTe.png",
-      principales:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/perfectly-seared-ribeye-JtU4szrCqy283PA90ot5A0vQr9frlk.png",
-      postres:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/classic-tiramisu-SRmdNnRJSpCNQ3IPccaHIxzKSJ0Nfg.png",
-      bebidas:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/refreshing-mojito-UvtuDLxoejLOaOXNfrVeIkyekdgoaH.png",
-      vinos:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/rich-malbec-tasting-gpv7Z2Ei6sSpGMnbahR23yGS9ewTN0.png",
-      cocktails:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/classic-negroni-rlLgUEJfrlu0WBf7jlZpYnhw4G8Iw9.png",
-      default:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-leaf-restaurant-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png",
-    }
-
-    // Intentar determinar la categoría por el ID o nombre
-    const id = formattedId.toLowerCase()
-
-    if (id.includes("entrada") || id.includes("provoleta") || id.includes("empanada") || id.includes("carpaccio")) {
-      return defaultImages.entradas
-    } else if (
-      id.includes("bife") ||
-      id.includes("lomo") ||
-      id.includes("milanesa") ||
-      id.includes("salmon") ||
-      id.includes("risotto")
-    ) {
-      return defaultImages.principales
-    } else if (
-      id.includes("postre") ||
-      id.includes("flan") ||
-      id.includes("tiramisu") ||
-      id.includes("cheesecake") ||
-      id.includes("volcan")
-    ) {
-      return defaultImages.postres
-    } else if (
-      id.includes("bebida") ||
-      id.includes("cafe") ||
-      id.includes("jugo") ||
-      id.includes("limonada") ||
-      id.includes("gaseosa")
-    ) {
-      return defaultImages.bebidas
-    } else if (id.includes("vino") || id.includes("malbec") || id.includes("champagne") || id.includes("chardonnay")) {
-      return defaultImages.vinos
-    } else if (id.includes("cocktail") || id.includes("negroni") || id.includes("mojito") || id.includes("margarita")) {
-      return defaultImages.cocktails
-    }
-
-    // Si no se puede determinar la categoría, usar la imagen por defecto
-    return defaultImages.default
+  // Función para obtener una imagen por defecto
+  const getDefaultImage = () => {
+    return "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-leaf-restaurant-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png"
   }
 
   // Asegurar que siempre tengamos una imagen válida
-  const defaultImage = image || getDefaultProductImage()
+  const imageUrl = image || getDefaultImage()
 
   // Función para manejar el clic en el botón de edición
   const handleEditClick = (e: React.MouseEvent) => {
@@ -118,22 +64,19 @@ export function MenuItemCard({
     setIsImageLoading(false)
   }
 
-  // Estilo original para tarjetas con imagen
   return (
     <Link href={`/product/${formattedId}`} className="block h-full">
       <div className="bg-montebello-navy/80 rounded-xl overflow-hidden shadow-sm flex flex-col relative border border-montebello-gold/20 hover:shadow-md hover:-translate-y-1 transition-all duration-300 h-[320px] sm:h-[360px] lg:h-[400px]">
         {/* Botón de edición para administradores */}
         {isAdmin && (
-          <div className="animate-fade-in">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 z-10 h-7 w-7 sm:h-8 sm:w-8 bg-montebello-gold/20 hover:bg-montebello-gold/30 text-montebello-light rounded-full shadow-sm"
-              onClick={handleEditClick}
-            >
-              <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 z-10 h-7 w-7 sm:h-8 sm:w-8 bg-montebello-gold/20 hover:bg-montebello-gold/30 text-montebello-light rounded-full shadow-sm"
+            onClick={handleEditClick}
+          >
+            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+          </Button>
         )}
 
         <div className="relative w-full aspect-square p-1 sm:p-2">
@@ -145,9 +88,8 @@ export function MenuItemCard({
           )}
 
           <div className="relative h-full w-full rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300">
-            {/* Usar img en lugar de Image para mayor compatibilidad */}
             <img
-              src={imageError ? getDefaultProductImage() : defaultImage}
+              src={imageError ? getDefaultImage() : imageUrl}
               alt={name}
               className="w-full h-full object-cover"
               onLoad={() => setIsImageLoading(false)}
@@ -183,15 +125,9 @@ export function MenuItemCard({
           )}
 
           {/* Logo y precio en la parte inferior */}
-          <div className="mt-auto pt-1 sm:pt-2 flex justify-end items-center">
+          <div className="mt-auto pt-1 sm:pt-2 flex justify-between items-center">
             {/* Ícono vegetariano en la parte inferior izquierda */}
-            <div className="relative">
-              {isVegetarian && (
-                <div>
-                  <VegetarianBadge className="h-4 w-4 sm:h-5 sm:w-5" />
-                </div>
-              )}
-            </div>
+            <div className="relative">{isVegetarian && <VegetarianBadge className="h-4 w-4 sm:h-5 sm:w-5" />}</div>
 
             {/* Precio en la parte inferior derecha */}
             {!variants.length && (

@@ -107,27 +107,25 @@ export default function MenuPage() {
     setIsLoading(true)
 
     try {
-      // Cargar productos
-      const loadedProducts = getProducts()
+      // Intentar cargar productos
+      let loadedProducts = getProducts()
 
-      // Si no hay productos, usar los iniciales
+      // Asegurarse de que siempre haya productos
       if (!loadedProducts || loadedProducts.length === 0) {
         console.log("No se encontraron productos, usando productos iniciales")
-        setProducts(initialProducts.filter((p) => !!p.image))
-
-        // Cargar productos destacados desde los iniciales
-        setFeaturedProducts(initialProducts.filter((p) => p.featured === true))
-      } else {
-        console.log(`Cargados ${loadedProducts.length} productos`)
-        setProducts(loadedProducts)
-
-        // Cargar productos destacados
-        setFeaturedProducts(getFeaturedProducts())
+        loadedProducts = initialProducts
       }
+
+      console.log(`Cargados ${loadedProducts.length} productos`)
+      setProducts(loadedProducts)
+
+      // Cargar productos destacados
+      const featured = loadedProducts.filter((p) => p.featured === true)
+      setFeaturedProducts(featured.length > 0 ? featured : initialProducts.filter((p) => p.featured === true))
     } catch (error) {
       console.error("Error al cargar productos:", error)
       // En caso de error, usar los productos iniciales
-      setProducts(initialProducts.filter((p) => !!p.image))
+      setProducts(initialProducts)
       setFeaturedProducts(initialProducts.filter((p) => p.featured === true))
     } finally {
       // Finalizar carga
