@@ -10,12 +10,12 @@ export function LogoContainer({ className = "", size = "medium" }: LogoContainer
   const getFontSize = () => {
     switch (size) {
       case "small":
-        return "text-sm sm:text-base"
+        return "text-xl sm:text-2xl"
       case "large":
-        return "text-lg sm:text-xl"
+        return "text-3xl sm:text-4xl"
       case "medium":
       default:
-        return "text-base sm:text-lg"
+        return "text-2xl sm:text-3xl"
     }
   }
 
@@ -23,10 +23,9 @@ export function LogoContainer({ className = "", size = "medium" }: LogoContainer
 
   return (
     <Link href="/" className={`flex items-center justify-center w-full ${className}`}>
-      <div className="flex flex-col items-center py-0">
-        <h1 className={`font-serif ${fontSize} text-montebello-gold tracking-wider font-bold text-center leading-none`}>
-          <span className="block">CLUB</span>
-          <span className="block">MONTEBELLO</span>
+      <div className="flex flex-col items-center">
+        <h1 className={`font-serif ${fontSize} text-montebello-gold tracking-wider font-bold text-center`}>
+          CLUB MONTEBELLO
         </h1>
       </div>
     </Link>

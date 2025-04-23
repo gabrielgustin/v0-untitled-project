@@ -4,12 +4,9 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Edit } from "lucide-react"
 import { VegetarianBadge } from "@/components/vegetarian-badge"
-import { motion } from "framer-motion"
-import { cardAnimation } from "@/lib/animation-utils"
-import { getDefaultImage } from "@/lib/products"
 
 interface MenuItemCardProps {
   id: string
@@ -27,9 +24,6 @@ interface MenuItemCardProps {
   onEdit?: (id: string) => void
 }
 
-// Asegurar que las cards sean visibles en dispositivos móviles
-
-// Modificar el componente MenuItemCard para mejorar la visualización en móvil
 export function MenuItemCard({
   id,
   name,
@@ -44,7 +38,42 @@ export function MenuItemCard({
 }: MenuItemCardProps) {
   const formattedId = id.toLowerCase().replace(/\s+/g, "-")
   const [isImageLoading, setIsImageLoading] = useState(true)
-  const defaultImage = getDefaultImage(size === "large" ? "bebidas" : null, name)
+
+  // Actualizar la función getDefaultProductImage para eliminar las referencias a los productos eliminados
+  const getDefaultProductImage = () => {
+    // Imágenes disponibles en el proyecto
+    const defaultImages = {
+      entradas: "/artisanal-cheese-selection.png",
+      principales: "/perfectly-seared-ribeye.png",
+      postres: "/classic-tiramisu.png",
+      bebidas: "/refreshing-mojito.png",
+      vinos: "/rich-malbec-glass.png",
+      cocktails: "/classic-negroni.png",
+      default: "/golden-leaf-restaurant.png",
+    }
+
+    // Intentar determinar la categoría por el ID o nombre
+    const id = formattedId.toLowerCase()
+
+    if (id.includes("entrada") || id.includes("provoleta") || id.includes("empanada")) {
+      return defaultImages.entradas
+    } else if (id.includes("bife") || id.includes("lomo") || id.includes("milanesa") || id.includes("salmon")) {
+      return defaultImages.principales
+    } else if (id.includes("postre") || id.includes("flan") || id.includes("tiramisu") || id.includes("cheesecake")) {
+      return defaultImages.postres
+    } else if (id.includes("bebida") || id.includes("cafe") || id.includes("jugo") || id.includes("limonada")) {
+      return defaultImages.bebidas
+    } else if (id.includes("vino") || id.includes("malbec") || id.includes("champagne")) {
+      return defaultImages.vinos
+    } else if (id.includes("cocktail") || id.includes("negroni") || id.includes("mojito")) {
+      return defaultImages.cocktails
+    }
+
+    // Si no se puede determinar la categoría, usar la imagen por defecto
+    return defaultImages.default
+  }
+
+  const defaultImage = image || getDefaultProductImage()
 
   // Función para manejar el clic en el botón de edición
   const handleEditClick = (e: React.MouseEvent) => {
@@ -58,16 +87,10 @@ export function MenuItemCard({
   // Estilo original para tarjetas con imagen
   return (
     <Link href={`/product/${formattedId}`} className="block h-full">
-      <motion.div
-        className="bg-montebello-navy/80 rounded-lg overflow-hidden shadow-sm h-full flex flex-col relative border border-montebello-gold/20"
-        initial="rest"
-        whileHover="hover"
-        whileTap="tap"
-        variants={cardAnimation}
-      >
+      <div className="bg-montebello-navy/80 rounded-xl overflow-hidden shadow-sm h-full flex flex-col relative border border-montebello-gold/20 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
         {/* Botón de edición para administradores */}
         {isAdmin && (
-          <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
+          <div className="animate-fade-in">
             <Button
               variant="ghost"
               size="icon"
@@ -76,11 +99,11 @@ export function MenuItemCard({
             >
               <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
-          </motion.div>
+          </div>
         )}
 
         <div
-          className={`relative ${size === "large" ? "h-28 sm:h-36 lg:h-40" : "h-20 sm:h-24 lg:h-36"} w-full p-0.5 sm:p-1`}
+          className={`relative ${size === "large" ? "h-32 sm:h-40 lg:h-40" : "h-20 sm:h-24 lg:h-40"} w-full p-1 sm:p-2`}
         >
           {/* Indicador de carga */}
           {isImageLoading && (
@@ -89,58 +112,35 @@ export function MenuItemCard({
             </div>
           )}
 
-          <motion.div
-            className="relative h-full w-full rounded-lg overflow-hidden"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
-          >
+          <div className="relative h-full w-full rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300">
             {/* Usar img en lugar de Image para mayor compatibilidad */}
             <img
-              src={image || defaultImage}
+              src={defaultImage || "/placeholder.svg"}
               alt={name}
               className="w-full h-full object-cover"
               onLoad={() => setIsImageLoading(false)}
-              onError={() => setIsImageLoading(false)}
+              onError={(e) => {
+                // Si la imagen falla, usar la imagen por defecto del restaurante
+                ;(e.target as HTMLImageElement).src = "/golden-leaf-restaurant.png"
+                setIsImageLoading(false)
+              }}
             />
-          </motion.div>
+          </div>
         </div>
-        <div className="p-1 py-0.5 sm:p-2 sm:py-1 lg:p-3 flex flex-col flex-grow">
+        <div className="p-2 py-1.5 sm:p-3 sm:py-2 lg:p-4 flex flex-col flex-grow">
           {/* Título en la parte superior */}
-          <motion.h3
-            className="font-bold text-montebello-gold text-[10px] sm:text-xs lg:text-sm font-open-sans mb-0.5"
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
+          <h3 className="font-bold text-montebello-gold text-[11px] sm:text-sm lg:text-base font-open-sans mb-0.5">
             {name}
-          </motion.h3>
+          </h3>
 
           {/* Descripción del producto */}
-          <motion.p
-            className="text-montebello-light/80 text-[8px] sm:text-[10px] lg:text-xs line-clamp-2 mb-0.5"
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            {description}
-          </motion.p>
+          <p className="text-montebello-light/80 text-[9px] sm:text-xs lg:text-xs line-clamp-2 mb-1">{description}</p>
 
           {/* Variantes (si existen) */}
           {variants.length > 0 && (
-            <motion.div
-              className="space-y-0.5 sm:space-y-1 mt-1 sm:mt-1.5 lg:mt-2 lg:space-y-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
+            <div className="space-y-0.5 sm:space-y-1 mt-1 sm:mt-1.5 lg:mt-2 lg:space-y-2">
               {variants.map((variant, index) => (
-                <motion.div
-                  key={index}
-                  className="flex items-center justify-between text-xs lg:text-sm"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                >
+                <div key={index} className="flex items-center justify-between text-xs lg:text-sm">
                   <span className="text-montebello-light font-bold text-xs lg:text-sm">{variant.name}</span>
                   <div className="flex items-center">
                     <div className="border-b border-dotted border-montebello-gold/30 flex-grow mx-1 sm:mx-2 w-8 sm:w-12 lg:w-16"></div>
@@ -148,45 +148,31 @@ export function MenuItemCard({
                       $ {variant.price}
                     </span>
                   </div>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </div>
           )}
 
           {/* Logo y precio en la parte inferior */}
-          <motion.div
-            className="mt-auto pt-1 sm:pt-2 flex justify-end items-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
+          <div className="mt-auto pt-1 sm:pt-2 flex justify-end items-center">
             {/* Ícono vegetariano en la parte inferior izquierda */}
             <div className="relative">
               {isVegetarian && (
-                <motion.div
-                  initial={{ rotate: -10, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  transition={{ delay: 0.5, type: "spring" }}
-                >
+                <div>
                   <VegetarianBadge className="h-4 w-4 sm:h-5 sm:w-5" />
-                </motion.div>
+                </div>
               )}
             </div>
 
             {/* Precio en la parte inferior derecha */}
             {!variants.length && (
-              <motion.span
-                className="font-bold text-montebello-gold text-xs sm:text-sm lg:text-base font-open-sans"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
+              <span className="font-bold text-montebello-gold text-xs sm:text-sm lg:text-base font-open-sans">
                 $ {price}
-              </motion.span>
+              </span>
             )}
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </Link>
   )
 }

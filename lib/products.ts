@@ -27,7 +27,8 @@ const initialProducts: Product[] = [
     name: "Carpaccio de Lomo",
     description: "Finas láminas de lomo con rúcula, parmesano, alcaparras y aceite de oliva.",
     price: 4800,
-    image: "/thinly-sliced-beef.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/thinly-sliced-beef-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png",
     category: "entradas",
     featured: true,
   },
@@ -36,7 +37,8 @@ const initialProducts: Product[] = [
     name: "Provoleta Clásica",
     description: "Queso provolone fundido con orégano y aceite de oliva.",
     price: 4200,
-    image: "/sizzling-provoleta.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sizzling-provoleta-Hzjx05BaQNMt915YYUPUzrg5mUzi9z.png",
     category: "entradas",
     isVegetarian: true,
   },
@@ -45,7 +47,8 @@ const initialProducts: Product[] = [
     name: "Empanadas Montebello",
     description: "Selección de empanadas caseras (carne cortada a cuchillo, pollo, jamón y queso).",
     price: 3600,
-    image: "/assorted-empanadas.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/assorted-empanadas-hJ34ZLhUnYZ7kclKnF31jwe9np6Yiz.png",
     category: "entradas",
     variants: [
       { name: "Unidad", price: 900 },
@@ -58,7 +61,8 @@ const initialProducts: Product[] = [
     name: "Tabla de Quesos",
     description: "Selección de quesos argentinos con frutos secos y mermelada casera.",
     price: 6500,
-    image: "/artisanal-cheese-selection.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/artisanal-cheese-selection-RA7eOCiVm8O1M8JEqAo4XnOsrO8PTe.png",
     category: "entradas",
     isVegetarian: true,
     size: "large",
@@ -69,7 +73,8 @@ const initialProducts: Product[] = [
     name: "Rabas",
     description: "Aros de calamar rebozados y fritos, servidos con salsa alioli y limón.",
     price: 5200,
-    image: "/golden-crispy-calamari.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-crispy-calamari-vWy46ohGOnjX28KVU7jetFZbbxnfvE.png",
     category: "entradas",
   },
   {
@@ -77,7 +82,8 @@ const initialProducts: Product[] = [
     name: "Langostinos Empanados",
     description: "Langostinos rebozados en panko, acompañados de salsa golf casera.",
     price: 5800,
-    image: "/crispy-breaded-shrimp.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/crispy-breaded-shrimp-2XsLRvo97dHFM8MOBNPiivIxpvuOtq.png",
     category: "entradas",
   },
   {
@@ -85,7 +91,8 @@ const initialProducts: Product[] = [
     name: "Burrata",
     description: "Queso burrata fresco con tomates cherry, rúcula, aceite de oliva y reducción de aceto balsámico.",
     price: 4900,
-    image: "/creamy-burrata-tomato.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/creamy-burrata-tomato-W7ddgH3Ztvj9Ube9qbUWyx2cNjOJxz.png",
     category: "entradas",
     isVegetarian: true,
   },
@@ -96,7 +103,8 @@ const initialProducts: Product[] = [
     name: "Bife de Chorizo",
     description: "Corte premium de 400g con guarnición a elección.",
     price: 9800,
-    image: "/grilled-chorizo-steak.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/grilled-chorizo-steak-E4VJ351Ax1AB8fBjKluLaX7rtb5Viu.png",
     category: "principales",
     featured: true,
   },
@@ -105,7 +113,8 @@ const initialProducts: Product[] = [
     name: "Lomo al Malbec",
     description: "Medallones de lomo con reducción de Malbec y hongos, acompañado de puré de papas.",
     price: 10500,
-    image: "/pan-seared-tenderloin-wine-reduction.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pan-seared-tenderloin-wine-reduction-u4x1WFjobWGQ1FRKdoH0QxGs0pfsVm.png",
     category: "principales",
   },
   {
@@ -113,7 +122,8 @@ const initialProducts: Product[] = [
     name: "Milanesa Napolitana",
     description: "Milanesa de ternera con jamón, salsa de tomate, mozzarella y papas fritas.",
     price: 8200,
-    image: "/milanesa-napolitana-close-up.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/milanesa-napolitana-close-up-FQt9BYc70rxZCPrgUKmdYGSSLhrlqm.png",
     category: "principales",
   },
   {
@@ -121,7 +131,8 @@ const initialProducts: Product[] = [
     name: "Risotto de Hongos",
     description: "Arroz arborio con variedad de hongos y queso parmesano.",
     price: 7800,
-    image: "/creamy-mushroom-risotto.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/creamy-mushroom-risotto-cuMgbuYpVLaNUxq6Oh76zdAA8LziSF.png",
     category: "principales",
     isVegetarian: true,
   },
@@ -130,7 +141,8 @@ const initialProducts: Product[] = [
     name: "Salmón Grillado",
     description: "Filete de salmón con salsa de eneldo, acompañado de vegetales salteados.",
     price: 9500,
-    image: "/perfectly-grilled-salmon.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/perfectly-grilled-salmon-FkRJEUHmYVIimv6mgNwVMZYa68lJGk.png",
     category: "principales",
   },
   // NUEVOS PLATOS PRINCIPALES
@@ -139,7 +151,8 @@ const initialProducts: Product[] = [
     name: "Ojo de Bife",
     description: "Corte premium de 350g con guarnición a elección.",
     price: 9500,
-    image: "/perfectly-seared-ribeye.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/perfectly-seared-ribeye-JtU4szrCqy283PA90ot5A0vQr9frlk.png",
     category: "principales",
   },
   {
@@ -147,7 +160,8 @@ const initialProducts: Product[] = [
     name: "Tomahawk",
     description: "Impresionante corte de 800g con hueso, ideal para compartir. Con guarnición a elección.",
     price: 15800,
-    image: "/perfectly-seared-tomahawk.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/perfectly-seared-tomahawk-xjlcN3wvmESuvayWeBZCJEy5Fw9f70.png",
     category: "principales",
     size: "large",
   },
@@ -156,7 +170,8 @@ const initialProducts: Product[] = [
     name: "Pollo a la Parrilla",
     description: "Pechuga de pollo marinada y grillada, acompañada de puré rústico y vegetales asados.",
     price: 7200,
-    image: "/perfectly-grilled-chicken.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/perfectly-grilled-chicken-wFhWiVpkEmm2rpqYR1IalQO1hFT50D.png",
     category: "principales",
   },
   {
@@ -164,7 +179,8 @@ const initialProducts: Product[] = [
     name: "Sorrentinos de Jamón y Queso",
     description: "Pasta rellena casera con salsa a elección: filetto, crema de hongos o bolognesa.",
     price: 7500,
-    image: "/colorful-stuffed-pasta.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/colorful-stuffed-pasta-phB5vMnehUTLvhxPFmluAi8wjroeXE.png",
     category: "principales",
   },
   {
@@ -172,7 +188,8 @@ const initialProducts: Product[] = [
     name: "Pescado del Día",
     description: "Filete de pescado fresco a la plancha con limón, hierbas y vegetales de estación.",
     price: 8900,
-    image: "/perfectly-grilled-tilapia.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/perfectly-grilled-tilapia-ZLKZDW7T95W3rIC0ipSA1R57UrVFn4.png",
     category: "principales",
   },
 
@@ -182,7 +199,8 @@ const initialProducts: Product[] = [
     name: "Flan Casero",
     description: "Flan con dulce de leche y crema.",
     price: 3200,
-    image: "/dulce-de-leche-flan.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/dulce-de-leche-flan-yse9eBecLZ4gPicCSGHDSpbgdFdJib.png",
     category: "postres",
     isVegetarian: true,
   },
@@ -191,7 +209,8 @@ const initialProducts: Product[] = [
     name: "Tiramisú",
     description: "Clásico postre italiano con café, mascarpone y cacao.",
     price: 3600,
-    image: "/classic-tiramisu.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/classic-tiramisu-SRmdNnRJSpCNQ3IPccaHIxzKSJ0Nfg.png",
     category: "postres",
     isVegetarian: true,
     featured: true,
@@ -201,7 +220,8 @@ const initialProducts: Product[] = [
     name: "Cheesecake de Frutos Rojos",
     description: "Tarta de queso con coulis de frutos rojos.",
     price: 3800,
-    image: "/berry-indulgence.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/berry-indulgence-Us2JWO1Gey6i3lIiY0mqircNZASWrd.png",
     category: "postres",
     isVegetarian: true,
   },
@@ -211,7 +231,8 @@ const initialProducts: Product[] = [
     name: "Volcán de Chocolate",
     description: "Bizcocho de chocolate con centro líquido, acompañado de helado de vainilla.",
     price: 3900,
-    image: "/decadent-lava-cake.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/decadent-lava-cake-epJm2c4gstXGQv3llU3GWSnKoVKsEu.png",
     category: "postres",
     isVegetarian: true,
   },
@@ -220,7 +241,8 @@ const initialProducts: Product[] = [
     name: "Crumble de Manzana",
     description: "Manzanas caramelizadas con canela, cubiertas de crumble y servidas con helado.",
     price: 3500,
-    image: "/spiced-apple-crumble-scoops.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/spiced-apple-crumble-scoops-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png",
     category: "postres",
     isVegetarian: true,
   },
@@ -229,7 +251,8 @@ const initialProducts: Product[] = [
     name: "Panqueque con Dulce de Leche",
     description: "Clásico panqueque relleno de dulce de leche, flambeado con coñac.",
     price: 3400,
-    image: "/dulce-de-leche-crepe-stack.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/dulce-de-leche-crepe-stack-7B7XabmLUvh3zWrijGZSPdqFNToWnQ.png",
     category: "postres",
     isVegetarian: true,
   },
@@ -302,7 +325,8 @@ const initialProducts: Product[] = [
     name: "Malbec Reserva",
     description: "Bodega Luigi Bosca, Mendoza.",
     price: 7500,
-    image: "/rich-malbec-glass.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/rich-malbec-tasting-gpv7Z2Ei6sSpGMnbahR23yGS9ewTN0.png",
     category: "vinos",
     isVegetarian: true,
   },
@@ -311,7 +335,7 @@ const initialProducts: Product[] = [
     name: "Chardonnay",
     description: "Bodega Catena Zapata, Mendoza.",
     price: 6800,
-    image: "/golden-chardonnay-still-life.png",
+    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-chardonnay-still-life-BOqGf.png",
     category: "vinos",
     isVegetarian: true,
   },
@@ -320,7 +344,8 @@ const initialProducts: Product[] = [
     name: "Champagne Extra Brut",
     description: "Bodega Chandon, Mendoza.",
     price: 8200,
-    image: "/celebratory-toast.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/celebratory-toast-uOapKDDTLtBphVJjqQQ6JWSGajt640.png",
     category: "vinos",
     isVegetarian: true,
     featured: true,
@@ -330,7 +355,8 @@ const initialProducts: Product[] = [
     name: "Cabernet Sauvignon",
     description: "Bodega Rutini, Mendoza.",
     price: 7200,
-    image: "/rich-red-cabernet.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/rich-red-cabernet-ZNr3Y24NECu8D1WnrPHunypbcjTDrE.png",
     category: "vinos",
     isVegetarian: true,
   },
@@ -339,7 +365,8 @@ const initialProducts: Product[] = [
     name: "Pinot Noir",
     description: "Bodega Salentein, Valle de Uco.",
     price: 6900,
-    image: "/elegant-pinot-noir.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/elegant-pinot-noir-xOg1Zv3NTakuBHwCrGT632x2N5Tzds.png",
     category: "vinos",
     isVegetarian: true,
   },
@@ -348,27 +375,19 @@ const initialProducts: Product[] = [
     name: "Sauvignon Blanc",
     description: "Bodega Zuccardi, Mendoza.",
     price: 6500,
-    image: "/chilled-sauvignon-blanc.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/chilled-sauvignon-blanc-VuamjVmGscIJiikVRBTFQeL0BeUncz.png",
     category: "vinos",
     isVegetarian: true,
   },
 
-  // COCKTAILS (solo 6)
+  // COCKTAILS (solo 5, eliminamos Aperol Spritz)
   {
     id: "negroni",
     name: "Negroni",
     description: "Gin, Campari, Vermouth Rosso.",
     price: 3200,
-    image: "/classic-negroni.png",
-    category: "cocktails",
-    isVegetarian: true,
-  },
-  {
-    id: "aperol-spritz",
-    name: "Aperol Spritz",
-    description: "Aperol, Prosecco, Soda.",
-    price: 3000,
-    image: "/vibrant-aperol-spritz.png",
+    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/classic-negroni-rlLgUEJfrlu0WBf7jlZpYnhw4G8Iw9.png",
     category: "cocktails",
     isVegetarian: true,
   },
@@ -377,7 +396,8 @@ const initialProducts: Product[] = [
     name: "Old Fashioned",
     description: "Bourbon, Angostura, Azúcar.",
     price: 3500,
-    image: "/classic-old-fashioned.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/classic-old-fashioned-BUKXwvh30EP4LFYJAWJ5Fwtc9S9NPA.png",
     category: "cocktails",
     isVegetarian: true,
   },
@@ -386,7 +406,8 @@ const initialProducts: Product[] = [
     name: "Mojito",
     description: "Ron, Lima, Menta, Azúcar, Soda.",
     price: 2800,
-    image: "/refreshing-mojito.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/refreshing-mojito-UvtuDLxoejLOaOXNfrVeIkyekdgoaH.png",
     category: "cocktails",
     isVegetarian: true,
   },
@@ -395,7 +416,8 @@ const initialProducts: Product[] = [
     name: "Margarita",
     description: "Tequila, Triple Sec, Jugo de limón.",
     price: 3100,
-    image: "/classic-margarita.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/classic-margarita-xkNPSAn3QE2Uvqfeh1jtz5gkD7VkPK.png",
     category: "cocktails",
     isVegetarian: true,
   },
@@ -404,13 +426,15 @@ const initialProducts: Product[] = [
     name: "Manhattan",
     description: "Whisky, Vermouth Rosso, Angostura.",
     price: 3400,
-    image: "/classic-manhattan.png",
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/classic-manhattan-kJKNHozpkhwzngCi6IP3CRl0X5MAJv.png",
     category: "cocktails",
     isVegetarian: true,
   },
 ]
 
 // Función para obtener los productos (desde localStorage si existen, o los iniciales)
+// Corregir la función getProducts para asegurar que filtre correctamente el producto Aperol Spritz
 export function getProducts(): Product[] {
   if (typeof window === "undefined") return initialProducts.filter((product) => !!product.image)
 
@@ -426,29 +450,66 @@ export function getProducts(): Product[] {
           localStorage.setItem("products", JSON.stringify(filteredProducts))
           return filteredProducts
         }
+
+        // Actualizar las imágenes específicas si existen y eliminar los productos especificados
+        const updatedProducts = parsedProducts.filter(
+          (product) =>
+            product.id !== "aperol-spritz" &&
+            product.id !== "crumble-de-manzana" &&
+            product.id !== "chardonnay" &&
+            product.id !== "carpaccio-de-lomo",
+        ) // Eliminar los productos especificados
+
+        // Guardar los productos actualizados
+        localStorage.setItem("products", JSON.stringify(updatedProducts))
+
         // Filtrar productos sin imágenes y asegurarse de que todos los productos tengan las propiedades requeridas
-        return parsedProducts.filter((product) => {
+        return updatedProducts.filter((product) => {
           // Verificar que el producto tenga las propiedades mínimas requeridas
           if (!product || !product.id || !product.name || product.price === undefined) {
-            console.warn(`Invalid product found in localStorage, filtering out:`, product)
+            console.warn("Invalid product found in localStorage, filtering out:", product)
             return false
           }
-          return !!product.image
+          return true
         })
       } catch (e) {
         console.error("Error parsing products from localStorage, resetting to initial products", e)
-        const filteredProducts = initialProducts.filter((product) => !!product.image)
+        const filteredProducts = initialProducts
+          .filter((product) => !!product.image)
+          .filter(
+            (product) =>
+              product.id !== "aperol-spritz" &&
+              product.id !== "crumble-de-manzana" &&
+              product.id !== "chardonnay" &&
+              product.id !== "carpaccio-de-lomo",
+          )
         localStorage.setItem("products", JSON.stringify(filteredProducts))
         return filteredProducts
       }
     }
   } catch (e) {
     console.error("Error accessing localStorage, using initial products", e)
-    return initialProducts.filter((product) => !!product.image)
+    return initialProducts
+      .filter((product) => !!product.image)
+      .filter(
+        (product) =>
+          product.id !== "aperol-spritz" &&
+          product.id !== "crumble-de-manzana" &&
+          product.id !== "chardonnay" &&
+          product.id !== "carpaccio-de-lomo",
+      )
   }
 
   // Si no hay productos guardados o hay un error, guardar los iniciales (filtrados)
-  const filteredProducts = initialProducts.filter((product) => !!product.image)
+  const filteredProducts = initialProducts
+    .filter((product) => !!product.image)
+    .filter(
+      (product) =>
+        product.id !== "aperol-spritz" &&
+        product.id !== "crumble-de-manzana" &&
+        product.id !== "chardonnay" &&
+        product.id !== "carpaccio-de-lomo",
+    )
   try {
     localStorage.setItem("products", JSON.stringify(filteredProducts))
   } catch (e) {
@@ -545,7 +606,6 @@ export function getDisplayOrder(category: ProductCategory): string[] {
   // Definir el orden de visualización para cada categoría
   const displayOrder: Record<ProductCategory, string[]> = {
     entradas: [
-      "carpaccio-de-lomo",
       "provoleta-clasica",
       "empanadas-montebello",
       "tabla-de-quesos",
@@ -570,19 +630,11 @@ export function getDisplayOrder(category: ProductCategory): string[] {
       "tiramisu",
       "cheesecake-frutos-rojos",
       "volcan-de-chocolate",
-      "crumble-de-manzana",
       "panqueque-con-dulce-de-leche",
     ],
     bebidas: ["gaseosas", "limonada-casera", "jugo-de-naranja", "cafe-espresso", "cafe-con-leche", "frappe-de-cafe"],
-    vinos: [
-      "malbec-reserva",
-      "chardonnay",
-      "champagne-extra-brut",
-      "cabernet-sauvignon",
-      "pinot-noir",
-      "sauvignon-blanc",
-    ],
-    cocktails: ["negroni", "aperol-spritz", "old-fashioned", "mojito", "margarita", "manhattan"],
+    vinos: ["malbec-reserva", "champagne-extra-brut", "cabernet-sauvignon", "pinot-noir", "sauvignon-blanc"],
+    cocktails: ["negroni", "old-fashioned", "mojito", "margarita", "manhattan"],
   }
 
   return displayOrder[category] || []

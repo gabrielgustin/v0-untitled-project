@@ -1,6 +1,8 @@
-// Script simplificado para manejar el comportamiento del carrusel sticky sin animaciones
+// Verificar si este archivo existe y tiene contenido válido
+// Si no existe, crearlo con el siguiente contenido:
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Obtener el carrusel
+  // Referencia al carrusel
   const carousel = document.getElementById("categories-carousel")
   if (!carousel) return
 
@@ -15,48 +17,38 @@ document.addEventListener("DOMContentLoaded", () => {
     carousel.parentNode?.insertBefore(spacer, carousel.nextSibling)
   }
 
-  // Función para manejar el scroll sin animaciones
-  function handleScroll() {
-    // Obtener la posición actual del carrusel relativa a la ventana
-    const carouselRect = carousel.getBoundingClientRect()
+  // Variable para almacenar la posición original del carrusel
+  let carouselPosition = null
 
-    // Verificar si el carrusel toca exactamente el borde superior de la pantalla
-    if (carouselRect.top <= 0) {
-      // Solo aplicar cambios si no está ya fijo
-      if (!carousel.classList.contains("fixed")) {
-        // Añadir clase para fijar el carrusel instantáneamente
-        carousel.classList.add("fixed")
+  // Función para manejar el scroll
+  const handleScroll = () => {
+    // Guardar la posición original del carrusel la primera vez
+    if (carouselPosition === null) {
+      carouselPosition = carousel.getBoundingClientRect().top + window.scrollY
+    }
 
-        // Ajustar el espaciador para mantener el flujo del documento
-        spacer.style.height = `${carouselHeight}px`
-      }
+    // Si hemos scrolleado más allá de la posición original del carrusel
+    if (window.scrollY > carouselPosition) {
+      // Añadir clase para estilos adicionales
+      carousel.classList.add("fixed")
+      // Ajustar el espaciador para mantener el flujo del documento
+      spacer.style.height = `${carouselHeight}px`
     } else {
-      // Solo aplicar cambios si está fijo
-      if (carousel.classList.contains("fixed")) {
-        // Quitar clase instantáneamente
-        carousel.classList.remove("fixed")
-
-        // Restaurar el espaciador
-        spacer.style.height = "0"
-      }
+      // Quitar clase
+      carousel.classList.remove("fixed")
+      // Restaurar el espaciador
+      spacer.style.height = "0"
     }
   }
 
-  // Función para recalcular en caso de resize
-  function handleResize() {
-    // Actualizar la altura del carrusel en caso de que haya cambiado
-    const newCarouselHeight = carousel.offsetHeight
-
-    // Si el carrusel está fijo, actualizar también la altura del espaciador
-    if (carousel.classList.contains("fixed")) {
-      spacer.style.height = `${newCarouselHeight}px`
-    }
-
-    handleScroll() // Verificar la posición actual
+  // Función para recalcular la posición en caso de resize
+  const handleResize = () => {
+    carouselPosition = null // Resetear para recalcular
+    handleScroll() // Llamar inmediatamente para actualizar
   }
 
   // Añadir los event listeners
-  window.addEventListener("scroll", handleScroll, { passive: true }) // passive para mejor rendimiento
+  window.addEventListener("scroll", handleScroll)
   window.addEventListener("resize", handleResize)
 
   // Llamar una vez para configurar el estado inicial
