@@ -108,15 +108,18 @@ export default function MenuPage() {
 
     try {
       // Intentar cargar productos
+      console.log("Intentando cargar productos...")
       let loadedProducts = getProducts()
+      console.log(`Cargados ${loadedProducts.length} productos`)
 
       // Asegurarse de que siempre haya productos
       if (!loadedProducts || loadedProducts.length === 0) {
         console.log("No se encontraron productos, usando productos iniciales")
-        loadedProducts = initialProducts
+        loadedProducts = initialProducts.filter(
+          (p) => !["crumble-de-manzana", "chardonnay", "carpaccio-de-lomo"].includes(p.id),
+        )
       }
 
-      console.log(`Cargados ${loadedProducts.length} productos`)
       setProducts(loadedProducts)
 
       // Cargar productos destacados
@@ -124,9 +127,12 @@ export default function MenuPage() {
       setFeaturedProducts(featured.length > 0 ? featured : initialProducts.filter((p) => p.featured === true))
     } catch (error) {
       console.error("Error al cargar productos:", error)
-      // En caso de error, usar los productos iniciales
-      setProducts(initialProducts)
-      setFeaturedProducts(initialProducts.filter((p) => p.featured === true))
+      // En caso de error, usar los productos iniciales filtrados
+      const safeProducts = initialProducts.filter(
+        (p) => !["crumble-de-manzana", "chardonnay", "carpaccio-de-lomo"].includes(p.id),
+      )
+      setProducts(safeProducts)
+      setFeaturedProducts(safeProducts.filter((p) => p.featured === true))
     } finally {
       // Finalizar carga
       setIsLoading(false)
@@ -764,7 +770,7 @@ export default function MenuPage() {
             <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
-            {entradasProducts.length > 0 ? (
+            {entradasProducts && entradasProducts.length > 0 ? (
               entradasProducts.map((product) => (
                 <MenuItemCard
                   key={product.id}
@@ -782,7 +788,25 @@ export default function MenuPage() {
               ))
             ) : (
               <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
-                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+                <p className="text-montebello-light/70">
+                  {isLoading ? "Cargando productos..." : "No hay productos en esta categoría"}
+                </p>
+                {!isLoading && (
+                  <Button
+                    className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
+                    onClick={() => {
+                      const resetProds = resetProducts()
+                      setProducts(resetProds)
+                      toast({
+                        title: "Productos restablecidos",
+                        description: "Se han cargado los productos predeterminados",
+                        duration: 3000,
+                      })
+                    }}
+                  >
+                    Restablecer productos
+                  </Button>
+                )}
               </div>
             )}
           </div>

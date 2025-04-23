@@ -408,8 +408,9 @@ const excludedProductIds = ["crumble-de-manzana", "chardonnay", "carpaccio-de-lo
 
 // Función para obtener los productos (desde localStorage si existen, o los iniciales)
 export function getProducts(): Product[] {
-  // Si estamos en el servidor, devolver los productos iniciales filtrados
-  if (typeof window === "undefined") {
+  // Si estamos en el servidor o en un entorno donde localStorage no está disponible
+  if (typeof window === "undefined" || typeof localStorage === "undefined") {
+    console.log("Ejecutando en el servidor o localStorage no disponible, usando productos iniciales")
     return initialProducts.filter((product) => !excludedProductIds.includes(product.id))
   }
 
