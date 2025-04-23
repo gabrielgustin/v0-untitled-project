@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Search, X, Home, ShoppingBag, LogOut, Utensils } from "lucide-react"
+import { Search, X, Home, ShoppingBag, LogOut, Utensils, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FoodCategory } from "@/components/food-category"
@@ -436,18 +436,20 @@ export default function MenuPage() {
       <DesktopNavigation user={user} onLoginSuccess={handleLoginSuccess} cartItemCount={cartItemCount} />
 
       {/* Mobile Header */}
-      <header className="lg:hidden pt-6 pb-2">
-        <div className="flex justify-between items-center mb-6 container mx-auto">
-          <div
-            className={`cursor-pointer z-50 pl-4 ${isMenuOpen ? "opacity-0" : "opacity-100"} transition-opacity`}
+      {/* Reducir aún más el padding del header */}
+      <header className="lg:hidden pt-0.5 pb-0 compact-header">
+        <div className="flex justify-between items-center container mx-auto h-10">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`z-50 text-montebello-gold p-0 h-7 w-7 ${isMenuOpen ? "opacity-0" : "opacity-100"} transition-opacity`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Abrir menú"
           >
-            <div className="w-7 h-0.5 bg-montebello-gold mb-1.5"></div>
-            <div className="w-7 h-0.5 bg-montebello-gold mb-1.5"></div>
-            <div className="w-7 h-0.5 bg-montebello-gold"></div>
-          </div>
+            <HamburgerIcon className="h-5 w-5" />
+          </Button>
 
-          <div className="flex-1">
+          <div className="flex-1 compact-logo">
             <LogoContainer size="large" />
           </div>
 
@@ -594,21 +596,21 @@ export default function MenuPage() {
         )}
       </header>
 
-      {/* Search */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex gap-2 max-w-3xl mx-auto">
+      {/* Search - Exactamente 10px de distancia desde el logo */}
+      <div className="container mx-auto px-4 mt-0">
+        <div className="flex gap-2 max-w-3xl mx-auto compact-search">
           <div className="relative flex-1">
             <Input
               placeholder="Buscar.."
-              className="bg-montebello-navy/50 border-montebello-gold/20 shadow-sm text-montebello-light rounded-full py-6"
+              className="bg-montebello-navy/50 border-montebello-gold/20 shadow-sm text-montebello-light rounded-full py-2 text-sm h-10"
             />
           </div>
           <Button
             variant="outline"
             size="icon"
-            className="bg-montebello-navy/50 shadow-sm border-montebello-gold/20 text-montebello-light rounded-full h-12 w-12"
+            className="bg-montebello-navy/50 shadow-sm border-montebello-gold/20 text-montebello-light rounded-full h-10 w-10"
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -632,56 +634,21 @@ export default function MenuPage() {
         )}
 
         {/* Categories Header - Similar al ejemplo */}
-        <div className="flex justify-between items-center mb-4">
+        {/* Reducir el espacio entre la barra de búsqueda y las categorías */}
+        <div className="flex justify-between items-center mb-1 mt-1 categories-header">
           <h2 className="text-xl font-bold text-montebello-gold">Categorías</h2>
-          <AnimatePresence>
-            {showScrollIndicator && (
-              <motion.div
-                className="text-sm text-montebello-light/60 flex items-center relative"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <motion.svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: "loop",
-                    duration: 1.5,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <path
-                    d="M13 17L18 12L13 7"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M6 17L11 12L6 7"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </motion.svg>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="text-montebello-gold text-2xl">
+            <ChevronRight className="h-6 w-6 inline-block" />
+            <ChevronRight className="h-6 w-6 inline-block -ml-4" />
+          </div>
         </div>
 
         {/* Categories Carousel - Estilo similar al ejemplo */}
-        <div className="relative carousel-wrapper mb-8">
+        {/* Reducir el espacio del carrusel */}
+        <div className="relative carousel-wrapper mb-3">
           <div className="carousel-inner">
             <motion.div
-              className="overflow-x-auto pb-4 hide-scrollbar carousel-container px-1 pt-4"
+              className="overflow-x-auto pb-2 hide-scrollbar carousel-container px-1 pt-2"
               id="categories-carousel"
               ref={carouselRef}
               initial={{ opacity: 0, y: 10 }}
@@ -701,7 +668,7 @@ export default function MenuPage() {
                 }
               }}
             >
-              <div className="flex space-x-8 min-w-max px-4 container mx-auto">
+              <div className="flex space-x-6 min-w-max px-4 container mx-auto">
                 <motion.button
                   onClick={() => scrollToCategory("entradas")}
                   className="focus:outline-none"
@@ -791,12 +758,12 @@ export default function MenuPage() {
         </div>
 
         {/* Sección Entradas */}
-        <div ref={entradasRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+        <div ref={entradasRef} className="mb-6 md:mb-12 scroll-mt-24">
+          <div className="flex flex-col items-center mb-2 md:mb-4">
+            <h2 className="text-xl font-bold text-montebello-gold uppercase tracking-wide mb-1">
               {getCategoryTitle("entradas")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
+            <div className="w-16 h-0.5 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {entradasProducts.map((product) => (
@@ -818,12 +785,12 @@ export default function MenuPage() {
         </div>
 
         {/* Sección Platos Principales */}
-        <div ref={principalesRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+        <div ref={principalesRef} className="mb-6 md:mb-12 scroll-mt-24">
+          <div className="flex flex-col items-center mb-2 md:mb-4">
+            <h2 className="text-xl font-bold text-montebello-gold uppercase tracking-wide mb-1">
               {getCategoryTitle("principales")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
+            <div className="w-16 h-0.5 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {principalesProducts.map((product) => (
@@ -845,12 +812,12 @@ export default function MenuPage() {
         </div>
 
         {/* Sección Postres */}
-        <div ref={postresRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+        <div ref={postresRef} className="mb-6 md:mb-12 scroll-mt-24">
+          <div className="flex flex-col items-center mb-2 md:mb-4">
+            <h2 className="text-xl font-bold text-montebello-gold uppercase tracking-wide mb-1">
               {getCategoryTitle("postres")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
+            <div className="w-16 h-0.5 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {postresProducts.map((product) => (
@@ -872,12 +839,12 @@ export default function MenuPage() {
         </div>
 
         {/* Sección Bebidas */}
-        <div ref={bebidasRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+        <div ref={bebidasRef} className="mb-6 md:mb-12 scroll-mt-24">
+          <div className="flex flex-col items-center mb-2 md:mb-4">
+            <h2 className="text-xl font-bold text-montebello-gold uppercase tracking-wide mb-1">
               {getCategoryTitle("bebidas")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
+            <div className="w-16 h-0.5 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {bebidasProducts.map((product) => (
@@ -899,12 +866,12 @@ export default function MenuPage() {
         </div>
 
         {/* Sección Vinos */}
-        <div ref={vinosRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+        <div ref={vinosRef} className="mb-6 md:mb-12 scroll-mt-24">
+          <div className="flex flex-col items-center mb-2 md:mb-4">
+            <h2 className="text-xl font-bold text-montebello-gold uppercase tracking-wide mb-1">
               {getCategoryTitle("vinos")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
+            <div className="w-16 h-0.5 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {vinosProducts.map((product) => (
@@ -926,12 +893,12 @@ export default function MenuPage() {
         </div>
 
         {/* Sección Cocktails */}
-        <div ref={cocktailsRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+        <div ref={cocktailsRef} className="mb-6 md:mb-12 scroll-mt-24">
+          <div className="flex flex-col items-center mb-2 md:mb-4">
+            <h2 className="text-xl font-bold text-montebello-gold uppercase tracking-wide mb-1">
               {getCategoryTitle("cocktails")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
+            <div className="w-16 h-0.5 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {cocktailsProducts.map((product) => (

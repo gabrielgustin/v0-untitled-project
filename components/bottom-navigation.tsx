@@ -55,7 +55,7 @@ export function BottomNavigation({ cartItemCount = 0, cartAnimation = false }: B
     }
   }, [cartAnimation])
 
-  // Función para determinar la visibilidad basada en el ancho de pantalla
+  // Modificar la función getNavStyles para asegurar que no interfiera con la visualización de las cards
   const getNavStyles = () => {
     // Si es pantalla grande (>=1024px), ocultar completamente
     if (screenWidth >= 1024) {
@@ -80,6 +80,7 @@ export function BottomNavigation({ cartItemCount = 0, cartAnimation = false }: B
   // Actualizar la aplicación de estilos en el div del navbar
   const navStyles = getNavStyles()
 
+  // Modificar el return para asegurar que la barra de navegación no cubra el contenido
   return (
     <div
       className="fixed bottom-0 left-0 right-0 w-full bg-montebello-navy border-t border-montebello-gold/20 flex justify-around items-center py-3 z-20 transition-all duration-300"

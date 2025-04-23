@@ -27,6 +27,9 @@ interface MenuItemCardProps {
   onEdit?: (id: string) => void
 }
 
+// Asegurar que las cards sean visibles en dispositivos móviles
+
+// Modificar el componente MenuItemCard para mejorar la visualización en móvil
 export function MenuItemCard({
   id,
   name,
@@ -56,7 +59,7 @@ export function MenuItemCard({
   return (
     <Link href={`/product/${formattedId}`} className="block h-full">
       <motion.div
-        className="bg-montebello-navy/80 rounded-xl overflow-hidden shadow-sm h-full flex flex-col relative border border-montebello-gold/20"
+        className="bg-montebello-navy/80 rounded-lg overflow-hidden shadow-sm h-full flex flex-col relative border border-montebello-gold/20"
         initial="rest"
         whileHover="hover"
         whileTap="tap"
@@ -77,7 +80,7 @@ export function MenuItemCard({
         )}
 
         <div
-          className={`relative ${size === "large" ? "h-32 sm:h-40 lg:h-40" : "h-20 sm:h-24 lg:h-40"} w-full p-1 sm:p-2`}
+          className={`relative ${size === "large" ? "h-28 sm:h-36 lg:h-40" : "h-20 sm:h-24 lg:h-36"} w-full p-0.5 sm:p-1`}
         >
           {/* Indicador de carga */}
           {isImageLoading && (
@@ -101,10 +104,10 @@ export function MenuItemCard({
             />
           </motion.div>
         </div>
-        <div className="p-2 py-1.5 sm:p-3 sm:py-2 lg:p-4 flex flex-col flex-grow">
+        <div className="p-1 py-0.5 sm:p-2 sm:py-1 lg:p-3 flex flex-col flex-grow">
           {/* Título en la parte superior */}
           <motion.h3
-            className="font-bold text-montebello-gold text-[11px] sm:text-sm lg:text-base font-open-sans mb-0.5"
+            className="font-bold text-montebello-gold text-[10px] sm:text-xs lg:text-sm font-open-sans mb-0.5"
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -114,7 +117,7 @@ export function MenuItemCard({
 
           {/* Descripción del producto */}
           <motion.p
-            className="text-montebello-light/80 text-[9px] sm:text-xs lg:text-xs line-clamp-2 mb-1"
+            className="text-montebello-light/80 text-[8px] sm:text-[10px] lg:text-xs line-clamp-2 mb-0.5"
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}

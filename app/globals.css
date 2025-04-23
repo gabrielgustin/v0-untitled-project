@@ -86,6 +86,23 @@
     @apply mx-auto px-4 sm:px-6 lg:px-8;
     max-width: 1280px;
   }
+
+  /* Añadir clases personalizadas para márgenes específicos */
+  .mt-1\.25 {
+    margin-top: 5px;
+  }
+
+  /* Reducir espacios para elementos específicos */
+  .compact-search input {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    height: 2.5rem;
+  }
+
+  .compact-search button {
+    height: 2.5rem;
+    width: 2.5rem;
+  }
 }
 
 /* Actualizar los estilos del carrusel para que coincidan con la imagen */
@@ -93,7 +110,7 @@
   position: relative;
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
-  padding: 0.75rem 0;
+  padding: 0.25rem 0; /* Reducido de 0.5rem a 0.25rem */
   z-index: 40;
   background-color: #121628; /* Color sólido montebello-navy */
   width: 100%;
@@ -117,8 +134,8 @@
   background-color: #121628; /* Color sólido montebello-navy */
   border-bottom: 1px solid rgba(212, 180, 90, 0.3);
   box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.3);
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding-top: 0.25rem; /* Reducido de 0.5rem a 0.25rem */
+  padding-bottom: 0.25rem; /* Reducido de 0.5rem a 0.25rem */
   z-index: 40; /* Asegurar que sea menor que los modales */
   /* Asegurar que no haya transición */
   transition: none;
@@ -150,7 +167,8 @@
 
 /* Ajustar el scroll-margin-top para las secciones de categoría */
 .scroll-mt-24 {
-  scroll-margin-top: 150px; /* Ajustar según la altura del carrusel + margen */
+  scroll-margin-top: 100px; /* Ajustado para compensar el cambio en la altura del header */
+  scroll-margin-bottom: 80px; /* Espacio para la barra de navegación */
 }
 
 @media (min-width: 1024px) {
@@ -225,4 +243,115 @@
 /* Estilos para modales y ventanas flotantes */
 .modal-overlay {
   z-index: 100 !important; /* Valor alto para asegurar que esté por encima de todo */
+}
+
+/* Añadir estilos para asegurar que las cards sean visibles en dispositivos móviles */
+
+/* Asegurar que las cards sean visibles en dispositivos móviles */
+@media (max-width: 767px) {
+  .container {
+    padding-bottom: 80px; /* Espacio para la barra de navegación */
+  }
+
+  /* Ajustar el tamaño de las cards para dispositivos móviles */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  /* Ajustes específicos para el logo y búsqueda */
+  .font-serif {
+    line-height: 1;
+  }
+
+  /* Añadir estos estilos nuevos */
+  .compact-header {
+    padding-top: 0.5rem;
+    padding-bottom: 0;
+  }
+
+  .compact-logo h1 {
+    line-height: 0.9;
+    margin-bottom: 0;
+  }
+
+  /* Ajustar el espacio entre categorías */
+  .categories-header {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  /* Reducir el scroll-margin-top para las secciones de categoría en móvil */
+  .scroll-mt-24 {
+    scroll-margin-top: 100px; /* Reducido aún más para móvil */
+    scroll-margin-bottom: 50px; /* Reducido para móvil */
+  }
+
+  /* Reducir el espacio entre elementos de título */
+  .flex-col.items-center .w-20.h-1 {
+    margin-bottom: 0.25rem;
+  }
+
+  /* Ajustar el botón de hamburguesa para que no añada espacio adicional */
+  .compact-header button {
+    margin: 0;
+  }
+
+  /* Reducir el espacio entre elementos de título */
+
+  /* Reducir el tamaño de los títulos de sección para que ocupen menos espacio */
+  h2.text-2xl {
+    font-size: 1.125rem;
+    margin-bottom: 0.25rem;
+  }
+
+  /* Reducir el espacio superior en la vista móvil */
+  .lg\:hidden.pt-3 {
+    padding-top: 0.25rem;
+  }
+
+  /* Ajustar el espacio del contenedor del logo */
+  .compact-logo {
+    line-height: 0.9;
+    padding: 0;
+  }
+
+  /* Ajustar el espacio del contenedor del logo */
+  .font-serif {
+    line-height: 1;
+  }
+
+  /* Reducir le padding del carrusel */
+  .carousel-container {
+    padding: 0.25rem 0;
+  }
+
+  /* Reducir el espacio entre secciones */
+  .mb-6 {
+    margin-bottom: 1rem;
+  }
+  .md\:mb-12 {
+    margin-bottom: 2rem;
+  }
+
+  /* Reducir el espacio entre categorías */
+  .space-x-6 > * {
+    margin-left: 1.5rem;
+  }
+  .space-x-6 > *:first-child {
+    margin-left: 0;
+  }
+
+  /* Estilo para el título de categorías */
+  .text-lg.font-bold.text-montebello-gold {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Estilo para el indicador de desplazamiento */
+  .carousel-scroll-indicator {
+    font-size: 1.5rem;
+    color: #d4b45a;
+  }
 }
