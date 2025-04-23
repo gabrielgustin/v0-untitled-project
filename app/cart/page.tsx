@@ -9,7 +9,7 @@ import { BottomNavigation } from "@/components/bottom-navigation"
 import { DesktopNavigation } from "@/components/desktop-navigation"
 import { getAuthState, type User } from "@/lib/auth"
 import { LeafIcon } from "@/components/icons"
-import { getProducts } from "@/lib/products"
+import { getProducts, getDefaultImage } from "@/lib/products"
 import { Toaster } from "@/components/ui/toaster"
 import { toast } from "@/components/ui/use-toast"
 
@@ -132,7 +132,7 @@ export default function CartPage() {
   // Función para finalizar el pedido
   const checkout = () => {
     // Generar un número de pedido aleatorio
-    const orderNumber = `LC-${Math.floor(Math.random() * 10000)
+    const orderNumber = `CM-${Math.floor(Math.random() * 10000)
       .toString()
       .padStart(4, "0")}`
 
@@ -190,7 +190,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="bg-lacapke-background min-h-screen">
+    <div className="bg-montebello-navy min-h-screen">
       {/* Desktop Navigation */}
       <DesktopNavigation user={user} onLoginSuccess={handleLoginSuccess} />
 
@@ -200,17 +200,17 @@ export default function CartPage() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 mr-4 bg-white shadow-sm hover:bg-white/90 rounded-2xl"
+            className="h-10 w-10 mr-4 bg-montebello-navy/80 border border-montebello-gold/20 shadow-sm hover:bg-montebello-navy/90"
             onClick={() => router.back()}
           >
-            <ArrowLeft className="h-6 w-6 text-lacapke-charcoal" />
+            <ArrowLeft className="h-6 w-6 text-montebello-light" />
           </Button>
-          <h1 className="text-2xl font-bold text-lacapke-charcoal">Mi Pedido</h1>
+          <h1 className="text-2xl font-bold text-montebello-gold">Mi Pedido</h1>
         </header>
 
         {/* Header - Solo visible en desktop */}
         <header className="hidden lg:block pt-8 pb-4">
-          <h1 className="text-3xl font-bold text-lacapke-charcoal">Mi Pedido</h1>
+          <h1 className="text-3xl font-bold text-montebello-gold">Mi Pedido</h1>
         </header>
 
         {/* Main Content */}
@@ -218,10 +218,10 @@ export default function CartPage() {
           <div className="max-w-2xl mx-auto">
             {cart.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12">
-                <ShoppingBag className="h-16 w-16 text-lacapke-charcoal/30 mb-4" />
-                <p className="text-lacapke-charcoal/70 text-lg">Tu carrito está vacío</p>
+                <ShoppingBag className="h-16 w-16 text-montebello-light/30 mb-4" />
+                <p className="text-montebello-light/70 text-lg">Tu carrito está vacío</p>
                 <Button
-                  className="mt-6 bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal rounded-2xl"
+                  className="mt-6 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
                   onClick={() => router.push("/menu")}
                 >
                   Ver menú
@@ -238,56 +238,44 @@ export default function CartPage() {
                         <motion.div
                           key={`${item.id}-${item.variant}-${index}`}
                           variants={slideUp}
-                          className="bg-white rounded-2xl p-2 sm:p-3 flex items-center shadow-sm"
+                          className="bg-montebello-navy/80 rounded-lg p-2 sm:p-3 flex items-center shadow-sm border border-montebello-gold/20"
                         >
-                          <div className="h-12 w-12 sm:h-16 sm:w-16 relative rounded-xl overflow-hidden mr-2 sm:mr-3 flex-shrink-0">
-                            {item.image && item.image !== "" ? (
-                              <Image
-                                src={item.image || "/placeholder.svg"}
-                                alt={item.name}
-                                fill
-                                className="object-cover"
-                              />
-                            ) : (
-                              // Usar la misma imagen por defecto que en la página de detalle del producto
-                              <div className="w-full h-full flex items-center justify-center bg-white">
-                                <Image
-                                  src="/default-product-icon.png"
-                                  alt={item.name}
-                                  fill
-                                  className="object-contain p-1"
-                                />
-                              </div>
-                            )}
+                          <div className="h-12 w-12 sm:h-16 sm:w-16 relative rounded-lg overflow-hidden mr-2 sm:mr-3 flex-shrink-0">
+                            <Image
+                              src={item.image ? item.image : getDefaultImage("bebidas", item.name)}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                            />
                             {productInfo?.isVegetarian && (
-                              <div className="absolute bottom-0 left-0 bg-white/80 p-0.5 rounded-tr-md">
+                              <div className="absolute bottom-0 left-0 bg-montebello-navy/80 p-0.5 rounded-tr-md">
                                 <LeafIcon className="h-3 w-3 text-green-600" />
                               </div>
                             )}
                           </div>
                           <div className="flex-1">
-                            <h3 className="font-medium text-lacapke-charcoal text-sm sm:text-base">{item.name}</h3>
-                            {item.variant && <p className="text-xs text-lacapke-charcoal/70">{item.variant}</p>}
+                            <h3 className="font-medium text-montebello-light text-sm sm:text-base">{item.name}</h3>
+                            {item.variant && <p className="text-xs text-montebello-light/70">{item.variant}</p>}
                             <div className="flex justify-between items-center mt-0.5 sm:mt-1">
-                              <span className="font-semibold text-lacapke-charcoal text-xs sm:text-base">
+                              <span className="font-semibold text-montebello-gold text-xs sm:text-base">
                                 ${formatPrice(item.price * item.quantity)}
                               </span>
                               <div className="flex items-center">
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  className="h-6 w-6 sm:h-8 sm:w-8 rounded-full border-0 bg-[#f8e1e1] text-lacapke-charcoal hover:bg-[#f5d4d4]"
+                                  className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg border-montebello-gold/20 bg-montebello-gold/20 text-montebello-light hover:bg-montebello-gold/30"
                                   onClick={() => updateQuantity(item.id, item.variant, item.quantity - 1)}
                                 >
                                   <Minus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                                 </Button>
-                                <span className="mx-1.5 sm:mx-2 font-medium text-lacapke-charcoal text-sm sm:text-base">
+                                <span className="mx-1.5 sm:mx-2 font-medium text-montebello-light text-sm sm:text-base">
                                   {item.quantity}
                                 </span>
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  className="h-6 w-6 sm:h-8 sm:w-8 rounded-full border-0 bg-[#e0f0e9] text-lacapke-charcoal hover:bg-[#d3e8df]"
+                                  className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg border-montebello-gold/20 bg-montebello-gold/20 text-montebello-light hover:bg-montebello-gold/30"
                                   onClick={() => updateQuantity(item.id, item.variant, item.quantity + 1)}
                                 >
                                   <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -295,7 +283,7 @@ export default function CartPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-6 w-6 sm:h-8 sm:w-8 ml-1 sm:ml-2 text-red-500 hover:bg-red-50 rounded-full"
+                                  className="h-6 w-6 sm:h-8 sm:w-8 ml-1 sm:ml-2 text-red-500 hover:bg-red-900/20"
                                   onClick={() => removeItem(item.id, item.variant)}
                                 >
                                   <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -311,12 +299,12 @@ export default function CartPage() {
 
                 {/* Resumen del pedido */}
                 <motion.div
-                  className="bg-white rounded-2xl p-3 sm:p-4 mb-3 sm:mb-4 shadow-sm"
+                  className="bg-montebello-navy/80 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4 shadow-sm border border-montebello-gold/20"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <h3 className="font-bold text-lacapke-charcoal mb-2 sm:mb-3 text-sm sm:text-base">
+                  <h3 className="font-bold text-montebello-gold mb-2 sm:mb-3 text-sm sm:text-base">
                     Resumen del pedido
                   </h3>
                   <div className="space-y-1 sm:space-y-2 mb-2 sm:mb-3">
@@ -325,25 +313,25 @@ export default function CartPage() {
                         key={`summary-${item.id}-${item.variant}-${index}`}
                         className="flex justify-between text-xs sm:text-sm"
                       >
-                        <span className="text-lacapke-charcoal/70">
+                        <span className="text-montebello-light/70">
                           {item.quantity} x {item.name}
                           {item.variant ? ` (${item.variant})` : ""}
                         </span>
-                        <span className="text-lacapke-charcoal">${formatPrice(item.price * item.quantity)}</span>
+                        <span className="text-montebello-light">${formatPrice(item.price * item.quantity)}</span>
                       </div>
                     ))}
                   </div>
-                  <div className="border-t border-lacapke-charcoal/10 pt-2 sm:pt-3 mt-2 sm:mt-3">
+                  <div className="border-t border-montebello-gold/20 pt-2 sm:pt-3 mt-2 sm:mt-3">
                     <div className="flex justify-between font-bold">
-                      <span className="text-lacapke-charcoal text-sm sm:text-base">Total</span>
-                      <span className="text-lacapke-charcoal text-sm sm:text-base">${formatPrice(totalPrice)}</span>
+                      <span className="text-montebello-gold text-sm sm:text-base">Total</span>
+                      <span className="text-montebello-gold text-sm sm:text-base">${formatPrice(totalPrice)}</span>
                     </div>
                   </div>
                 </motion.div>
 
                 {/* Botón de finalizar pedido */}
                 <motion.button
-                  className="w-full bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal py-4 text-lg font-medium rounded-2xl"
+                  className="w-full bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy py-4 text-lg font-medium rounded-lg"
                   onClick={checkout}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -368,7 +356,7 @@ export default function CartPage() {
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="bg-white rounded-2xl p-6 max-w-xs w-full shadow-lg"
+                className="bg-montebello-navy rounded-lg p-6 max-w-xs w-full shadow-lg border border-montebello-gold/20"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
@@ -376,20 +364,20 @@ export default function CartPage() {
               >
                 <div className="flex items-center mb-4">
                   <AlertCircle className="h-6 w-6 text-red-500 mr-2" />
-                  <h3 className="text-lg font-bold text-lacapke-charcoal">Confirmar eliminación</h3>
+                  <h3 className="text-lg font-bold text-montebello-gold">Confirmar eliminación</h3>
                 </div>
-                <p className="text-lacapke-charcoal mb-6">
+                <p className="text-montebello-light mb-6">
                   ¿Estás seguro de que deseas eliminar {getItemName()} de tu pedido?
                 </p>
                 <div className="flex justify-end gap-3">
                   <Button
                     variant="outline"
-                    className="border-lacapke-charcoal/20 text-lacapke-charcoal rounded-xl"
+                    className="border-montebello-gold text-montebello-gold font-medium hover:bg-montebello-gold/10"
                     onClick={cancelRemove}
                   >
                     Cancelar
                   </Button>
-                  <Button className="bg-red-500 hover:bg-red-600 text-white rounded-xl" onClick={confirmRemove}>
+                  <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={confirmRemove}>
                     Eliminar
                   </Button>
                 </div>
@@ -408,7 +396,7 @@ export default function CartPage() {
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="bg-white rounded-2xl p-6 max-w-md w-full shadow-lg my-8"
+                className="bg-montebello-navy rounded-lg p-6 max-w-md w-full shadow-lg my-8 border border-montebello-gold/20"
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -417,47 +405,52 @@ export default function CartPage() {
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center">
                     <Check className="h-6 w-6 text-green-500 mr-2" />
-                    <h3 className="text-xl font-bold text-lacapke-charcoal">¡Pedido confirmado!</h3>
+                    <h3 className="text-xl font-bold text-montebello-gold">¡Pedido confirmado!</h3>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={closeOrderConfirmation}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full text-montebello-light"
+                    onClick={closeOrderConfirmation}
+                  >
                     <X className="h-5 w-5" />
                   </Button>
                 </div>
 
-                <div className="bg-green-50 p-4 rounded-xl mb-4">
+                <div className="bg-green-900/20 p-4 rounded-lg mb-4 border border-green-800/30">
                   <div className="flex justify-between mb-2">
-                    <span className="text-sm text-green-700">Número de pedido:</span>
-                    <span className="font-bold text-green-700">{orderDetails.orderNumber}</span>
+                    <span className="text-sm text-green-400">Número de pedido:</span>
+                    <span className="font-bold text-green-400">{orderDetails.orderNumber}</span>
                   </div>
                 </div>
 
-                <h4 className="font-bold text-lacapke-charcoal mb-2">Detalle del pedido:</h4>
-                <div className="border-t border-lacapke-charcoal/10 pt-2 mb-4">
+                <h4 className="font-bold text-montebello-gold mb-2">Detalle del pedido:</h4>
+                <div className="border-t border-montebello-gold/20 pt-2 mb-4">
                   {orderDetails.items.map((item, index) => (
                     <div key={`order-${index}`} className="flex justify-between py-1 text-sm">
-                      <span className="text-lacapke-charcoal">
+                      <span className="text-montebello-light">
                         {item.quantity} x {item.name}
                         {item.variant ? ` (${item.variant})` : ""}
                       </span>
-                      <span className="text-lacapke-charcoal font-medium">
+                      <span className="text-montebello-light font-medium">
                         ${formatPrice(item.price * item.quantity)}
                       </span>
                     </div>
                   ))}
-                  <div className="border-t border-lacapke-charcoal/10 mt-2 pt-2">
+                  <div className="border-t border-montebello-gold/20 mt-2 pt-2">
                     <div className="flex justify-between font-bold">
-                      <span className="text-lacapke-charcoal">Total</span>
-                      <span className="text-lacapke-charcoal">${formatPrice(orderDetails.total)}</span>
+                      <span className="text-montebello-gold">Total</span>
+                      <span className="text-montebello-gold">${formatPrice(orderDetails.total)}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-[#f8f5d7] p-4 rounded-xl mb-6">
-                  <p className="text-sm text-lacapke-charcoal">Tu pedido ha sido recibido y está siendo preparado.</p>
+                <div className="bg-montebello-gold/10 p-4 rounded-lg mb-6 border border-montebello-gold/20">
+                  <p className="text-sm text-montebello-light">Tu pedido ha sido recibido y está siendo preparado.</p>
                 </div>
 
                 <Button
-                  className="w-full bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal py-4 font-medium rounded-2xl"
+                  className="w-full bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy py-4 font-medium"
                   onClick={closeOrderConfirmation}
                 >
                   Volver al menú

@@ -1,8 +1,12 @@
-import type { Config } from "tailwindcss"
-
 const config = {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}", "*.{js,ts,jsx,tsx,mdx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+    "*.{js,ts,jsx,tsx,mdx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -17,7 +21,16 @@ const config = {
         sans: ["var(--font-open-sans)", "sans-serif"],
       },
       colors: {
-        // Colores de La Capke
+        // Paleta de colores de Club Montebello (principal)
+        montebello: {
+          navy: "#121628", // Azul marino oscuro (casi negro)
+          gold: "#d4b45a", // Dorado
+          cream: "#f5f0e0", // Crema claro
+          charcoal: "#2a2a2a", // Gris oscuro
+          light: "#f8f8f8", // Blanco hueso
+          accent: "#d4b45a", // Dorado (mismo que gold para consistencia)
+        },
+        // Mantener los colores originales de La Capke para compatibilidad
         lacapke: {
           background: "#fdf5f5", // Fondo rosa original
           cream: "#f8f5d7",
@@ -82,6 +95,6 @@ const config = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+}
 
 export default config

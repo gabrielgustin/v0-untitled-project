@@ -7,8 +7,8 @@ const inter = Inter({ subsets: ["latin"] })
 const openSans = Open_Sans({ subsets: ["latin"], variable: "--font-open-sans" })
 
 export const metadata: Metadata = {
-  title: "La Capke",
-  description: "Menú digital de La Capke",
+  title: "Club Montebello",
+  description: "Menú digital de Club Montebello",
   generator: "v0.dev",
 }
 
@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${openSans.variable}`}>
-      <body className="font-sans bg-lacapke-background min-h-screen">{children}</body>
+      <body className="font-sans bg-montebello-navy min-h-screen">{children}</body>
     </html>
   )
 }

@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { X, Plus, Trash2 } from "lucide-react"
+import { X, Plus, Trash2, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,31 +30,30 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
     isVegetarian: false,
     variants: [],
     category: null,
+    featured: false,
   })
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   // Cargar los datos del producto cuando se abre el modal
   useEffect(() => {
     if (product) {
       // Asegurarse de que la categoría esté definida
-      const category =
-        product.category ||
-        (product.id.includes("sandwich") || product.id.includes("tosti")
-          ? "brunch"
-          : product.id.includes("cafe") || product.id.includes("latte")
-            ? "coffee"
-            : product.id.includes("torta") || product.id.includes("postre")
-              ? "desserts"
-              : product.id.includes("pan") || product.id.includes("croissant")
-                ? "bakery"
-                : product.id.includes("milanesa") || product.id.includes("ensalada")
-                  ? "lunch"
-                  : "breakfast")
+      const category = product.category || "entradas"
+
+      // Asegurarse de que la descripción sea una cadena de texto
+      const description = typeof product.description === "string" ? product.description : ""
 
       setEditedProduct({
         ...product,
+        description,
         variants: product.variants || [],
-        category: category,
+        category: category as ProductCategory,
       })
+
+      // Establecer la vista previa de la imagen
+      if (product.image) {
+        setImagePreview(product.image)
+      }
     }
   }, [product])
 
@@ -77,6 +76,13 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
     setEditedProduct((prev) => ({
       ...prev,
       category: value as ProductCategory,
+    }))
+  }
+
+  const handleSizeChange = (value: string) => {
+    setEditedProduct((prev) => ({
+      ...prev,
+      size: value as "normal" | "large",
     }))
   }
 
@@ -112,6 +118,21 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
     })
   }
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setEditedProduct((prev) => ({
+      ...prev,
+      image: value,
+    }))
+
+    // Actualizar la vista previa de la imagen
+    if (value) {
+      setImagePreview(value)
+    } else {
+      setImagePreview(null)
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -121,8 +142,14 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
       return
     }
 
+    // Asegurarse de que la descripción sea una cadena de texto
+    const sanitizedProduct = {
+      ...editedProduct,
+      description: String(editedProduct.description || ""),
+    }
+
     // Guardar el producto
-    onSave(editedProduct)
+    onSave(sanitizedProduct)
   }
 
   const handleDelete = () => {
@@ -136,14 +163,14 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <Card className="rounded-2xl">
+        <Card className="bg-montebello-navy border border-montebello-gold/20">
           <CardHeader className="pb-3">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-xl font-bold text-lacapke-charcoal">Editar Producto</CardTitle>
+              <CardTitle className="text-xl font-bold text-montebello-gold">Editar Producto</CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-lacapke-charcoal rounded-full"
+                className="h-8 w-8 text-montebello-light rounded-full"
                 onClick={onClose}
               >
                 <X className="h-5 w-5" />
@@ -153,7 +180,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-lacapke-charcoal">
+                <Label htmlFor="name" className="text-montebello-light">
                   Nombre
                 </Label>
                 <Input
@@ -161,13 +188,13 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   name="name"
                   value={editedProduct.name}
                   onChange={handleChange}
-                  className="border-lacapke-charcoal/20"
+                  className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category" className="text-lacapke-charcoal">
+                <Label htmlFor="category" className="text-montebello-light">
                   Categoría
                 </Label>
                 <Select
@@ -175,51 +202,35 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   onValueChange={handleCategoryChange}
                   defaultValue={editedProduct.category || ""}
                 >
-                  <SelectTrigger className="border-lacapke-charcoal/20 rounded-xl">
-                    <SelectValue
-                      placeholder={
-                        editedProduct.category === "breakfast"
-                          ? "Desayuno & Merienda"
-                          : editedProduct.category === "brunch"
-                            ? "Brunchear"
-                            : editedProduct.category === "lunch"
-                              ? "Almuerzo & Cena"
-                              : editedProduct.category === "desserts"
-                                ? "Postres"
-                                : editedProduct.category === "bakery"
-                                  ? "Pastelería & Panadería"
-                                  : editedProduct.category === "coffee"
-                                    ? "Cafetería"
-                                    : "Selecciona una categoría"
-                      }
-                    />
+                  <SelectTrigger className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light">
+                    <SelectValue placeholder="Selecciona una categoría" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="breakfast">Desayuno & Merienda</SelectItem>
-                    <SelectItem value="brunch">Brunchear</SelectItem>
-                    <SelectItem value="lunch">Almuerzo & Cena</SelectItem>
-                    <SelectItem value="desserts">Postres</SelectItem>
-                    <SelectItem value="bakery">Pastelería & Panadería</SelectItem>
-                    <SelectItem value="coffee">Cafetería</SelectItem>
+                  <SelectContent className="bg-montebello-navy border-montebello-gold/20 text-montebello-light">
+                    <SelectItem value="entradas">Entradas</SelectItem>
+                    <SelectItem value="principales">Platos Principales</SelectItem>
+                    <SelectItem value="postres">Postres</SelectItem>
+                    <SelectItem value="bebidas">Bebidas</SelectItem>
+                    <SelectItem value="vinos">Vinos</SelectItem>
+                    <SelectItem value="cocktails">Cocktails</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-lacapke-charcoal">
+                <Label htmlFor="description" className="text-montebello-light">
                   Descripción
                 </Label>
                 <Textarea
                   id="description"
                   name="description"
-                  value={editedProduct.description}
+                  value={typeof editedProduct.description === "string" ? editedProduct.description : ""}
                   onChange={handleChange}
-                  className="border-lacapke-charcoal/20 min-h-[80px] rounded-xl"
+                  className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light min-h-[80px]"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="price" className="text-lacapke-charcoal">
+                <Label htmlFor="price" className="text-montebello-light">
                   Precio
                 </Label>
                 <Input
@@ -228,23 +239,65 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   type="number"
                   value={editedProduct.price}
                   onChange={handleChange}
-                  className="border-lacapke-charcoal/20"
+                  className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="image" className="text-lacapke-charcoal">
+                <Label htmlFor="image" className="text-montebello-light">
                   URL de la imagen
                 </Label>
-                <Input
-                  id="image"
-                  name="image"
-                  value={editedProduct.image || ""}
-                  onChange={handleChange}
-                  className="border-lacapke-charcoal/20"
-                  placeholder="/placeholder.svg"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="image"
+                    name="image"
+                    value={editedProduct.image || ""}
+                    onChange={handleImageChange}
+                    className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light flex-1"
+                    placeholder="/placeholder.svg"
+                  />
+                </div>
+
+                {/* Vista previa de la imagen */}
+                {imagePreview && (
+                  <div className="mt-2 relative w-full h-40 bg-montebello-navy/30 rounded-md overflow-hidden border border-montebello-gold/20">
+                    <img
+                      src={imagePreview || "/placeholder.svg"}
+                      alt="Vista previa"
+                      className="w-full h-full object-contain"
+                      onError={() => setImagePreview(null)}
+                    />
+                  </div>
+                )}
+
+                {!imagePreview && (
+                  <div className="mt-2 flex items-center justify-center w-full h-40 bg-montebello-navy/30 rounded-md border border-montebello-gold/20">
+                    <div className="text-center text-montebello-light/50">
+                      <ImageIcon className="h-10 w-10 mx-auto mb-2" />
+                      <p>Sin imagen</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="size" className="text-montebello-light">
+                  Tamaño
+                </Label>
+                <Select
+                  value={editedProduct.size || "normal"}
+                  onValueChange={handleSizeChange}
+                  defaultValue={editedProduct.size || "normal"}
+                >
+                  <SelectTrigger className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light">
+                    <SelectValue placeholder="Selecciona un tamaño" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-montebello-navy border-montebello-gold/20 text-montebello-light">
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="large">Grande</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center space-x-2">
@@ -253,7 +306,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   checked={editedProduct.isVegetarian || false}
                   onCheckedChange={handleVegetarianChange}
                 />
-                <Label htmlFor="isVegetarian" className="text-lacapke-charcoal">
+                <Label htmlFor="isVegetarian" className="text-montebello-light">
                   Vegetariano
                 </Label>
               </div>
@@ -261,12 +314,12 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
               {/* Variantes */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <Label className="text-lacapke-charcoal font-medium">Variantes</Label>
+                  <Label className="text-montebello-light font-medium">Variantes</Label>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-8 text-xs border-lacapke-charcoal/20 rounded-xl"
+                    className="h-8 text-xs border-montebello-gold/20 text-montebello-light"
                     onClick={addVariant}
                   >
                     <Plus className="h-3.5 w-3.5 mr-1" />
@@ -279,20 +332,20 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                     {editedProduct.variants.map((variant, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-2 border p-2 rounded-xl border-lacapke-charcoal/20"
+                        className="flex items-center gap-2 border p-2 rounded-md border-montebello-gold/20 bg-montebello-navy/30"
                       >
                         <div className="flex-1">
                           <Input
                             value={variant.name}
                             onChange={(e) => handleVariantChange(index, "name", e.target.value)}
-                            className="border-lacapke-charcoal/20 mb-1"
+                            className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light mb-1"
                             placeholder="Nombre de la variante"
                           />
                           <Input
                             type="number"
                             value={variant.price}
                             onChange={(e) => handleVariantChange(index, "price", e.target.value)}
-                            className="border-lacapke-charcoal/20"
+                            className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light"
                             placeholder="Precio"
                           />
                         </div>
@@ -300,7 +353,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-red-500 rounded-full"
+                          className="h-8 w-8 text-red-500"
                           onClick={() => removeVariant(index)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -309,8 +362,24 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-lacapke-charcoal/70 italic">No hay variantes</p>
+                  <p className="text-sm text-montebello-light/70 italic">No hay variantes</p>
                 )}
+              </div>
+
+              <div className="flex items-center space-x-2 mt-4">
+                <Switch
+                  id="isFeatured"
+                  checked={editedProduct.featured || false}
+                  onCheckedChange={(checked) => {
+                    setEditedProduct((prev) => ({
+                      ...prev,
+                      featured: checked,
+                    }))
+                  }}
+                />
+                <Label htmlFor="isFeatured" className="text-montebello-light">
+                  Producto destacado
+                </Label>
               </div>
 
               <div className="flex justify-between pt-4">
@@ -318,7 +387,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-red-200 text-red-500 hover:bg-red-50 rounded-xl"
+                    className="border-red-800/30 text-red-400 hover:bg-red-900/20"
                     onClick={handleDelete}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
@@ -329,14 +398,14 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-lacapke-charcoal/20 rounded-xl"
+                    className="border-montebello-gold/20 text-montebello-light"
                     onClick={onClose}
                   >
                     Cancelar
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal font-medium rounded-xl"
+                    className="bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy font-medium"
                   >
                     Guardar cambios
                   </Button>

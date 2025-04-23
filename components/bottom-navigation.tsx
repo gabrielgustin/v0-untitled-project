@@ -82,27 +82,23 @@ export function BottomNavigation({ cartItemCount = 0, cartAnimation = false }: B
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 w-full bg-white border-t border-lacapke-charcoal/10 flex justify-around items-center py-3 z-50 transition-all duration-300"
+      className="fixed bottom-0 left-0 right-0 w-full bg-montebello-navy border-t border-montebello-gold/20 flex justify-around items-center py-3 z-20 transition-all duration-300"
       style={{
         ...navStyles,
       }}
     >
       <Link href="/menu">
-        <Button variant="ghost" size="icon" className="text-lacapke-charcoal hover:bg-lacapke-background rounded-2xl">
+        <Button variant="ghost" size="icon" className="text-montebello-gold hover:bg-montebello-gold/10">
           <Home className="h-5 w-5" />
         </Button>
       </Link>
       <Link href="/cart">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-lacapke-charcoal hover:bg-lacapke-background rounded-2xl relative"
-        >
+        <Button variant="ghost" size="icon" className="text-montebello-gold hover:bg-montebello-gold/10 relative">
           <div className={`relative ${animateCart ? "animate-bounce" : ""}`}>
             <ShoppingBag className="h-5 w-5" />
             {showCartBadge && (
               <span
-                className={`absolute -top-2 -right-2 bg-[#f8e1e1] text-lacapke-charcoal text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center ${animateCart ? "scale-125" : ""} transition-transform`}
+                className={`absolute -top-2 -right-2 bg-montebello-gold text-montebello-navy text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center ${animateCart ? "scale-125" : ""} transition-transform`}
               >
                 {cartItemCount > 9 ? "9+" : cartItemCount}
               </span>

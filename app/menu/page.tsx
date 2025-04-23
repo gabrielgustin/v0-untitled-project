@@ -3,8 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Search, X, Home, ShoppingBag, LogOut, PlusCircle, Edit } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Search, X, Home, ShoppingBag, LogOut, Utensils } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FoodCategory } from "@/components/food-category"
@@ -13,8 +12,6 @@ import { MenuItemCard } from "@/components/menu-item-card"
 import { LoginForm } from "@/components/login-form"
 import { AdminPanel } from "@/components/admin-panel"
 import { ProductEditModal } from "@/components/product-edit-modal"
-import Image from "next/image"
-import { TicketIcon } from "@/components/icons"
 import Link from "next/link"
 import { getAuthState, logout, type User } from "@/lib/auth"
 import {
@@ -24,26 +21,23 @@ import {
   addProduct,
   resetProducts,
   getDefaultCategory,
+  getFeaturedProducts,
   type Product,
   type ProductCategory,
 } from "@/lib/products"
 import { DesktopNavigation } from "@/components/desktop-navigation"
-import { PaltaYHuevoCard } from "@/components/featured-cards/palta-y-huevo-card"
-import { MeLoMerezcoCard } from "@/components/featured-cards/me-lo-merezco-card"
-// Importar el nuevo componente VegetarianBadge
-import { VegetarianBadge } from "@/components/vegetarian-badge"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
+import Script from "next/script"
 
-// Añadir la importación de useSearchParams
 import { useSearchParams } from "next/navigation"
-
-// Añadir la importación del nuevo componente
 import { RefreshDataButton } from "@/components/refresh-data-button"
-
-// Importar motion y las utilidades de animación
 import { motion, AnimatePresence } from "framer-motion"
-import { categoryAnimation, mobileMenuAnimation, menuItemAnimation } from "@/lib/animation-utils"
+import { fadeIn, mobileMenuAnimation, menuItemAnimation } from "@/lib/animation-utils"
+
+// Importar el componente
+import { ScrollToTopButton } from "@/components/scroll-to-top-button"
+import { LogoContainer } from "@/components/logo-container"
 
 // Definir el tipo para un item del carrito
 interface CartItem {
@@ -55,9 +49,8 @@ interface CartItem {
   variant?: string
 }
 
-// Buscar el componente HamburgerIcon y reemplazarlo con este nuevo diseño
-// Reemplazar el componente HamburgerIcon actual por este nuevo:
-
+// Reemplazar el componente HamburgerIcon actual con esta versión
+// que mantiene el tamaño del SVG pero tiene líneas más gruesas y prominentes
 const HamburgerIcon = (props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -77,28 +70,6 @@ const HamburgerIcon = (props: React.SVGProps<SVGSVGElement>) => {
   )
 }
 
-// Modificar el componente FoodCategory para usar animaciones
-function AnimatedFoodCategory({ title, iconType, isActive, onClick }) {
-  return (
-    <motion.div
-      variants={categoryAnimation}
-      initial="inactive"
-      animate={isActive ? "active" : "inactive"}
-      whileTap={{ scale: 0.95 }}
-      onClick={onClick}
-      className="cursor-pointer"
-    >
-      <FoodCategory title={title} iconType={iconType} />
-    </motion.div>
-  )
-}
-
-// Importar el componente
-import { ScrollToTopButton } from "@/components/scroll-to-top-button"
-
-// Importar el nuevo componente
-import { StickyCategoryCarousel } from "@/components/sticky-category-carousel"
-
 export default function MenuPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -106,21 +77,25 @@ export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
-  const [activeCategory, setActiveCategory] = useState<ProductCategory>("breakfast")
+  const [activeCategory, setActiveCategory] = useState<ProductCategory>("entradas")
   const [cartItemCount, setCartItemCount] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
+  const [isCarouselFixed, setIsCarouselFixed] = useState(false)
+  const carouselPositionRef = useRef<number | null>(null)
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false)
 
   // Añadir después de la declaración de carouselRef
   const searchParams = useSearchParams()
   const editProductId = searchParams.get("edit")
 
   // Referencias para las secciones de categoría
-  const breakfastRef = useRef<HTMLDivElement>(null)
-  const brunchRef = useRef<HTMLDivElement>(null)
-  const lunchRef = useRef<HTMLDivElement>(null)
-  const dessertsRef = useRef<HTMLDivElement>(null)
-  const bakeryRef = useRef<HTMLDivElement>(null)
-  const coffeeRef = useRef<HTMLDivElement>(null)
+  const entradasRef = useRef<HTMLDivElement>(null)
+  const principalesRef = useRef<HTMLDivElement>(null)
+  const postresRef = useRef<HTMLDivElement>(null)
+  const bebidasRef = useRef<HTMLDivElement>(null)
+  const vinosRef = useRef<HTMLDivElement>(null)
+  const cocktailsRef = useRef<HTMLDivElement>(null)
 
   // Cargar el estado de autenticación y productos al iniciar
   useEffect(() => {
@@ -132,7 +107,98 @@ export default function MenuPage() {
     // Cargar productos
     const loadedProducts = getProducts()
     setProducts(loadedProducts)
+
+    // Cargar productos destacados
+    setFeaturedProducts(getFeaturedProducts())
   }, [])
+
+  // Función para verificar si el carrusel necesita scroll
+  const checkCarouselOverflow = () => {
+    if (carouselRef.current) {
+      const isOverflowing = carouselRef.current.scrollWidth > carouselRef.current.clientWidth
+      setShowScrollIndicator(isOverflowing)
+    }
+  }
+
+  // Verificar el overflow del carrusel cuando cambia el tamaño de la ventana
+  useEffect(() => {
+    // Verificar inicialmente después de que el componente se monte
+    setTimeout(checkCarouselOverflow, 500) // Pequeño retraso para asegurar que el carrusel esté renderizado
+
+    // Verificar cuando cambie el tamaño de la ventana
+    const handleResize = () => {
+      checkCarouselOverflow()
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => {
+      window.removeEventListener("resize", handleResize)
+    }
+  }, [])
+
+  // Reemplazar el useEffect que maneja el scroll con esta versión mejorada:
+  useEffect(() => {
+    // Referencia al carrusel
+    const carousel = document.getElementById("categories-carousel")
+    if (!carousel) return
+
+    // Guardar la altura original del carrusel para el padding compensatorio
+    const carouselHeight = carousel.offsetHeight
+
+    // Elemento para mantener el espacio cuando el carrusel se fija
+    let spacer = document.getElementById("carousel-spacer")
+    if (!spacer) {
+      spacer = document.createElement("div")
+      spacer.id = "carousel-spacer"
+      carousel.parentNode?.insertBefore(spacer, carousel.nextSibling)
+    }
+
+    // Función para manejar el scroll
+    const handleScroll = () => {
+      // Guardar la posición original del carrusel la primera vez
+      if (carouselPositionRef.current === null) {
+        carouselPositionRef.current = carousel.getBoundingClientRect().top + window.scrollY
+      }
+
+      // Si hemos scrolleado más allá de la posición original del carrusel
+      if (window.scrollY > carouselPositionRef.current) {
+        if (!isCarouselFixed) {
+          setIsCarouselFixed(true)
+          // Ajustar el espaciador para mantener el flujo del documento
+          spacer.style.height = `${carouselHeight}px`
+          // Añadir clase para estilos adicionales
+          carousel.classList.add("fixed")
+        }
+      } else {
+        if (isCarouselFixed) {
+          setIsCarouselFixed(false)
+          // Restaurar el espaciador
+          spacer.style.height = "0"
+          // Quitar clase
+          carousel.classList.remove("fixed")
+        }
+      }
+    }
+
+    // Función para recalcular la posición en caso de resize
+    const handleResize = () => {
+      carouselPositionRef.current = null // Resetear para recalcular
+      handleScroll() // Llamar inmediatamente para actualizar
+    }
+
+    // Añadir los event listeners
+    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("resize", handleResize)
+
+    // Llamar una vez para configurar el estado inicial
+    handleScroll()
+
+    // Limpiar los event listeners cuando el componente se desmonte
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("resize", handleResize)
+    }
+  }, [isCarouselFixed])
 
   // Verificar si hay un producto para editar desde la URL
   useEffect(() => {
@@ -167,6 +233,7 @@ export default function MenuPage() {
       // Asegurarse de que el carrusel sea visible inicialmente
       setTimeout(() => {
         carousel.scrollLeft = 0
+        checkCarouselOverflow() // Verificar si hay overflow después de inicializar
       }, 500)
     }
   }, [])
@@ -192,12 +259,12 @@ export default function MenuPage() {
     setIsMenuOpen(false)
   }
 
-  // Función para manejar el inicio de sesión exitoso
+  // Modificar la función handleLoginSuccess para asegurar que el modal se cierre después de iniciar sesión
   const handleLoginSuccess = () => {
     const authUser = getAuthState()
     setUser(authUser)
-    setShowLoginForm(false)
-    setIsMenuOpen(false)
+    setShowLoginForm(false) // Asegurarse de que el modal se cierre
+    setIsMenuOpen(false) // Cerrar el menú móvil si está abierto
   }
 
   // Función para editar un producto
@@ -226,7 +293,6 @@ export default function MenuPage() {
   }
 
   // Modificar la función handleSaveProduct para actualizar inmediatamente la UI
-  // Reemplazar la función handleSaveProduct con:
   const handleSaveProduct = (updatedProduct: Product) => {
     const updatedProducts = updateProduct(updatedProduct)
     setProducts(updatedProducts)
@@ -237,6 +303,11 @@ export default function MenuPage() {
     if (updatedProduct.category && updatedProduct.category !== activeCategory) {
       setActiveCategory(updatedProduct.category)
       scrollToCategory(updatedProduct.category)
+    }
+
+    // Actualizar productos destacados si es necesario
+    if (updatedProduct.featured) {
+      setFeaturedProducts(getFeaturedProducts())
     }
 
     // Mostrar notificación de éxito
@@ -251,6 +322,11 @@ export default function MenuPage() {
   const handleAddProduct = (newProduct: Product) => {
     const updatedProducts = addProduct(newProduct)
     setProducts(updatedProducts)
+
+    // Actualizar productos destacados si es necesario
+    if (newProduct.featured) {
+      setFeaturedProducts(getFeaturedProducts())
+    }
 
     // Mostrar notificación de éxito
     toast({
@@ -267,6 +343,9 @@ export default function MenuPage() {
     setShowEditModal(false)
     setEditingProduct(null)
 
+    // Actualizar productos destacados
+    setFeaturedProducts(getFeaturedProducts())
+
     // Mostrar notificación de éxito
     toast({
       title: "Producto eliminado",
@@ -279,6 +358,7 @@ export default function MenuPage() {
   const handleResetProducts = () => {
     const originalProducts = resetProducts()
     setProducts(originalProducts)
+    setFeaturedProducts(getFeaturedProducts())
   }
 
   // Función para hacer scroll a la categoría seleccionada
@@ -287,23 +367,23 @@ export default function MenuPage() {
 
     let ref = null
     switch (category) {
-      case "breakfast":
-        ref = breakfastRef
+      case "entradas":
+        ref = entradasRef
         break
-      case "brunch":
-        ref = brunchRef
+      case "principales":
+        ref = principalesRef
         break
-      case "lunch":
-        ref = lunchRef
+      case "postres":
+        ref = postresRef
         break
-      case "desserts":
-        ref = dessertsRef
+      case "bebidas":
+        ref = bebidasRef
         break
-      case "bakery":
-        ref = bakeryRef
+      case "vinos":
+        ref = vinosRef
         break
-      case "coffee":
-        ref = coffeeRef
+      case "cocktails":
+        ref = cocktailsRef
         break
     }
 
@@ -322,371 +402,63 @@ export default function MenuPage() {
   // Obtener títulos de categorías
   const getCategoryTitle = (category: ProductCategory): string => {
     switch (category) {
-      case "breakfast":
-        return "PARA DESAYUNAR Y MERENDAR"
-      case "brunch":
-        return "PARA BRUNCHEAR"
-      case "lunch":
-        return "PARA ALMORZAR Y CENAR"
-      case "desserts":
+      case "entradas":
+        return "ENTRADAS"
+      case "principales":
+        return "PLATOS PRINCIPALES"
+      case "postres":
         return "POSTRES"
-      case "bakery":
-        return "PASTELERÍA Y PANADERÍA"
-      case "coffee":
-        return "CAFETERÍA"
+      case "bebidas":
+        return "BEBIDAS"
+      case "vinos":
+        return "VINOS"
+      case "cocktails":
+        return "COCKTAILS"
       default:
-        return "PARA DESAYUNAR Y MERENDAR"
+        return "ENTRADAS"
     }
   }
 
-  // Componente para el botón de edición del administrador
-  const AdminEditButton = ({ productId }: { productId: string }) => {
-    if (!isAdmin) return null
-
-    return (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-3 right-3 z-10 h-8 w-8 bg-white/80 hover:bg-white text-lacapke-charcoal rounded-full shadow-sm"
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          handleEditProduct(productId)
-        }}
-      >
-        <Edit className="h-4 w-4" />
-      </Button>
-    )
-  }
-
-  // Componente para tarjeta simple personalizable
-  const SimpleCard = ({
-    id,
-    name,
-    price,
-    description,
-    isVegetarian = false,
-  }: {
-    id: string
-    name: string
-    price: number
-    description: string
-    isVegetarian?: boolean
-  }) => {
-    return (
-      <Link href={`/product/${id}`} className="block h-full">
-        <div className="bg-[#f8f5d7] rounded-xl overflow-hidden shadow-sm h-full flex flex-col p-2 sm:p-3 relative">
-          {isAdmin && <AdminEditButton productId={id} />}
-          <div className="mb-auto">
-            <h3 className="font-bold text-lacapke-charcoal text-xs sm:text-sm font-open-sans">{name}</h3>
-            <p className="text-lacapke-charcoal/80 text-[9px] sm:text-[10px] line-clamp-2 mt-0.5">{description}</p>
-          </div>
-          <div className="flex justify-between items-center w-full mt-1 sm:mt-2">
-            <div className="relative">{isVegetarian && <VegetarianBadge className="h-4 w-4 sm:h-5 sm:w-5" />}</div>
-            <span className="font-bold text-lacapke-charcoal text-xs sm:text-sm font-open-sans">$ {price}</span>
-          </div>
-        </div>
-      </Link>
-    )
-  }
-
   // Filtrar productos por categoría
-  const breakfastProducts = products.filter((product) => product.category === "breakfast")
-  const brunchProducts = products.filter((product) => product.category === "brunch")
-
-  // Renderizar contenido específico para la categoría "brunch"
-  const renderBrunchContent = () => {
-    return (
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Primera fila */}
-        <div className="col-span-1">
-          <MenuItemCard
-            id="sandwich-mediterraneo"
-            name="Sándwich Mediterráneo"
-            description="Ciabatta de pan de masa madre, cheesecream, queso pategrás, jamón crudo, tomates asados y rúcula."
-            price={13300}
-            image="/sandwich-mediterraneo.jpg"
-            isAdmin={isAdmin}
-            onEdit={handleEditProduct}
-          />
-        </div>
-        <div className="col-span-1">
-          <MenuItemCard
-            id="club-sandwich"
-            name="Club Sándwich"
-            description="Pollo asado, rúcula, tomates asados, panceta, mostaneza, jamón natural, queso danbo y queso pategrás."
-            price={13800}
-            image="/club-sandwich.jpg"
-            isAdmin={isAdmin}
-            onEdit={handleEditProduct}
-          />
-        </div>
-        <div className="col-span-1">
-          <MenuItemCard
-            id="tosti-madre"
-            name="Tosti Madre"
-            description="Sándwich en pan de masa madre relleno de jamón natural a la plancha, queso danbo y pategrás, con un toque de mostaza."
-            price={8200}
-            image="/tosti-madre.jpg"
-            isAdmin={isAdmin}
-            onEdit={handleEditProduct}
-          />
-        </div>
-
-        {/* Segunda fila */}
-        <div className="col-span-1">
-          <MenuItemCard
-            id="toston-de-palta"
-            name="Tostón de Palta"
-            description="Tostada de pan de masa madre, hummus cremoso de garbanzo, champiñones salteados y palta."
-            price={7900}
-            image="/toston-de-palta.jpg"
-            isVegetarian={true}
-            isAdmin={isAdmin}
-            onEdit={handleEditProduct}
-          />
-        </div>
-        <div className="col-span-1">
-          <MenuItemCard
-            id="el-benedictino"
-            name="El Benedictino"
-            description="Dos esponjosos muffins inglés, cheesecream, espinaca salteada, salmón ahumado, huevo media cocción y salsa holandesa cítrica."
-            price={8700}
-            image="/el-benedictino.jpg"
-            isAdmin={isAdmin}
-            onEdit={handleEditProduct}
-          />
-        </div>
-        <div className="col-span-1">
-          <MenuItemCard
-            id="croissant-con-helado"
-            name="Croissant con Helado"
-            description="Croissant relleno de helado de crema americana, coulis de arándanos, banana y frutillas."
-            price={6900}
-            image="/croissant-con-helado-new.png"
-            isVegetarian={true}
-            isAdmin={isAdmin}
-            onEdit={handleEditProduct}
-          />
-        </div>
-
-        {/* Tercera fila - Nuevos productos */}
-        <div className="col-span-1">
-          <MenuItemCard
-            id="tosti-espinaca-champis"
-            name="Tosti de Espinaca y Champis"
-            description="Sándwich en pan de masa madre, espinaca y champiñones salteados en aceite infusionado en ajo con queso muzzarella."
-            price={8200}
-            image="/tosti-espinaca-champis-new.png"
-            isVegetarian={true}
-            isAdmin={isAdmin}
-            onEdit={handleEditProduct}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  // Renderizar contenido para la categoría "breakfast"
-  const renderBreakfastContent = () => {
-    return (
-      <>
-        {/* Palta y Huevo (ancho completo) - Solo visible en móvil */}
-        <div className="mt-6 mb-4">
-          <PaltaYHuevoCard isAdmin={isAdmin} onEdit={handleEditProduct} />
-        </div>
-
-        {/* Productos destacados */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-          <div className="lg:col-span-1">
-            {/* Me lo merezco */}
-            <MeLoMerezcoCard isAdmin={isAdmin} onEdit={handleEditProduct} />
-          </div>
-          <div className="grid grid-rows-3 gap-2 h-full lg:col-span-1">
-            {/* Plato de tostadas */}
-            <Link href="/product/plato-de-tostadas" className="block h-full">
-              <div className="bg-[#f8f5d7] rounded-xl overflow-hidden shadow-sm h-full flex flex-col p-2 sm:p-3 relative">
-                {isAdmin && <AdminEditButton productId="plato-de-tostadas" />}
-                <div className="mb-auto">
-                  <h3 className="font-bold text-lacapke-charcoal text-xs sm:text-sm font-open-sans">
-                    Plato de tostadas
-                  </h3>
-                  <p className="text-lacapke-charcoal/80 text-[9px] sm:text-[10px] line-clamp-2 mt-0.5">
-                    (2 tostadas con 2 dips a elección)
-                  </p>
-                </div>
-                <div className="flex justify-end items-center w-full mt-1 sm:mt-2">
-                  <span className="font-bold text-lacapke-charcoal text-xs sm:text-sm font-open-sans">$ 3200</span>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/product/plato-de-huevos-revueltos" className="block h-full">
-              <div className="bg-[#f8f5d7] rounded-xl overflow-hidden shadow-sm h-full flex flex-col p-2 sm:p-3 relative">
-                {isAdmin && <AdminEditButton productId="plato-de-huevos-revueltos" />}
-                <div className="mb-auto">
-                  <h3 className="font-bold text-lacapke-charcoal text-xs sm:text-sm font-open-sans">
-                    Plato de huevos revueltos
-                  </h3>
-                  <p className="text-lacapke-charcoal/80 text-[9px] sm:text-[10px] line-clamp-2 mt-0.5">
-                    Incluye una rodaja de pan de masa madre.
-                  </p>
-                </div>
-                <div className="flex justify-end items-center w-full mt-1 sm:mt-2">
-                  <span className="font-bold text-lacapke-charcoal text-xs sm:text-sm font-open-sans">$ 4700</span>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/product/budin" className="block h-full">
-              <div className="bg-[#f8f5d7] rounded-xl overflow-hidden shadow-sm h-full flex flex-col p-2 sm:p-3 relative">
-                {isAdmin && <AdminEditButton productId="budin" />}
-                <div className="mb-auto">
-                  <h3 className="font-bold text-lacapke-charcoal text-xs sm:text-sm font-open-sans">Budín</h3>
-                  <p className="text-lacapke-charcoal/80 text-[9px] sm:text-[10px] line-clamp-2 mt-0.5">
-                    Budín casero con crema de amapola y frutas frescas.
-                  </p>
-                </div>
-                <div className="flex justify-end items-center w-full mt-1 sm:mt-2">
-                  <span className="font-bold text-lacapke-charcoal text-xs sm:text-sm font-open-sans">$ 5300</span>
-                </div>
-              </div>
-            </Link>
-          </div>
-          <div className="hidden lg:block lg:col-span-1">
-            <div className="grid grid-rows-2 gap-4 h-full">
-              <MenuItemCard
-                id="fosforito-la-capke"
-                name="Fosforito La Capke"
-                description="Cuadradito de láminas de hojaldre relleno de queso pategrás, cheesecream, tomate asado y rúcula."
-                price={4900}
-                image="/fosforito-la-capke.png"
-                isVegetarian={true}
-                isAdmin={isAdmin}
-                onEdit={handleEditProduct}
-              />
-              <Link href="/product/fosforito-clasico" className="block h-full">
-                <div className="bg-[#f8f5d7] rounded-xl overflow-hidden shadow-sm h-full flex flex-col relative transition-transform hover:shadow-md hover:-translate-y-1">
-                  {isAdmin && <AdminEditButton productId="fosforito-clasico" />}
-                  <div className="relative h-24 sm:h-28 lg:h-40 w-full p-1 sm:p-2">
-                    <div className="relative h-full w-full rounded-lg overflow-hidden">
-                      <Image src="/fosforito-clasico.png" alt="Fosforito Clásico" fill className="object-cover" />
-                    </div>
-                  </div>
-                  <div className="p-2 py-1.5 sm:p-3 sm:py-2 lg:p-4 flex flex-grow">
-                    <h3 className="font-bold text-lacapke-charcoal text-xs sm:text-sm lg:text-base font-open-sans mb-0.5">
-                      Fosforito Clásico
-                    </h3>
-                    <p className="text-lacapke-charcoal/80 text-[10px] sm:text-xs lg:text-xs line-clamp-2 mb-1">
-                      Con jamón natural y queso pategrás.
-                    </p>
-                    <div className="mt-auto pt-1 sm:pt-2 flex justify-end items-center">
-                      <span className="font-bold text-lacapke-charcoal text-xs sm:text-sm lg:text-base font-open-sans">
-                        $ 4800
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Otros productos */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-          {breakfastProducts
-            .filter(
-              (product) =>
-                product.id !== "me-lo-merezco" &&
-                product.id !== "plato-de-tostadas" &&
-                product.id !== "plato-de-huevos-revueltos" &&
-                product.id !== "budin-con-crema" &&
-                product.id !== "palta-y-huevo" &&
-                (window.innerWidth < 1024 ||
-                  (product.id !== "fosforito-la-capke" && product.id !== "fosforito-clasico")),
-            )
-            .map((item) => (
-              <MenuItemCard
-                key={item.id}
-                id={item.id}
-                name={item.name}
-                description={item.description}
-                price={item.price}
-                image={item.image}
-                isVegetarian={item.isVegetarian}
-                variants={item.variants}
-                size={item.size}
-                isAdmin={isAdmin}
-                onEdit={handleEditProduct}
-              />
-            ))}
-        </div>
-      </>
-    )
-  }
+  const entradasProducts = products.filter((product) => product.category === "entradas")
+  const principalesProducts = products.filter((product) => product.category === "principales")
+  const postresProducts = products.filter((product) => product.category === "postres")
+  const bebidasProducts = products.filter((product) => product.category === "bebidas")
+  const vinosProducts = products.filter((product) => product.category === "vinos")
+  const cocktailsProducts = products.filter((product) => product.category === "cocktails")
 
   return (
-    <div className="bg-lacapke-background min-h-screen">
+    <div className="bg-montebello-navy min-h-screen">
+      {/* Script para manejar el carrusel sticky */}
+      <Script id="sticky-carousel" strategy="afterInteractive" src="/js/sticky-carousel.js" />
+
       {/* Desktop Navigation con contador de carrito */}
       <DesktopNavigation user={user} onLoginSuccess={handleLoginSuccess} cartItemCount={cartItemCount} />
 
       {/* Mobile Header */}
-      <header className="lg:hidden px-4 pt-6 pb-2">
-        <div className="flex justify-between items-center mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`h-14 w-14 z-50 -ml-2 text-lacapke-charcoal ${isMenuOpen ? "opacity-0" : "opacity-100"} transition-opacity`}
+      <header className="lg:hidden pt-6 pb-2">
+        <div className="flex justify-between items-center mb-6 container mx-auto">
+          <div
+            className={`cursor-pointer z-50 pl-4 ${isMenuOpen ? "opacity-0" : "opacity-100"} transition-opacity`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            <HamburgerIcon className="h-10 w-10" />
-          </Button>
-
-          <div className="relative h-20 w-64">
-            <Image src="/finall.png" alt="La Capke" fill className="object-contain" priority />
+            <div className="w-7 h-0.5 bg-montebello-gold mb-1.5"></div>
+            <div className="w-7 h-0.5 bg-montebello-gold mb-1.5"></div>
+            <div className="w-7 h-0.5 bg-montebello-gold"></div>
           </div>
 
-          <div className="w-8">{/* Espacio vacío para equilibrar el diseño */}</div>
-        </div>
-
-        {/* Promo Section */}
-        <div className="flex flex-col items-center mb-4">
-          <div className="border border-lacapke-charcoal/20 rounded-full px-4 py-2 flex items-center gap-3 bg-white">
-            <div className="flex items-center gap-2">
-              <TicketIcon className="h-5 w-5 text-lacapke-charcoal" />
-              <div className="text-xs">
-                <span className="font-medium text-lacapke-charcoal">Lunes a Jueves</span>
-                <br />
-                <span className="text-lacapke-charcoal/70 text-[10px]">(excepto feriados)</span>
-              </div>
-            </div>
-            <div className="h-8 w-px bg-lacapke-charcoal/20"></div>
-            <div className="text-xs">
-              <span className="font-bold text-sm text-lacapke-charcoal">EFECTIVO 10%</span>
-              <br />
-              <span className="text-lacapke-charcoal/70">DE DESCUENTO</span>
-            </div>
+          <div className="flex-1">
+            <LogoContainer size="large" />
           </div>
 
-          {/* Reemplazar el uso de LeafIcon en la sección de promo */}
-          <div className="flex gap-4 mt-2">
-            <div className="flex items-center gap-1 text-xs text-lacapke-charcoal/80">
-              <VegetarianBadge className="h-4 w-4" />
-              <span>VEGETARIANO</span>
-            </div>
-            <div className="flex items-center gap-1 text-xs text-lacapke-charcoal/80">
-              <VegetarianBadge className="h-4 w-4" />
-              <VegetarianBadge className="h-4 w-4" />
-              <span>VEGANO</span>
-            </div>
-          </div>
+          <div className="w-7"></div>
         </div>
 
         {/* Slide-out Menu */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
-              className="fixed inset-0 bg-black/50 z-50"
+              className="fixed inset-0 bg-black/50 z-40"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -695,117 +467,110 @@ export default function MenuPage() {
           )}
         </AnimatePresence>
 
+        {/* Modificar la sección del menú lateral para que se parezca al de LaCaphe
+        Buscar la sección que comienza con <motion.div className="fixed top-0 left-0 bottom-0... */}
+
+        {/* Reemplazar con este nuevo diseño */}
         <motion.div
-          className="fixed top-0 left-0 bottom-0 w-64 bg-white z-50 shadow-xl"
+          className="fixed top-0 left-0 bottom-0 w-80 bg-montebello-navy z-50 shadow-xl"
           variants={mobileMenuAnimation}
           initial="closed"
           animate={isMenuOpen ? "open" : "closed"}
         >
-          {/* Contenido del menú móvil */}
-          <div className="relative">
+          {/* Botón de cierre en la esquina superior derecha */}
+          <div className="absolute right-4 top-4 z-10">
             <motion.button
               variants={menuItemAnimation}
-              className="absolute right-2 top-2 h-8 w-8 text-lacapke-charcoal z-20"
+              className="h-10 w-10 flex items-center justify-center text-montebello-light"
               onClick={() => setIsMenuOpen(false)}
             >
-              <X className="h-5 w-5" />
+              <X className="h-6 w-6" />
             </motion.button>
           </div>
 
-          <motion.div className="p-6 pt-12 border-b border-lacapke-charcoal/10" variants={menuItemAnimation}>
-            {user ? (
-              <div className="flex items-center gap-3">
-                <Avatar className="h-14 w-14 border-2 border-lacapke-cream">
-                  <AvatarImage src="/la-capke-logo.png" alt="Admin" />
-                  <AvatarFallback>LC</AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-medium text-lacapke-charcoal text-lg">{user.username}</h3>
-                  <p className="text-sm text-lacapke-charcoal/70">Administrador</p>
-                </div>
-              </div>
+          {/* Logo centrado */}
+          <div className="flex justify-center items-center pt-12 pb-6">
+            <div className="w-24 h-24 rounded-full bg-montebello-navy flex items-center justify-center border border-montebello-gold/30">
+              <img
+                src="/golden-leaf-restaurant.png"
+                alt="Club Montebello Logo"
+                className="h-20 w-20 object-contain rounded-full"
+              />
+            </div>
+          </div>
+
+          {/* Botón de inicio de sesión */}
+          <div className="px-6 mb-8">
+            {!user ? (
+              <Button
+                className="w-full bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy font-medium py-5 rounded-full"
+                onClick={() => setShowLoginForm(true)}
+              >
+                Iniciar Sesión
+              </Button>
             ) : (
-              <div className="flex flex-col items-center">
-                <Avatar className="h-14 w-14 border-2 border-lacapke-cream mb-2">
-                  <AvatarImage src="/la-capke-logo.png" alt="La Capke" />
-                  <AvatarFallback>LC</AvatarFallback>
-                </Avatar>
-                <Button
-                  className="w-full bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal"
-                  onClick={() => setShowLoginForm(true)}
-                >
-                  Iniciar Sesión
+              <div className="text-center">
+                <p className="text-montebello-gold font-medium text-lg">{user.username}</p>
+                <Button variant="ghost" className="mt-2 text-red-400 hover:bg-red-900/20" onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Cerrar Sesión
                 </Button>
               </div>
             )}
-          </motion.div>
+          </div>
 
-          <motion.nav className="p-4">
-            <motion.ul className="space-y-2">
+          {/* Separador */}
+          <div className="border-t border-montebello-gold/10 mb-6"></div>
+
+          {/* Navegación simplificada */}
+          <motion.nav className="px-6">
+            <motion.ul className="space-y-6">
               <motion.li variants={menuItemAnimation}>
-                <Link href="/" className="block">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-lacapke-charcoal hover:bg-lacapke-cream/50"
-                  >
-                    <Home className="mr-3 h-5 w-5" />
-                    Home
-                  </Button>
+                <Link
+                  href="/"
+                  className="flex items-center text-montebello-light hover:text-montebello-gold transition-colors"
+                >
+                  <Home className="mr-4 h-6 w-6" />
+                  <span className="text-lg">Home</span>
                 </Link>
               </motion.li>
-              <li>
-                <Link href="/cart" className="block">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-lacapke-charcoal hover:bg-lacapke-cream/50"
-                  >
-                    <div className="relative mr-3">
-                      <ShoppingBag className="h-5 w-5" />
-                      {cartItemCount > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-[#f8e1e1] text-lacapke-charcoal text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
-                          {cartItemCount > 9 ? "9+" : cartItemCount}
-                        </span>
-                      )}
-                    </div>
-                    Mi Pedido
-                  </Button>
+              <motion.li variants={menuItemAnimation}>
+                <Link
+                  href="/menu"
+                  className="flex items-center text-montebello-light hover:text-montebello-gold transition-colors"
+                >
+                  <Utensils className="mr-4 h-6 w-6" />
+                  <span className="text-lg">Menú</span>
                 </Link>
-              </li>
-              {isAdmin && (
-                <li>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-lacapke-charcoal hover:bg-lacapke-cream/50"
-                  >
-                    <PlusCircle className="mr-3 h-5 w-5" />
-                    Administrar Productos
-                  </Button>
-                </li>
-              )}
-              {user && (
-                <li className="pt-4 mt-4 border-t border-lacapke-charcoal/10">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-red-500 hover:bg-red-50"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-3 h-5 w-5" />
-                    Logout
-                  </Button>
-                </li>
-              )}
+              </motion.li>
+              <motion.li variants={menuItemAnimation}>
+                <Link
+                  href="/cart"
+                  className="flex items-center text-montebello-light hover:text-montebello-gold transition-colors"
+                >
+                  <div className="relative mr-4">
+                    <ShoppingBag className="h-6 w-6" />
+                    {cartItemCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-montebello-gold text-montebello-navy text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {cartItemCount > 9 ? "9+" : cartItemCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-lg">Mi Pedido</span>
+                </Link>
+              </motion.li>
             </motion.ul>
           </motion.nav>
         </motion.div>
 
         {/* Modal de inicio de sesión */}
         {showLoginForm && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
             <div className="relative w-full max-w-md">
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-2 top-2 h-8 w-8 text-lacapke-charcoal z-20 bg-white rounded-full"
+                className="absolute right-2 top-2 h-8 w-8 text-montebello-light z-20 bg-montebello-navy rounded-full"
                 onClick={() => setShowLoginForm(false)}
               >
                 <X className="h-5 w-5" />
@@ -829,42 +594,27 @@ export default function MenuPage() {
         )}
       </header>
 
-      {/* Desktop Promo Section */}
-      <div className="hidden lg:flex justify-center py-4">
-        <div className="container-app">
-          <div className="border border-lacapke-charcoal/20 rounded-full px-6 py-3 flex items-center gap-6 bg-white max-w-3xl mx-auto">
-            <div className="flex items-center gap-3">
-              <TicketIcon className="h-6 w-6 text-lacapke-charcoal" />
-              <div className="text-sm">
-                <span className="font-medium text-lacapke-charcoal">Lunes a Jueves</span>
-                <br />
-                <span className="text-lacapke-charcoal/70 text-xs">(except feriados)</span>
-              </div>
-            </div>
-            <div className="h-10 w-px bg-lacapke-charcoal/20"></div>
-            <div className="text-sm">
-              <span className="font-bold text-lg text-lacapke-charcoal">EFECTIVO 10%</span>
-              <br />
-              <span className="text-lacapke-charcoal/70">DE DESCUENTO</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Search */}
-      <div className="container-app mb-8">
-        <div className="flex gap-2">
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex gap-2 max-w-3xl mx-auto">
           <div className="relative flex-1">
-            <Input placeholder="Buscar.." className="bg-white border-lacapke-charcoal/20 shadow-sm" />
+            <Input
+              placeholder="Buscar.."
+              className="bg-montebello-navy/50 border-montebello-gold/20 shadow-sm text-montebello-light rounded-full py-6"
+            />
           </div>
-          <Button variant="outline" size="icon" className="bg-white shadow-sm border-lacapke-charcoal/20">
-            <Search className="h-5 w-5 text-lacapke-charcoal" />
+          <Button
+            variant="outline"
+            size="icon"
+            className="bg-montebello-navy/50 shadow-sm border-montebello-gold/20 text-montebello-light rounded-full h-12 w-12"
+          >
+            <Search className="h-5 w-5" />
           </Button>
         </div>
       </div>
 
       {/* Main Content */}
-      <main className="container-app pb-20 lg:pb-10">
+      <main className="container mx-auto px-4 pb-20 lg:pb-10">
         {/* Panel de Administración (solo visible para administradores) */}
         {isAdmin && (
           <>
@@ -881,126 +631,324 @@ export default function MenuPage() {
           </>
         )}
 
-        {/* Categories Carousel */}
-        <motion.div
-          className="mb-4"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          {/* Este div está vacío pero mantiene el espaciado */}
-        </motion.div>
+        {/* Categories Header - Similar al ejemplo */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-montebello-gold">Categorías</h2>
+          <AnimatePresence>
+            {showScrollIndicator && (
+              <motion.div
+                className="text-sm text-montebello-light/60 flex items-center relative"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <motion.svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{
+                    repeat: Number.POSITIVE_INFINITY,
+                    repeatType: "loop",
+                    duration: 1.5,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <path
+                    d="M13 17L18 12L13 7"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M6 17L11 12L6 7"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </motion.svg>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-        {/* Usar el componente StickyCategoryCarousel */}
-        <StickyCategoryCarousel
-          categories={[
-            { id: "breakfast", name: "Desayuno & Merienda" },
-            { id: "brunch", name: "Brunchear" },
-            { id: "lunch", name: "Almorzar & Cenar" },
-            { id: "desserts", name: "Postres" },
-            { id: "bakery", name: "Pastelería & Panadería" },
-            { id: "coffee", name: "Cafetería" },
-          ]}
-          activeCategory={activeCategory}
-          onCategoryChange={scrollToCategory}
-          rightIcon={
-            <motion.svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              animate={{ x: [0, 5, 0] }}
-              transition={{
-                repeat: Number.POSITIVE_INFINITY,
-                repeatType: "loop",
-                duration: 1.5,
-                ease: "easeInOut",
+        {/* Categories Carousel - Estilo similar al ejemplo */}
+        <div className="relative carousel-wrapper mb-8">
+          <div className="carousel-inner">
+            <motion.div
+              className="overflow-x-auto pb-4 hide-scrollbar carousel-container px-1 pt-4"
+              id="categories-carousel"
+              ref={carouselRef}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              onScroll={() => {
+                // Verificar si el usuario ha llegado al final del carrusel
+                if (carouselRef.current) {
+                  const isAtEnd =
+                    carouselRef.current.scrollLeft + carouselRef.current.clientWidth >=
+                    carouselRef.current.scrollWidth - 10
+                  if (isAtEnd) {
+                    setShowScrollIndicator(false)
+                  } else {
+                    setShowScrollIndicator(true)
+                  }
+                }
               }}
             >
-              <path
-                d="M13 17L18 12L13 7"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M6 17L11 12L6 7"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </motion.svg>
-          }
-        />
+              <div className="flex space-x-8 min-w-max px-4 container mx-auto">
+                <motion.button
+                  onClick={() => scrollToCategory("entradas")}
+                  className="focus:outline-none"
+                  aria-label="Seleccionar categoría Entradas"
+                  aria-pressed={activeCategory === "entradas"}
+                  variants={fadeIn}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FoodCategory title="Entradas" iconType="entradas" isActive={activeCategory === "entradas"} />
+                </motion.button>
 
-        {/* Sección Desayuno y Merienda */}
-        <div ref={breakfastRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-4">
-            <h2 className="text-xl font-bold text-lacapke-charcoal uppercase tracking-wide mb-2">
-              {getCategoryTitle("breakfast")}
-            </h2>
+                <motion.button
+                  onClick={() => scrollToCategory("principales")}
+                  className="focus:outline-none"
+                  aria-label="Seleccionar categoría Platos Principales"
+                  aria-pressed={activeCategory === "principales"}
+                  variants={fadeIn}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FoodCategory
+                    title="Platos & Principales"
+                    iconType="principales"
+                    isActive={activeCategory === "principales"}
+                  />
+                </motion.button>
+
+                <motion.button
+                  onClick={() => scrollToCategory("postres")}
+                  className="focus:outline-none"
+                  aria-label="Seleccionar categoría Postres"
+                  aria-pressed={activeCategory === "postres"}
+                  variants={fadeIn}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FoodCategory title="Postres" iconType="postres" isActive={activeCategory === "postres"} />
+                </motion.button>
+
+                <motion.button
+                  onClick={() => scrollToCategory("bebidas")}
+                  className="focus:outline-none"
+                  aria-label="Seleccionar categoría Bebidas"
+                  aria-pressed={activeCategory === "bebidas"}
+                  variants={fadeIn}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FoodCategory
+                    title="Bebidas & Refrescos"
+                    iconType="bebidas"
+                    isActive={activeCategory === "bebidas"}
+                  />
+                </motion.button>
+
+                <motion.button
+                  onClick={() => scrollToCategory("vinos")}
+                  className="focus:outline-none"
+                  aria-label="Seleccionar categoría Vinos"
+                  aria-pressed={activeCategory === "vinos"}
+                  variants={fadeIn}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FoodCategory title="Vinos & Espumantes" iconType="vinos" isActive={activeCategory === "vinos"} />
+                </motion.button>
+
+                <motion.button
+                  onClick={() => scrollToCategory("cocktails")}
+                  className="focus:outline-none"
+                  aria-label="Seleccionar categoría Cocktails"
+                  aria-pressed={activeCategory === "cocktails"}
+                  variants={fadeIn}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FoodCategory
+                    title="Cocktails & Tragos"
+                    iconType="cocktails"
+                    isActive={activeCategory === "cocktails"}
+                  />
+                </motion.button>
+              </div>
+            </motion.div>
           </div>
-          {renderBreakfastContent()}
         </div>
 
-        {/* Sección Brunchear */}
-        <div ref={brunchRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-4">
-            <h2 className="text-xl font-bold text-lacapke-charcoal uppercase tracking-wide mb-2">
-              {getCategoryTitle("brunch")}
+        {/* Sección Entradas */}
+        <div ref={entradasRef} className="mb-16 scroll-mt-24">
+          <div className="flex flex-col items-center mb-6">
+            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+              {getCategoryTitle("entradas")}
             </h2>
+            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
-          {renderBrunchContent()}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {entradasProducts.map((product) => (
+              <MenuItemCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                description={product.description}
+                price={product.price}
+                image={product.image}
+                isVegetarian={product.isVegetarian}
+                variants={product.variants}
+                size={product.size}
+                isAdmin={isAdmin}
+                onEdit={handleEditProduct}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Sección Almorzar y Cenar */}
-        <div ref={lunchRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-4">
-            <h2 className="text-xl font-bold text-lacapke-charcoal uppercase tracking-wide mb-2">
-              {getCategoryTitle("lunch")}
+        {/* Sección Platos Principales */}
+        <div ref={principalesRef} className="mb-16 scroll-mt-24">
+          <div className="flex flex-col items-center mb-6">
+            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+              {getCategoryTitle("principales")}
             </h2>
+            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
-          <div className="bg-white/50 p-8 rounded-lg text-center">
-            <p className="text-lacapke-charcoal/70">Próximamente nuevos platos para almorzar y cenar</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {principalesProducts.map((product) => (
+              <MenuItemCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                description={product.description}
+                price={product.price}
+                image={product.image}
+                isVegetarian={product.isVegetarian}
+                variants={product.variants}
+                size={product.size}
+                isAdmin={isAdmin}
+                onEdit={handleEditProduct}
+              />
+            ))}
           </div>
         </div>
 
         {/* Sección Postres */}
-        <div ref={dessertsRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-4">
-            <h2 className="text-xl font-bold text-lacapke-charcoal uppercase tracking-wide mb-2">
-              {getCategoryTitle("desserts")}
+        <div ref={postresRef} className="mb-16 scroll-mt-24">
+          <div className="flex flex-col items-center mb-6">
+            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+              {getCategoryTitle("postres")}
             </h2>
+            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
-          <div className="bg-white/50 p-8 rounded-lg text-center">
-            <p className="text-lacapke-charcoal/70">Próximamente deliciosos postres</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {postresProducts.map((product) => (
+              <MenuItemCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                description={product.description}
+                price={product.price}
+                image={product.image}
+                isVegetarian={product.isVegetarian}
+                variants={product.variants}
+                size={product.size}
+                isAdmin={isAdmin}
+                onEdit={handleEditProduct}
+              />
+            ))}
           </div>
         </div>
 
-        {/* Sección Pastelería y Panadería */}
-        <div ref={bakeryRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-4">
-            <h2 className="text-xl font-bold text-lacapke-charcoal uppercase tracking-wide mb-2">
-              {getCategoryTitle("bakery")}
+        {/* Sección Bebidas */}
+        <div ref={bebidasRef} className="mb-16 scroll-mt-24">
+          <div className="flex flex-col items-center mb-6">
+            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+              {getCategoryTitle("bebidas")}
             </h2>
+            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
-          <div className="bg-white/50 p-8 rounded-lg text-center">
-            <p className="text-lacapke-charcoal/70">Próximamente productos de pastelería y panadería</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {bebidasProducts.map((product) => (
+              <MenuItemCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                description={product.description}
+                price={product.price}
+                image={product.image}
+                isVegetarian={product.isVegetarian}
+                variants={product.variants}
+                size={product.size}
+                isAdmin={isAdmin}
+                onEdit={handleEditProduct}
+              />
+            ))}
           </div>
         </div>
 
-        {/* Sección Cafetería */}
-        <div ref={coffeeRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-4">
-            <h2 className="text-xl font-bold text-lacapke-charcoal uppercase tracking-wide mb-2">
-              {getCategoryTitle("coffee")}
+        {/* Sección Vinos */}
+        <div ref={vinosRef} className="mb-16 scroll-mt-24">
+          <div className="flex flex-col items-center mb-6">
+            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+              {getCategoryTitle("vinos")}
             </h2>
+            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
-          <div className="bg-white/50 p-8 rounded-lg text-center">
-            <p className="text-lacapke-charcoal/70">Próximamente bebidas de cafetería</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {vinosProducts.map((product) => (
+              <MenuItemCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                description={product.description}
+                price={product.price}
+                image={product.image}
+                isVegetarian={product.isVegetarian}
+                variants={product.variants}
+                size={product.size}
+                isAdmin={isAdmin}
+                onEdit={handleEditProduct}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Sección Cocktails */}
+        <div ref={cocktailsRef} className="mb-16 scroll-mt-24">
+          <div className="flex flex-col items-center mb-6">
+            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
+              {getCategoryTitle("cocktails")}
+            </h2>
+            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {cocktailsProducts.map((product) => (
+              <MenuItemCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                description={product.description}
+                price={product.price}
+                image={product.image}
+                isVegetarian={product.isVegetarian}
+                variants={product.variants}
+                size={product.size}
+                isAdmin={isAdmin}
+                onEdit={handleEditProduct}
+              />
+            ))}
           </div>
         </div>
       </main>

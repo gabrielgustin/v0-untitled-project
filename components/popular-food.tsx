@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
 import { Star } from "lucide-react"
 import Link from "next/link"
+import { getDefaultImage } from "@/lib/products"
 
 interface PopularFoodProps {
   title: string
@@ -17,7 +18,7 @@ export function PopularFood({ title, image, rating, restaurants }: PopularFoodPr
     <Link href={`/product/${id}`} className="block">
       <Card className="overflow-hidden border-none shadow-sm">
         <div className="relative h-36 w-full bg-white/50">
-          <Image src={image || "/placeholder.svg"} alt={title} fill className="object-cover" />
+          <Image src={image ? image : getDefaultImage(null, title)} alt={title} fill className="object-cover" />
         </div>
         <CardContent className="p-3 bg-lacapke-cream">
           <div className="flex items-center gap-1 mb-1">

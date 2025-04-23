@@ -4,21 +4,15 @@ import React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import { Minus, Plus, ShoppingBag, ArrowLeft, Check, Info, Coffee, Utensils, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { getAuthState, type User } from "@/lib/auth"
-import { getProducts, type Product } from "@/lib/products"
+import { getProducts, type Product, getDefaultImage } from "@/lib/products"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
 import { DesktopNavigation } from "@/components/desktop-navigation"
-// Importar el nuevo componente VegetarianBadge
 import { VegetarianBadge } from "@/components/vegetarian-badge"
 
-// Modificar solo las partes relevantes para las animaciones
-
-// Importar motion y las utilidades de animación
 import { motion, AnimatePresence } from "framer-motion"
 import { addToCartAnimation } from "@/lib/animation-utils"
 
@@ -34,6 +28,7 @@ interface CartItem {
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+
   const [quantity, setQuantity] = useState(1)
   const [isChanging, setIsChanging] = useState(false)
   const [changeDirection, setChangeDirection] = useState<"up" | "down" | null>(null)
@@ -47,6 +42,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [cartItemCount, setCartItemCount] = useState(0)
   const [cartAnimation, setCartAnimation] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isImageLoading, setIsImageLoading] = useState(true)
 
   // Cargar el producto por ID
   useEffect(() => {
@@ -55,6 +51,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
     if (foundProduct) {
       setProduct(foundProduct)
+
       // Si el producto tiene variantes, seleccionar la primera por defecto
       if (foundProduct.variants && foundProduct.variants.length > 0) {
         setSelectedVariant(foundProduct.variants[0].name)
@@ -92,7 +89,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     const authUser = getAuthState()
     if (authUser) {
       setUser(authUser)
-      setIsAdmin(authUser.isAdmin || false)
+      setIsAdmin(authUser.username === "Admin1")
     }
   }, [params.id])
 
@@ -150,7 +147,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       name: product.name,
       price: selectedVariantPrice !== null ? selectedVariantPrice : product.price,
       quantity: quantity,
-      image: product.image || "/default-plant-icon.png", // Imagen por defecto si no hay imagen
+      image: product.image || getDefaultImage(product.category, product.name),
       variant: selectedVariant || undefined,
     }
 
@@ -196,8 +193,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   if (!product) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-pulse text-lacapke-charcoal">Cargando producto...</div>
+      <div className="flex items-center justify-center min-h-screen bg-montebello-navy">
+        <div className="animate-pulse text-montebello-light">Cargando producto...</div>
       </div>
     )
   }
@@ -222,20 +219,21 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   // Función para obtener el icono según la categoría o ID del producto
   const getProductIcon = () => {
     if (product.category === "breakfast") {
-      return <Coffee className="h-12 w-12 text-lacapke-charcoal/60" />
+      return <Coffee className="h-12 w-12 text-montebello-light/60" />
     } else if (product.category === "brunch") {
-      return <Utensils className="h-12 w-12 text-lacapke-charcoal/60" />
+      return <Utensils className="h-12 w-12 text-montebello-light/60" />
     } else {
-      return <Coffee className="h-12 w-12 text-lacapke-charcoal/60" />
+      return <Coffee className="h-12 w-12 text-montebello-light/60" />
     }
   }
 
-  // Dentro del componente ProductPage, modificar las secciones relevantes:
+  // Obtener la URL de la imagen
+  const imageUrl = product.image || getDefaultImage(product.category, product.name)
 
   // Reemplazar el div principal por motion.div
   return (
     <motion.div
-      className="bg-lacapke-background min-h-screen flex flex-col pb-20"
+      className="bg-montebello-navy min-h-screen flex flex-col pb-20"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -256,10 +254,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-10 w-10 bg-white shadow-sm hover:bg-white/90"
+              className="h-10 w-10 bg-montebello-navy/80 border border-montebello-gold/20 shadow-sm hover:bg-montebello-navy/90"
               onClick={() => router.back()}
             >
-              <ArrowLeft className="h-6 w-6 text-lacapke-charcoal" />
+              <ArrowLeft className="h-6 w-6 text-montebello-light" />
             </Button>
           </div>
 
@@ -267,7 +265,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           <div className="hidden lg:block mb-4 mt-4">
             <Button
               variant="outline"
-              className="text-lacapke-charcoal hover:bg-lacapke-background border-lacapke-charcoal/20"
+              className="text-montebello-light hover:bg-montebello-navy border-montebello-gold/20"
               onClick={() => router.back()}
             >
               <ArrowLeft className="h-5 w-5 mr-2" />
@@ -275,127 +273,64 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </Button>
           </div>
 
-          {/* Modificar la sección de la imagen */}
-          {hasImage ? (
-            // Imagen del producto (si existe)
-            <div className="w-full flex justify-center px-4 lg:px-0">
-              <motion.div
-                className="w-full max-w-xs lg:max-w-md aspect-square bg-white rounded-lg overflow-hidden shadow-sm relative"
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                  delay: 0.2,
-                }}
-              >
-                {isAdmin && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-2 right-2 z-10 h-8 w-8 bg-white/80 hover:bg-white text-lacapke-charcoal rounded-full shadow-sm"
-                      onClick={() => router.push(`/menu?edit=${product.id}`)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </motion.div>
-                )}
-                <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
-                  <Image
-                    src={product.image || "/placeholder.svg"}
+          {/* Sección de la imagen - Enfoque simplificado */}
+          <div className="w-full flex justify-center px-4 lg:px-0">
+            <div className="w-full max-w-xs lg:max-w-md aspect-square bg-montebello-navy/60 rounded-lg overflow-hidden shadow-sm relative border border-montebello-gold/20">
+              {isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 z-10 h-8 w-8 bg-montebello-gold/20 hover:bg-montebello-gold/30 text-montebello-light rounded-full shadow-sm"
+                  onClick={() => router.push(`/menu?edit=${product.id}`)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              )}
+
+              {/* Indicador de carga */}
+              {isImageLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-montebello-navy/60">
+                  <div className="animate-pulse text-montebello-gold">Cargando imagen...</div>
+                </div>
+              )}
+
+              {/* Imagen del producto - Enfoque simplificado */}
+              {hasImage ? (
+                <div className="relative w-full h-full">
+                  <img
+                    src={imageUrl || "/placeholder.svg"}
                     alt={product.name}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                </motion.div>
-                {product.isVegetarian && (
-                  <motion.div
-                    className="absolute bottom-2 left-2 bg-white/80 p-1 rounded-full"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 30,
-                      delay: 0.6,
-                    }}
-                  >
-                    <VegetarianBadge className="h-5 w-5" />
-                  </motion.div>
-                )}
-              </motion.div>
-            </div>
-          ) : (
-            // Diseño alternativo para productos sin imagen - Ahora con la imagen por defecto
-            <div className="w-full flex justify-center px-4 lg:px-0">
-              <motion.div
-                className="w-full max-w-xs lg:max-w-md aspect-square bg-white rounded-lg overflow-hidden shadow-sm relative"
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                  delay: 0.2,
-                }}
-              >
-                {isAdmin && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-2 right-2 z-10 h-8 w-8 bg-white/80 hover:bg-white text-lacapke-charcoal rounded-full shadow-sm"
-                      onClick={() => router.push(`/menu?edit=${product.id}`)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </motion.div>
-                )}
-                <div className="flex items-center justify-center h-full">
-                  <Image
-                    src="/default-product-icon.png"
-                    alt={product.name}
-                    width={250}
-                    height={250}
-                    className="object-contain"
+                    className="object-cover w-full h-full"
+                    onLoad={() => setIsImageLoading(false)}
+                    onError={() => setIsImageLoading(false)}
                   />
                 </div>
-                {product.isVegetarian && (
-                  <motion.div
-                    className="absolute bottom-2 left-2 bg-white/80 p-1 rounded-full"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 30,
-                      delay: 0.6,
-                    }}
-                  >
-                    <VegetarianBadge className="h-5 w-5" />
-                  </motion.div>
-                )}
-              </motion.div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full p-6">
+                  <div className="bg-montebello-navy/50 rounded-full p-8 mb-4 border border-montebello-gold/20">
+                    {getProductIcon()}
+                  </div>
+                  <h2 className="text-xl font-bold text-montebello-gold text-center">{product.name}</h2>
+                  <p className="text-sm text-montebello-light/70 text-center mt-2 max-w-xs">
+                    {typeof product.description === "string" && product.description.split("•")[0]}
+                  </p>
+                </div>
+              )}
+
+              {product.isVegetarian && (
+                <div className="absolute bottom-2 left-2 bg-montebello-navy/60 p-1 rounded-full">
+                  <VegetarianBadge className="h-5 w-5" />
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Product Details */}
         <div className="flex-1 p-4 lg:p-0 flex flex-col">
           {/* Modificar el título del producto */}
           <motion.h1
-            className="text-2xl lg:text-3xl font-bold mb-2 lg:mb-3 text-lacapke-charcoal"
+            className="text-2xl lg:text-3xl font-bold mb-2 lg:mb-3 text-montebello-gold"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -403,38 +338,30 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             {product.name}
           </motion.h1>
 
-          {/* Etiquetas del producto */}
-          <div className="flex flex-wrap gap-2 mb-3">
-            {product.isVegetarian && (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                <VegetarianBadge className="h-3 w-3 mr-1" /> Vegetariano
-              </Badge>
-            )}
-            {getCategoryText(product.category) && (
-              <Badge
-                variant="outline"
-                className={
-                  product.category === "breakfast" || product.id === "me-lo-merezco"
-                    ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                    : product.category === "brunch"
-                      ? "bg-orange-50 text-orange-700 border-orange-200"
-                      : "bg-blue-50 text-blue-700 border-blue-200"
-                }
-              >
-                {getCategoryText(product.category)}
-              </Badge>
-            )}
-          </div>
-
           {/* Tabs para información del producto */}
           <Tabs defaultValue="description" className="w-full mb-4">
-            <TabsList className="mb-2">
-              <TabsTrigger value="description">Descripción</TabsTrigger>
-              <TabsTrigger value="ingredients">Ingredientes</TabsTrigger>
-              <TabsTrigger value="info">Información</TabsTrigger>
+            <TabsList className="mb-2 bg-montebello-navy/60 border border-montebello-gold/20">
+              <TabsTrigger
+                value="description"
+                className="text-montebello-light data-[state=active]:bg-montebello-gold/20 data-[state=active]:text-montebello-gold"
+              >
+                Descripción
+              </TabsTrigger>
+              <TabsTrigger
+                value="ingredients"
+                className="text-montebello-light data-[state=active]:bg-montebello-gold/20 data-[state=active]:text-montebello-gold"
+              >
+                Ingredientes
+              </TabsTrigger>
+              <TabsTrigger
+                value="info"
+                className="text-montebello-light data-[state=active]:bg-montebello-gold/20 data-[state=active]:text-montebello-gold"
+              >
+                Información
+              </TabsTrigger>
             </TabsList>
-            <TabsContent value="description" className="text-sm lg:text-base text-lacapke-charcoal">
-              <p className="bg-white/70 p-3 rounded-lg shadow-sm border border-lacapke-charcoal/10 leading-relaxed tracking-wide">
+            <TabsContent value="description" className="text-sm lg:text-base text-montebello-light">
+              <p className="bg-montebello-navy/60 p-3 rounded-lg shadow-sm border border-montebello-gold/20 leading-relaxed tracking-wide">
                 {product.id === "me-lo-merezco" ? (
                   <>
                     • 1 porción de torta a elección.
@@ -446,113 +373,117 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   </>
                 ) : (
                   <>
-                    {product.description.split("•").map((item, index) =>
-                      index === 0 ? (
-                        item
-                      ) : (
-                        <React.Fragment key={index}>
-                          <br />• {item.trim()}
-                        </React.Fragment>
-                      ),
-                    )}
+                    {product.description && typeof product.description === "string"
+                      ? product.description.split("•").map((item, index) =>
+                          index === 0 ? (
+                            item
+                          ) : (
+                            <React.Fragment key={index}>
+                              <br />• {item.trim()}
+                            </React.Fragment>
+                          ),
+                        )
+                      : "Sin descripción disponible"}
                   </>
                 )}
               </p>
             </TabsContent>
-            <TabsContent value="ingredients" className="text-sm lg:text-base text-lacapke-charcoal">
-              <p>Ingredientes principales:</p>
-              <ul className="list-disc pl-5 mt-2 space-y-1">
-                {product.id === "querido-bowl" && (
-                  <>
-                    <li>Yogurt natural</li>
-                    <li>Granola casera</li>
-                    <li>Frutas de estación</li>
-                    <li>Miel</li>
-                  </>
-                )}
-                {product.id === "palta-y-huevo" && (
-                  <>
-                    <li>Huevos frescos</li>
-                    <li>Palta</li>
-                    <li>Queso crema</li>
-                    <li>Pan brioche</li>
-                  </>
-                )}
-                {product.id === "croissant-con-helado" && (
-                  <>
-                    <li>Croissant de manteca</li>
-                    <li>Helado de crema americana</li>
-                    <li>Coulis de arándanos</li>
-                    <li>Banana</li>
-                    <li>Frutillas</li>
-                  </>
-                )}
-                {product.id === "tosti-espinaca-champis" && (
-                  <>
-                    <li>Pan de masa madre</li>
-                    <li>Espinaca fresca</li>
-                    <li>Champiñones</li>
-                    <li>Aceite de oliva infusionado con ajo</li>
-                    <li>Queso muzzarella</li>
-                  </>
-                )}
-                {product.id === "plato-de-tostadas" && (
-                  <>
-                    <li>Pan de masa madre</li>
-                    <li>Mermelada</li>
-                    <li>Manteca</li>
-                    <li>Dulce de leche clásico</li>
-                    <li>Queso crema</li>
-                  </>
-                )}
-                {product.id === "plato-de-huevos-revueltos" && (
-                  <>
-                    <li>Huevos frescos</li>
-                    <li>Manteca</li>
-                    <li>Sal y pimienta</li>
-                    <li>Pan de masa madre</li>
-                  </>
-                )}
-                {product.id === "budin" && (
-                  <>
-                    <li>Harina</li>
-                    <li>Huevos</li>
-                    <li>Manteca</li>
-                    <li>Semillas de amapola</li>
-                    <li>Frutas frescas de estación</li>
-                  </>
-                )}
-                {product.id === "mafalda-prensada" && (
-                  <>
-                    <li>Pan mafalda</li>
-                    <li>Jamón natural</li>
-                    <li>Queso danbo</li>
-                  </>
-                )}
-                {![
-                  "querido-bowl",
-                  "palta-y-huevo",
-                  "croissant-con-helado",
-                  "tosti-espinaca-champis",
-                  "plato-de-tostadas",
-                  "plato-de-huevos-revueltos",
-                  "budin",
-                  "mafalda-prensada",
-                ].includes(product.id) && <li>Consultar con el personal por ingredientes específicos</li>}
-              </ul>
+            <TabsContent value="ingredients" className="text-sm lg:text-base text-montebello-light">
+              <div className="bg-montebello-navy/60 p-3 rounded-lg shadow-sm border border-montebello-gold/20">
+                <p>Ingredientes principales:</p>
+                <ul className="list-disc pl-5 mt-2 space-y-1">
+                  {product.id === "querido-bowl" && (
+                    <>
+                      <li>Yogurt natural</li>
+                      <li>Granola casera</li>
+                      <li>Frutas de estación</li>
+                      <li>Miel</li>
+                    </>
+                  )}
+                  {product.id === "palta-y-huevo" && (
+                    <>
+                      <li>Huevos frescos</li>
+                      <li>Palta</li>
+                      <li>Queso crema</li>
+                      <li>Pan brioche</li>
+                    </>
+                  )}
+                  {product.id === "croissant-con-helado" && (
+                    <>
+                      <li>Croissant de manteca</li>
+                      <li>Helado de crema americana</li>
+                      <li>Coulis de arándanos</li>
+                      <li>Banana</li>
+                      <li>Frutillas</li>
+                    </>
+                  )}
+                  {product.id === "tosti-espinaca-champis" && (
+                    <>
+                      <li>Pan de masa madre</li>
+                      <li>Espinaca fresca</li>
+                      <li>Champiñones</li>
+                      <li>Aceite de oliva infusionado con ajo</li>
+                      <li>Queso muzzarella</li>
+                    </>
+                  )}
+                  {product.id === "plato-de-tostadas" && (
+                    <>
+                      <li>Pan de masa madre</li>
+                      <li>Mermelada</li>
+                      <li>Manteca</li>
+                      <li>Dulce de leche clásico</li>
+                      <li>Queso crema</li>
+                    </>
+                  )}
+                  {product.id === "plato-de-huevos-revueltos" && (
+                    <>
+                      <li>Huevos frescos</li>
+                      <li>Manteca</li>
+                      <li>Sal y pimienta</li>
+                      <li>Pan de masa madre</li>
+                    </>
+                  )}
+                  {product.id === "budin" && (
+                    <>
+                      <li>Harina</li>
+                      <li>Huevos</li>
+                      <li>Manteca</li>
+                      <li>Semillas de amapola</li>
+                      <li>Frutas frescas de estación</li>
+                    </>
+                  )}
+                  {product.id === "mafalda-prensada" && (
+                    <>
+                      <li>Pan mafalda</li>
+                      <li>Jamón natural</li>
+                      <li>Queso danbo</li>
+                    </>
+                  )}
+                  {![
+                    "querido-bowl",
+                    "palta-y-huevo",
+                    "croissant-con-helado",
+                    "tosti-espinaca-champis",
+                    "plato-de-tostadas",
+                    "plato-de-huevos-revueltos",
+                    "budin",
+                    "mafalda-prensada",
+                  ].includes(product.id) && <li>Consultar con el personal por ingredientes específicos</li>}
+                </ul>
+              </div>
             </TabsContent>
-            <TabsContent value="info" className="text-sm lg:text-base text-lacapke-charcoal">
-              <div className="space-y-2">
+            <TabsContent value="info" className="text-sm lg:text-base text-montebello-light">
+              <div className="bg-montebello-navy/60 p-3 rounded-lg shadow-sm border border-montebello-gold/20 space-y-2">
                 <p className="flex items-center">
-                  <Info className="h-4 w-4 mr-2 text-lacapke-charcoal/70" />
+                  <Info className="h-4 w-4 mr-2 text-montebello-light/70" />
                   <span>Tiempo de preparación: 10-15 minutos</span>
                 </p>
                 <p className="flex items-center">
-                  <Info className="h-4 w-4 mr-2 text-lacapke-charcoal/70" />
+                  <Info className="h-4 w-4 mr-2 text-montebello-light/70" />
                   <span>Apto para compartir: {product.size === "large" ? "Sí" : "No"}</span>
                 </p>
                 <p className="flex items-center">
-                  <Info className="h-4 w-4 mr-2 text-lacapke-charcoal/70" />
+                  <Info className="h-4 w-4 mr-2 text-montebello-light/70" />
                   <span>Disponible para llevar: Sí</span>
                 </p>
               </div>
@@ -562,20 +493,20 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {/* Variantes si existen */}
           {product.variants && product.variants.length > 0 && (
             <div className="mb-6">
-              <h3 className="font-medium text-lacapke-charcoal mb-2 lg:text-lg">Variantes:</h3>
+              <h3 className="font-medium text-montebello-gold mb-2 lg:text-lg">Variantes:</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {product.variants.map((variant, index) => (
                   <Button
                     key={index}
                     variant="outline"
                     className={cn(
-                      "justify-between border-lacapke-charcoal/20 hover:bg-lacapke-cream/30",
-                      selectedVariant === variant.name && "bg-lacapke-cream/50 border-lacapke-charcoal/40",
+                      "justify-between border-montebello-gold/20 hover:bg-montebello-gold/10 text-montebello-light",
+                      selectedVariant === variant.name && "bg-montebello-gold/20 border-montebello-gold/40",
                     )}
                     onClick={() => handleVariantSelect(variant.name)}
                   >
                     <span className="text-sm">{variant.name}</span>
-                    <span className="font-semibold text-lacapke-charcoal ml-2">$ {variant.price.toLocaleString()}</span>
+                    <span className="font-semibold text-montebello-gold ml-2">$ {variant.price.toLocaleString()}</span>
                   </Button>
                 ))}
               </div>
@@ -584,16 +515,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
           {/* Quantity Selector con colores pastel - Solo visible en desktop */}
           <div className="hidden lg:flex items-center justify-between mb-4 sm:mb-6 mt-auto">
-            <div className="text-base sm:text-lg lg:text-xl font-medium text-lacapke-charcoal">
+            <div className="text-base sm:text-lg lg:text-xl font-medium text-montebello-gold">
               ${(selectedVariantPrice !== null ? selectedVariantPrice : product.price).toFixed(2)}
-              <span className="text-xs sm:text-sm text-lacapke-charcoal/70">/ unidad</span>
+              <span className="text-xs sm:text-sm text-montebello-light/70">/ unidad</span>
             </div>
 
             <div className="flex items-center">
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg border-0 bg-[#f8e1e1] text-lacapke-charcoal hover:bg-[#f5d4d4]"
+                className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg border-montebello-gold/20 bg-montebello-gold/20 text-montebello-light hover:bg-montebello-gold/30"
                 onClick={decrementQuantity}
               >
                 <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -601,7 +532,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
               <span
                 className={cn(
-                  "mx-3 sm:mx-4 font-medium text-base sm:text-xl w-5 sm:w-6 text-center text-lacapke-charcoal transition-transform duration-300",
+                  "mx-3 sm:mx-4 font-medium text-base sm:text-xl w-5 sm:w-6 text-center text-montebello-light transition-transform duration-300",
                   isChanging && "transform scale-110",
                 )}
               >
@@ -611,7 +542,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg border-0 bg-[#e0f0e9] text-lacapke-charcoal hover:bg-[#d3e8df]"
+                className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg border-montebello-gold/20 bg-montebello-gold/20 text-montebello-light hover:bg-montebello-gold/30"
                 onClick={incrementQuantity}
               >
                 <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -628,8 +559,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           >
             <motion.div
               className={cn(
-                "text-2xl font-bold text-lacapke-charcoal transition-all duration-300",
-                isChanging && "scale-110 text-lacapke-accent",
+                "text-2xl font-bold text-montebello-gold transition-all duration-300",
+                isChanging && "scale-110 text-montebello-gold",
               )}
               animate={isChanging ? { scale: 1.1 } : { scale: 1 }}
             >
@@ -637,8 +568,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </motion.div>
             <motion.button
               className={cn(
-                "bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal border-0 px-6 py-6 rounded-lg flex items-center gap-2 transition-all duration-300",
-                isAddingToCart && "bg-green-100 text-green-700",
+                "bg-montebello-gold/20 hover:bg-montebello-gold/30 text-montebello-light border-montebello-gold/20 border px-6 py-6 rounded-lg flex items-center gap-2 transition-all duration-300",
+                isAddingToCart && "bg-green-900/20 text-green-400 border-green-800/30",
               )}
               onClick={addToCart}
               disabled={isAddingToCart}
@@ -681,7 +612,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       {/* Barra inferior con animación */}
       <AnimatePresence>
         <motion.div
-          className="fixed bottom-0 left-0 right-0 bg-white p-4 flex items-center justify-between lg:hidden z-50"
+          className="fixed bottom-0 left-0 right-0 bg-montebello-navy border-t border-montebello-gold/20 p-4 flex items-center justify-between lg:hidden z-50"
           initial={{ y: 100 }}
           animate={{ y: 0 }}
           exit={{ y: 100 }}
@@ -693,19 +624,19 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         >
           <div className="flex-1 max-w-[140px]">
             {/* Selector de cantidad con el nuevo estilo */}
-            <div className="bg-gray-100 rounded-full flex items-center justify-between p-1 shadow-sm">
+            <div className="bg-montebello-navy/80 rounded-full flex items-center justify-between p-1 shadow-sm border border-montebello-gold/20">
               <button
-                className="w-10 h-10 flex items-center justify-center text-[#f8e1e1] bg-[#f8e1e1] rounded-full"
+                className="w-10 h-10 flex items-center justify-center bg-montebello-gold/20 rounded-full"
                 onClick={decrementQuantity}
               >
-                <Minus className="h-5 w-5 text-lacapke-charcoal" />
+                <Minus className="h-5 w-5 text-montebello-light" />
               </button>
-              <span className="font-bold text-xl text-lacapke-charcoal">{quantity}</span>
+              <span className="font-bold text-xl text-montebello-light">{quantity}</span>
               <button
-                className="w-10 h-10 flex items-center justify-center text-[#e0f0e9] bg-[#e0f0e9] rounded-full"
+                className="w-10 h-10 flex items-center justify-center bg-montebello-gold/20 rounded-full"
                 onClick={incrementQuantity}
               >
-                <Plus className="h-5 w-5 text-lacapke-charcoal" />
+                <Plus className="h-5 w-5 text-montebello-light" />
               </button>
             </div>
           </div>
@@ -713,8 +644,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {/* Botón de agregar con el nuevo estilo */}
           <button
             className={cn(
-              "flex-1 ml-4 bg-[#f8e1e1] text-lacapke-charcoal font-bold py-3 px-4 rounded-lg text-center transition-all",
-              isAddingToCart && "bg-green-100 text-green-700",
+              "flex-1 ml-4 bg-montebello-gold/20 text-montebello-light font-bold py-3 px-4 rounded-lg text-center transition-all border border-montebello-gold/20",
+              isAddingToCart && "bg-green-900/20 text-green-400 border-green-800/30",
             )}
             onClick={addToCart}
             disabled={isAddingToCart}

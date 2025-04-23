@@ -32,7 +32,7 @@ export function ScrollToTopButton() {
     <AnimatePresence>
       {isVisible && (
         <motion.button
-          className="fixed bottom-20 right-4 lg:bottom-8 lg:right-8 bg-[#f8e1e1] text-lacapke-charcoal p-3 rounded-full shadow-lg z-50"
+          className="fixed bottom-20 right-4 lg:bottom-8 lg:right-8 bg-montebello-gold text-montebello-navy p-3 rounded-full shadow-lg z-50"
           onClick={scrollToTop}
           variants={floatingButtonAnimation}
           initial="initial"

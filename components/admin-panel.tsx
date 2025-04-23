@@ -61,21 +61,21 @@ export function AdminPanel({
 
   return (
     <div className="mb-8">
-      <Card className="border-lacapke-charcoal/10">
+      <Card className="border-montebello-gold/20 bg-montebello-navy/80">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-bold text-lacapke-charcoal">Panel de Administración</CardTitle>
+          <CardTitle className="text-lg font-bold text-montebello-gold">Panel de Administración</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
             <Button
-              className="bg-[#f8e1e1] hover:bg-[#f5d4d4] text-lacapke-charcoal font-medium"
+              className="bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy font-medium"
               onClick={handleAddProduct}
             >
               <Plus className="h-4 w-4 mr-2" />
               Añadir Producto
             </Button>
           </div>
-          <p className="text-sm text-lacapke-charcoal/70 mt-3">
+          <p className="text-sm text-montebello-light/70 mt-3">
             Como administrador, puedes añadir, editar o eliminar productos. Los cambios se guardarán automáticamente
             durante tu sesión.
           </p>

@@ -82,48 +82,61 @@
 
 /* Estilos responsive */
 @layer components {
-  .container-app {
-    @apply mx-auto w-full px-4;
-    max-width: 100%;
-  }
-
-  @media (min-width: 640px) {
-    .container-app {
-      @apply px-6;
-      max-width: 640px;
-    }
-  }
-
-  @media (min-width: 768px) {
-    .container-app {
-      @apply px-8;
-      max-width: 768px;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .container-app {
-      @apply px-10;
-      max-width: 1280px;
-    }
-  }
-
-  @media (min-width: 1280px) {
-    .container-app {
-      @apply px-12;
-      max-width: 1440px;
-    }
-  }
-
-  @media (min-width: 1536px) {
-    .container-app {
-      @apply px-16;
-      max-width: 1600px;
-    }
+  .container {
+    @apply mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: 1280px;
   }
 }
 
-/* Añadir estos estilos al final del archivo para el carrusel y la animación */
+/* Actualizar los estilos del carrusel para que coincidan con la imagen */
+.carousel-container {
+  position: relative;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: 0.75rem 0;
+  z-index: 40;
+  background-color: #121628; /* Color sólido montebello-navy */
+  width: 100%;
+  left: 0;
+  right: 0;
+  /* Eliminar cualquier transición para que sea instantáneo */
+  transition: none;
+}
+
+.carousel-container > div > button {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+}
+
+/* Cuando el carrusel está fijo - sin animaciones */
+.carousel-container.fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #121628; /* Color sólido montebello-navy */
+  border-bottom: 1px solid rgba(212, 180, 90, 0.3);
+  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.3);
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  z-index: 40; /* Asegurar que sea menor que los modales */
+  /* Asegurar que no haya transición */
+  transition: none;
+}
+
+/* Ajustar para la navegación de escritorio */
+@media (min-width: 1024px) {
+  .carousel-container.fixed {
+    top: 72px; /* Altura de la barra de navegación de escritorio */
+  }
+}
+
+/* Espaciador para mantener el flujo del documento cuando el carrusel está fijo */
+#carousel-spacer {
+  height: 0;
+  /* Eliminar transición para que sea instantáneo */
+  transition: none;
+}
 
 /* Estilos para el carrusel de categorías */
 .hide-scrollbar::-webkit-scrollbar {
@@ -135,31 +148,15 @@
   scrollbar-width: none;
 }
 
-.carousel-container {
-  position: relative;
-  scroll-behavior: smooth;
-  scroll-snap-type: x mandatory;
-  padding: 0.5rem 0;
+/* Ajustar el scroll-margin-top para las secciones de categoría */
+.scroll-mt-24 {
+  scroll-margin-top: 150px; /* Ajustar según la altura del carrusel + margen */
 }
 
-.carousel-container > div > button {
-  scroll-snap-align: center;
-  flex-shrink: 0;
-}
-
-/* Estilos mejorados para el carrusel */
-.category-carousel-item {
-  margin-right: 10px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.category-carousel-item:last-child {
-  margin-right: 0;
-}
-
-.category-carousel-item.active {
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+@media (min-width: 1024px) {
+  .scroll-mt-24 {
+    scroll-margin-top: 200px; /* Ajustar para escritorio */
+  }
 }
 
 @keyframes carousel-hint {
@@ -195,101 +192,37 @@
   animation: bounce-horizontal 1s infinite;
 }
 
-.category-indicator {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: rgba(74, 74, 74, 0.2);
-  transition: all 0.3s ease;
-}
-
-.category-indicator.active {
-  width: 18px;
-  background-color: rgba(74, 74, 74, 0.4);
-}
-
-/* Añadir estos estilos específicos para el carrusel de categorías */
-.category-button {
-  width: 80px; /* Ancho fijo para todos los botones */
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.category-icon-container {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.category-text {
-  width: 100%;
-  text-align: center;
-  margin-top: 8px;
-  font-size: 12px;
+/* Estilos para el texto de categoría con múltiples líneas */
+.text-xs.leading-tight {
   line-height: 1.2;
-  height: 2.4em; /* Altura para 2 líneas de texto */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
+  max-width: 100%;
+  word-wrap: break-word;
+  hyphens: auto;
 }
 
-@media (max-width: 640px) {
-  .food-category-card {
-    width: 120px;
-    height: 90px;
-  }
-  .food-category-icon {
-    width: 24px;
-    height: 24px;
-  }
-  .food-category-text {
-    font-size: 12px;
-  }
+/* Estilo para el contenedor del carrusel cuando está fijo */
+.carousel-wrapper {
+  position: relative;
+  width: 100%;
 }
 
-@media (min-width: 641px) and (max-width: 768px) {
-  .food-category-card {
-    width: 130px;
-    height: 100px;
-  }
-  .food-category-icon {
-    width: 26px;
-    height: 26px;
-  }
-  .food-category-text {
-    font-size: 13px;
-  }
+/* Estilo para el contenedor interno del carrusel */
+.carousel-inner {
+  position: relative;
+  width: 100%;
+  background-color: #121628; /* Color sólido montebello-navy */
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .food-category-card {
-    width: 140px;
-    height: 110px;
-  }
-  .food-category-icon {
-    width: 28px;
-    height: 28px;
-  }
-  .food-category-text {
-    font-size: 14px;
-  }
+/* Añadir efecto de brillo para los iconos activos */
+.icon-glow {
+  filter: drop-shadow(0 0 8px rgba(212, 180, 90, 0.7));
 }
 
-@media (min-width: 1025px) {
-  .food-category-card {
-    width: 150px;
-    height: 120px;
-  }
-  .food-category-icon {
-    width: 28px;
-    height: 28px;
-  }
-  .food-category-text {
-    font-size: 14px;
-  }
+/* Añadir una regla para asegurar que el modal de inicio de sesión siempre esté por encima del carrusel */
+/* Añadir al final del archivo */
+
+/* Estilos para modales y ventanas flotantes */
+.modal-overlay {
+  z-index: 100 !important; /* Valor alto para asegurar que esté por encima de todo */
 }
