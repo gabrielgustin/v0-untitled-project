@@ -23,12 +23,11 @@ const nextConfig = {
       }
     ],
   },
-  // Añadir configuración para mejorar el rendimiento en producción
+  // Modified experimental section to remove optimizeCss
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['lucide-react'],
   },
-  // Configuración para mejorar el manejo de imágenes
+  // Keeping the standalone output configuration
   output: 'standalone',
 };
 

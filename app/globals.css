@@ -88,6 +88,39 @@
   }
 }
 
+/* Estilos para el carrusel sticky */
+.sticky-carousel-wrapper {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.sticky-carousel {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background-color: #121628; /* montebello-navy */
+  border-bottom: 1px solid rgba(212, 180, 90, 0.3);
+}
+
+@media (min-width: 1024px) {
+  .sticky-carousel {
+    top: 72px; /* Altura de la barra de navegación de escritorio */
+  }
+}
+
+.sticky-carousel-container {
+  position: relative;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: 0.75rem 0;
+  width: 100%;
+}
+
+.sticky-carousel-container > div > button {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+}
+
 /* Actualizar los estilos del carrusel para que coincidan con la imagen */
 .carousel-container {
   position: relative;
