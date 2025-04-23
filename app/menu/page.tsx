@@ -80,6 +80,15 @@ const filterExcludedProducts = (products: Product[]): Product[] => {
 // Productos iniciales filtrados
 const filteredInitialProducts = filterExcludedProducts(initialProducts)
 
+// Modificar la función loadProductsFromStorage para que siempre devuelva productos
+// Buscar la función loadProductsFromStorage y reemplazarla con esta versión:
+
+const loadProductsFromStorage = () => {
+  console.log("Cargando productos iniciales filtrados")
+  // Siempre devolver los productos iniciales filtrados para garantizar que haya datos
+  return filteredInitialProducts
+}
+
 export default function MenuPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -110,34 +119,11 @@ export default function MenuPage() {
   const cocktailsRef = useRef<HTMLDivElement>(null)
 
   // Función para cargar productos desde localStorage
-  const loadProductsFromStorage = () => {
-    try {
-      if (typeof window === "undefined") {
-        console.log("Ejecutando en el servidor, usando productos iniciales")
-        return filteredInitialProducts
-      }
 
-      const savedProducts = localStorage.getItem("products")
-      if (savedProducts) {
-        try {
-          const parsedProducts = JSON.parse(savedProducts)
-          if (Array.isArray(parsedProducts) && parsedProducts.length > 0) {
-            console.log(`Cargados ${parsedProducts.length} productos desde localStorage`)
-            return filterExcludedProducts(parsedProducts)
-          }
-        } catch (e) {
-          console.error("Error parsing products from localStorage", e)
-        }
-      }
+  // Cargar el estado de autenticación y productos al iniciar
 
-      // Si no hay productos en localStorage o hay un error, guardar los iniciales
-      localStorage.setItem("products", JSON.stringify(filteredInitialProducts))
-      return filteredInitialProducts
-    } catch (e) {
-      console.error("Error accessing localStorage", e)
-      return filteredInitialProducts
-    }
-  }
+  // Modificar el useEffect que carga los productos para que siempre use los productos iniciales
+  // Buscar el useEffect que contiene setIsLoading(true) y reemplazarlo con:
 
   // Cargar el estado de autenticación y productos al iniciar
   useEffect(() => {
@@ -151,28 +137,23 @@ export default function MenuPage() {
     setLoadError(null)
 
     try {
-      // Intentar cargar productos desde localStorage
-      const loadedProducts = loadProductsFromStorage()
+      console.log("Cargando productos iniciales...")
+      // Usar directamente los productos iniciales filtrados
+      setProducts(filteredInitialProducts)
+      setFeaturedProducts(filteredInitialProducts.filter((p) => p.featured === true))
 
-      // Verificar si hay productos
-      if (loadedProducts && loadedProducts.length > 0) {
-        console.log(`Cargados ${loadedProducts.length} productos`)
-        setProducts(loadedProducts)
-
-        // Cargar productos destacados
-        const featured = loadedProducts.filter((p) => p.featured === true)
-        setFeaturedProducts(featured.length > 0 ? featured : filteredInitialProducts.filter((p) => p.featured === true))
-      } else {
-        console.warn("No se encontraron productos, usando productos iniciales")
-        setProducts(filteredInitialProducts)
-        setFeaturedProducts(filteredInitialProducts.filter((p) => p.featured === true))
+      // Intentar guardar en localStorage para futuras visitas
+      if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+        try {
+          localStorage.setItem("products", JSON.stringify(filteredInitialProducts))
+          console.log("Productos guardados en localStorage")
+        } catch (e) {
+          console.error("Error al guardar productos en localStorage:", e)
+        }
       }
     } catch (error) {
       console.error("Error al cargar productos:", error)
       setLoadError("Error al cargar productos. Por favor, intenta recargar la página.")
-      // En caso de error, usar los productos iniciales filtrados
-      setProducts(filteredInitialProducts)
-      setFeaturedProducts(filteredInitialProducts.filter((p) => p.featured === true))
     } finally {
       // Finalizar carga
       setIsLoading(false)

@@ -408,43 +408,38 @@ const excludedProductIds = ["crumble-de-manzana", "chardonnay", "carpaccio-de-lo
 
 // Función para obtener los productos (desde localStorage si existen, o los iniciales)
 export function getProducts(): Product[] {
+  // Filtrar los productos excluidos de los productos iniciales
+  const filteredProducts = initialProducts.filter((product) => !excludedProductIds.includes(product.id))
+
   // Si estamos en el servidor o en un entorno donde localStorage no está disponible
   if (typeof window === "undefined" || typeof localStorage === "undefined") {
     console.log("Ejecutando en el servidor o localStorage no disponible, usando productos iniciales")
-    return initialProducts.filter((product) => !excludedProductIds.includes(product.id))
+    return filteredProducts
   }
 
   try {
+    // Intentar obtener productos de localStorage
     const savedProducts = localStorage.getItem("products")
     if (savedProducts) {
       try {
         const parsedProducts = JSON.parse(savedProducts)
-        // Verificar que parsedProducts sea un array
-        if (!Array.isArray(parsedProducts) || parsedProducts.length === 0) {
-          console.error("Saved products is not a valid array, using initial products")
-          const filteredProducts = initialProducts.filter((product) => !excludedProductIds.includes(product.id))
-          localStorage.setItem("products", JSON.stringify(filteredProducts))
-          return filteredProducts
+        // Verificar que parsedProducts sea un array válido
+        if (Array.isArray(parsedProducts) && parsedProducts.length > 0) {
+          console.log(`Cargados ${parsedProducts.length} productos desde localStorage`)
+          // Filtrar los productos excluidos
+          return parsedProducts.filter((product) => !excludedProductIds.includes(product.id))
         }
-
-        // Filtrar los productos excluidos
-        const filteredProducts = parsedProducts.filter((product) => !excludedProductIds.includes(product.id))
-        return filteredProducts
       } catch (e) {
-        console.error("Error parsing products from localStorage, using initial products", e)
-        const filteredProducts = initialProducts.filter((product) => !excludedProductIds.includes(product.id))
-        localStorage.setItem("products", JSON.stringify(filteredProducts))
-        return filteredProducts
+        console.error("Error parsing products from localStorage", e)
       }
-    } else {
-      // Si no hay productos guardados, guardar los iniciales filtrados
-      const filteredProducts = initialProducts.filter((product) => !excludedProductIds.includes(product.id))
-      localStorage.setItem("products", JSON.stringify(filteredProducts))
-      return filteredProducts
     }
+
+    // Si no hay productos en localStorage o hay un error, guardar los iniciales filtrados
+    localStorage.setItem("products", JSON.stringify(filteredProducts))
+    return filteredProducts
   } catch (e) {
-    console.error("Error accessing localStorage, using initial products", e)
-    return initialProducts.filter((product) => !excludedProductIds.includes(product.id))
+    console.error("Error accessing localStorage", e)
+    return filteredProducts
   }
 }
 
