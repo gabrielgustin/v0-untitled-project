@@ -226,3 +226,31 @@
 .modal-overlay {
   z-index: 100 !important; /* Valor alto para asegurar que esté por encima de todo */
 }
+
+/* Estilos para el carrusel de categorías fijo */
+#categories-carousel.fixed {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Ocultar scrollbar pero mantener funcionalidad */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Asegurar que el carrusel tenga un fondo sólido cuando está fijo */
+#categories-carousel.fixed::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgb(14, 23, 38); /* bg-montebello-navy */
+  z-index: -1;
+}

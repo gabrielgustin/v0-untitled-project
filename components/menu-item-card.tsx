@@ -38,8 +38,9 @@ export function MenuItemCard({
 }: MenuItemCardProps) {
   const formattedId = id.toLowerCase().replace(/\s+/g, "-")
   const [isImageLoading, setIsImageLoading] = useState(true)
+  const [imageError, setImageError] = useState(false)
 
-  // Actualizar la función getDefaultProductImage para eliminar las referencias a los productos eliminados
+  // Actualizar la función getDefaultProductImage para usar URLs públicas
   const getDefaultProductImage = () => {
     // Imágenes disponibles en el proyecto con URLs públicas
     const defaultImages = {
@@ -62,17 +63,35 @@ export function MenuItemCard({
     // Intentar determinar la categoría por el ID o nombre
     const id = formattedId.toLowerCase()
 
-    if (id.includes("entrada") || id.includes("provoleta") || id.includes("empanada")) {
+    if (id.includes("entrada") || id.includes("provoleta") || id.includes("empanada") || id.includes("carpaccio")) {
       return defaultImages.entradas
-    } else if (id.includes("bife") || id.includes("lomo") || id.includes("milanesa") || id.includes("salmon")) {
+    } else if (
+      id.includes("bife") ||
+      id.includes("lomo") ||
+      id.includes("milanesa") ||
+      id.includes("salmon") ||
+      id.includes("risotto")
+    ) {
       return defaultImages.principales
-    } else if (id.includes("postre") || id.includes("flan") || id.includes("tiramisu") || id.includes("cheesecake")) {
+    } else if (
+      id.includes("postre") ||
+      id.includes("flan") ||
+      id.includes("tiramisu") ||
+      id.includes("cheesecake") ||
+      id.includes("volcan")
+    ) {
       return defaultImages.postres
-    } else if (id.includes("bebida") || id.includes("cafe") || id.includes("jugo") || id.includes("limonada")) {
+    } else if (
+      id.includes("bebida") ||
+      id.includes("cafe") ||
+      id.includes("jugo") ||
+      id.includes("limonada") ||
+      id.includes("gaseosa")
+    ) {
       return defaultImages.bebidas
-    } else if (id.includes("vino") || id.includes("malbec") || id.includes("champagne")) {
+    } else if (id.includes("vino") || id.includes("malbec") || id.includes("champagne") || id.includes("chardonnay")) {
       return defaultImages.vinos
-    } else if (id.includes("cocktail") || id.includes("negroni") || id.includes("mojito")) {
+    } else if (id.includes("cocktail") || id.includes("negroni") || id.includes("mojito") || id.includes("margarita")) {
       return defaultImages.cocktails
     }
 
@@ -80,6 +99,7 @@ export function MenuItemCard({
     return defaultImages.default
   }
 
+  // Asegurar que siempre tengamos una imagen válida
   const defaultImage = image || getDefaultProductImage()
 
   // Función para manejar el clic en el botón de edición
@@ -91,10 +111,17 @@ export function MenuItemCard({
     }
   }
 
+  // Función para manejar errores de carga de imagen
+  const handleImageError = () => {
+    console.warn(`Error loading image for product: ${id}`)
+    setImageError(true)
+    setIsImageLoading(false)
+  }
+
   // Estilo original para tarjetas con imagen
   return (
     <Link href={`/product/${formattedId}`} className="block h-full">
-      <div className="bg-montebello-navy/80 rounded-xl overflow-hidden shadow-sm h-full flex flex-col relative border border-montebello-gold/20 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+      <div className="bg-montebello-navy/80 rounded-xl overflow-hidden shadow-sm flex flex-col relative border border-montebello-gold/20 hover:shadow-md hover:-translate-y-1 transition-all duration-300 h-[320px] sm:h-[360px] lg:h-[400px]">
         {/* Botón de edición para administradores */}
         {isAdmin && (
           <div className="animate-fade-in">
@@ -109,11 +136,9 @@ export function MenuItemCard({
           </div>
         )}
 
-        <div
-          className={`relative ${size === "large" ? "h-32 sm:h-40 lg:h-40" : "h-20 sm:h-24 lg:h-40"} w-full p-1 sm:p-2`}
-        >
+        <div className="relative w-full aspect-square p-1 sm:p-2">
           {/* Indicador de carga */}
-          {isImageLoading && (
+          {isImageLoading && !imageError && (
             <div className="absolute inset-0 flex items-center justify-center bg-montebello-navy/60 z-10 rounded-lg">
               <div className="animate-pulse text-montebello-gold text-xs">Cargando...</div>
             </div>
@@ -122,15 +147,12 @@ export function MenuItemCard({
           <div className="relative h-full w-full rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300">
             {/* Usar img en lugar de Image para mayor compatibilidad */}
             <img
-              src={defaultImage || "/placeholder.svg"}
+              src={imageError ? getDefaultProductImage() : defaultImage}
               alt={name}
               className="w-full h-full object-cover"
               onLoad={() => setIsImageLoading(false)}
-              onError={(e) => {
-                // Si la imagen falla, usar la imagen por defecto del restaurante
-                ;(e.target as HTMLImageElement).src = "/golden-leaf-restaurant.png"
-                setIsImageLoading(false)
-              }}
+              onError={handleImageError}
+              loading="lazy"
             />
           </div>
         </div>

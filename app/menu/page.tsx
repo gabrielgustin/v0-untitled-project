@@ -24,11 +24,11 @@ import {
   getFeaturedProducts,
   type Product,
   type ProductCategory,
+  initialProducts,
 } from "@/lib/products"
 import { DesktopNavigation } from "@/components/desktop-navigation"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
-import Script from "next/script"
 
 import { useSearchParams } from "next/navigation"
 import { RefreshDataButton } from "@/components/refresh-data-button"
@@ -75,14 +75,13 @@ export default function MenuPage() {
   const [user, setUser] = useState<User | null>(null)
   const [showLoginForm, setShowLoginForm] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [activeCategory, setActiveCategory] = useState<ProductCategory>("entradas")
   const [cartItemCount, setCartItemCount] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
-  const [isCarouselFixed, setIsCarouselFixed] = useState(false)
-  const carouselPositionRef = useRef<number | null>(null)
   const [showScrollIndicator, setShowScrollIndicator] = useState(false)
 
   // Añadir después de la declaración de carouselRef
@@ -104,12 +103,36 @@ export default function MenuPage() {
       setUser(authUser)
     }
 
-    // Cargar productos
-    const loadedProducts = getProducts()
-    setProducts(loadedProducts)
+    // Iniciar carga
+    setIsLoading(true)
 
-    // Cargar productos destacados
-    setFeaturedProducts(getFeaturedProducts())
+    try {
+      // Cargar productos
+      const loadedProducts = getProducts()
+
+      // Si no hay productos, usar los iniciales
+      if (!loadedProducts || loadedProducts.length === 0) {
+        console.log("No se encontraron productos, usando productos iniciales")
+        setProducts(initialProducts.filter((p) => !!p.image))
+
+        // Cargar productos destacados desde los iniciales
+        setFeaturedProducts(initialProducts.filter((p) => p.featured === true))
+      } else {
+        console.log(`Cargados ${loadedProducts.length} productos`)
+        setProducts(loadedProducts)
+
+        // Cargar productos destacados
+        setFeaturedProducts(getFeaturedProducts())
+      }
+    } catch (error) {
+      console.error("Error al cargar productos:", error)
+      // En caso de error, usar los productos iniciales
+      setProducts(initialProducts.filter((p) => !!p.image))
+      setFeaturedProducts(initialProducts.filter((p) => p.featured === true))
+    } finally {
+      // Finalizar carga
+      setIsLoading(false)
+    }
   }, [])
 
   // Función para verificar si el carrusel necesita scroll
@@ -135,70 +158,6 @@ export default function MenuPage() {
       window.removeEventListener("resize", handleResize)
     }
   }, [])
-
-  // Reemplazar el useEffect que maneja el scroll con esta versión mejorada:
-  useEffect(() => {
-    // Referencia al carrusel
-    const carousel = document.getElementById("categories-carousel")
-    if (!carousel) return
-
-    // Guardar la altura original del carrusel para el padding compensatorio
-    const carouselHeight = carousel.offsetHeight
-
-    // Elemento para mantener el espacio cuando el carrusel se fija
-    let spacer = document.getElementById("carousel-spacer")
-    if (!spacer) {
-      spacer = document.createElement("div")
-      spacer.id = "carousel-spacer"
-      carousel.parentNode?.insertBefore(spacer, carousel.nextSibling)
-    }
-
-    // Función para manejar el scroll
-    const handleScroll = () => {
-      // Guardar la posición original del carrusel la primera vez
-      if (carouselPositionRef.current === null) {
-        carouselPositionRef.current = carousel.getBoundingClientRect().top + window.scrollY
-      }
-
-      // Si hemos scrolleado más allá de la posición original del carrusel
-      if (window.scrollY > carouselPositionRef.current) {
-        if (!isCarouselFixed) {
-          setIsCarouselFixed(true)
-          // Ajustar el espaciador para mantener el flujo del documento
-          spacer.style.height = `${carouselHeight}px`
-          // Añadir clase para estilos adicionales
-          carousel.classList.add("fixed")
-        }
-      } else {
-        if (isCarouselFixed) {
-          setIsCarouselFixed(false)
-          // Restaurar el espaciador
-          spacer.style.height = "0"
-          // Quitar clase
-          carousel.classList.remove("fixed")
-        }
-      }
-    }
-
-    // Función para recalcular la posición en caso de resize
-    const handleResize = () => {
-      carouselPositionRef.current = null // Resetear para recalcular
-      handleScroll() // Llamar inmediatamente para actualizar
-    }
-
-    // Añadir los event listeners
-    window.addEventListener("scroll", handleScroll)
-    window.addEventListener("resize", handleResize)
-
-    // Llamar una vez para configurar el estado inicial
-    handleScroll()
-
-    // Limpiar los event listeners cuando el componente se desmonte
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-      window.removeEventListener("resize", handleResize)
-    }
-  }, [isCarouselFixed])
 
   // Verificar si hay un producto para editar desde la URL
   useEffect(() => {
@@ -427,10 +386,21 @@ export default function MenuPage() {
   const vinosProducts = products.filter((product) => product.category === "vinos")
   const cocktailsProducts = products.filter((product) => product.category === "cocktails")
 
+  // Renderizar un estado de carga mientras se cargan los productos
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-montebello-navy">
+        <div className="flex flex-col items-center">
+          <div className="h-10 w-10 border-4 border-montebello-gold border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-montebello-light text-lg">Cargando menú...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-montebello-navy min-h-screen">
-      {/* Script para manejar el carrusel sticky */}
-      <Script id="sticky-carousel" strategy="afterInteractive" src="/js/sticky-carousel.js" />
+      {/* Script externo eliminado para evitar conflictos con la implementación en React */}
 
       {/* Desktop Navigation con contador de carrito */}
       <DesktopNavigation user={user} onLoginSuccess={handleLoginSuccess} cartItemCount={cartItemCount} />
@@ -492,7 +462,7 @@ export default function MenuPage() {
           <div className="flex justify-center items-center pt-12 pb-6">
             <div className="w-24 h-24 rounded-full bg-montebello-navy flex items-center justify-center border border-montebello-gold/30">
               <img
-                src="/golden-leaf-restaurant.png"
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-leaf-restaurant-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png"
                 alt="Club Montebello Logo"
                 className="h-20 w-20 object-contain rounded-full"
               />
@@ -677,16 +647,13 @@ export default function MenuPage() {
           </AnimatePresence>
         </div>
 
-        {/* Categories Carousel - Estilo similar al ejemplo */}
-        <div className="relative carousel-wrapper mb-8">
-          <div className="carousel-inner">
-            <motion.div
-              className="overflow-x-auto pb-4 hide-scrollbar carousel-container px-1 pt-4"
+        {/* Categories Carousel - Implementación con position: sticky */}
+        <div className="sticky-carousel-wrapper">
+          <div className="sticky-carousel">
+            <div
+              className="overflow-x-auto pb-4 hide-scrollbar sticky-carousel-container px-1 pt-4"
               id="categories-carousel"
               ref={carouselRef}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
               onScroll={() => {
                 // Verificar si el usuario ha llegado al final del carrusel
                 if (carouselRef.current) {
@@ -786,7 +753,7 @@ export default function MenuPage() {
                   />
                 </motion.button>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
 
@@ -798,22 +765,28 @@ export default function MenuPage() {
             </h2>
             <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {entradasProducts.map((product) => (
-              <MenuItemCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                description={product.description}
-                price={product.price}
-                image={product.image}
-                isVegetarian={product.isVegetarian}
-                variants={product.variants}
-                size={product.size}
-                isAdmin={isAdmin}
-                onEdit={handleEditProduct}
-              />
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
+            {entradasProducts.length > 0 ? (
+              entradasProducts.map((product) => (
+                <MenuItemCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  description={product.description}
+                  price={product.price}
+                  image={product.image}
+                  isVegetarian={product.isVegetarian}
+                  variants={product.variants}
+                  size={product.size}
+                  isAdmin={isAdmin}
+                  onEdit={handleEditProduct}
+                />
+              ))
+            ) : (
+              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
+                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -825,22 +798,28 @@ export default function MenuPage() {
             </h2>
             <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {principalesProducts.map((product) => (
-              <MenuItemCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                description={product.description}
-                price={product.price}
-                image={product.image}
-                isVegetarian={product.isVegetarian}
-                variants={product.variants}
-                size={product.size}
-                isAdmin={isAdmin}
-                onEdit={handleEditProduct}
-              />
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
+            {principalesProducts.length > 0 ? (
+              principalesProducts.map((product) => (
+                <MenuItemCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  description={product.description}
+                  price={product.price}
+                  image={product.image}
+                  isVegetarian={product.isVegetarian}
+                  variants={product.variants}
+                  size={product.size}
+                  isAdmin={isAdmin}
+                  onEdit={handleEditProduct}
+                />
+              ))
+            ) : (
+              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
+                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -852,22 +831,28 @@ export default function MenuPage() {
             </h2>
             <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {postresProducts.map((product) => (
-              <MenuItemCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                description={product.description}
-                price={product.price}
-                image={product.image}
-                isVegetarian={product.isVegetarian}
-                variants={product.variants}
-                size={product.size}
-                isAdmin={isAdmin}
-                onEdit={handleEditProduct}
-              />
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
+            {postresProducts.length > 0 ? (
+              postresProducts.map((product) => (
+                <MenuItemCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  description={product.description}
+                  price={product.price}
+                  image={product.image}
+                  isVegetarian={product.isVegetarian}
+                  variants={product.variants}
+                  size={product.size}
+                  isAdmin={isAdmin}
+                  onEdit={handleEditProduct}
+                />
+              ))
+            ) : (
+              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
+                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -879,22 +864,28 @@ export default function MenuPage() {
             </h2>
             <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {bebidasProducts.map((product) => (
-              <MenuItemCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                description={product.description}
-                price={product.price}
-                image={product.image}
-                isVegetarian={product.isVegetarian}
-                variants={product.variants}
-                size={product.size}
-                isAdmin={isAdmin}
-                onEdit={handleEditProduct}
-              />
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
+            {bebidasProducts.length > 0 ? (
+              bebidasProducts.map((product) => (
+                <MenuItemCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  description={product.description}
+                  price={product.price}
+                  image={product.image}
+                  isVegetarian={product.isVegetarian}
+                  variants={product.variants}
+                  size={product.size}
+                  isAdmin={isAdmin}
+                  onEdit={handleEditProduct}
+                />
+              ))
+            ) : (
+              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
+                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -906,22 +897,28 @@ export default function MenuPage() {
             </h2>
             <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {vinosProducts.map((product) => (
-              <MenuItemCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                description={product.description}
-                price={product.price}
-                image={product.image}
-                isVegetarian={product.isVegetarian}
-                variants={product.variants}
-                size={product.size}
-                isAdmin={isAdmin}
-                onEdit={handleEditProduct}
-              />
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
+            {vinosProducts.length > 0 ? (
+              vinosProducts.map((product) => (
+                <MenuItemCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  description={product.description}
+                  price={product.price}
+                  image={product.image}
+                  isVegetarian={product.isVegetarian}
+                  variants={product.variants}
+                  size={product.size}
+                  isAdmin={isAdmin}
+                  onEdit={handleEditProduct}
+                />
+              ))
+            ) : (
+              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
+                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -933,22 +930,28 @@ export default function MenuPage() {
             </h2>
             <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {cocktailsProducts.map((product) => (
-              <MenuItemCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                description={product.description}
-                price={product.price}
-                image={product.image}
-                isVegetarian={product.isVegetarian}
-                variants={product.variants}
-                size={product.size}
-                isAdmin={isAdmin}
-                onEdit={handleEditProduct}
-              />
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
+            {cocktailsProducts.length > 0 ? (
+              cocktailsProducts.map((product) => (
+                <MenuItemCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  description={product.description}
+                  price={product.price}
+                  image={product.image}
+                  isVegetarian={product.isVegetarian}
+                  variants={product.variants}
+                  size={product.size}
+                  isAdmin={isAdmin}
+                  onEdit={handleEditProduct}
+                />
+              ))
+            ) : (
+              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
+                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
+              </div>
+            )}
           </div>
         </div>
       </main>

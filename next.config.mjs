@@ -23,6 +23,13 @@ const nextConfig = {
       }
     ],
   },
+  // Añadir configuración para mejorar el rendimiento en producción
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ['lucide-react'],
+  },
+  // Configuración para mejorar el manejo de imágenes
+  output: 'standalone',
 };
 
 export default nextConfig;

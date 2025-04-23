@@ -8,7 +8,7 @@ import { Minus, Plus, ShoppingBag, ArrowLeft, Check, Info, Coffee, Utensils, Edi
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { getAuthState, type User } from "@/lib/auth"
-import { getProducts, type Product, getDefaultImage } from "@/lib/products"
+import { getProducts, type Product, getDefaultImage, initialProducts } from "@/lib/products"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DesktopNavigation } from "@/components/desktop-navigation"
 import { VegetarianBadge } from "@/components/vegetarian-badge"
@@ -43,28 +43,65 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [cartAnimation, setCartAnimation] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(true)
+  const [imageError, setImageError] = useState(false)
 
   // Cargar el producto por ID
   useEffect(() => {
-    const products = getProducts()
-    const foundProduct = products.find((p) => p.id === params.id)
+    try {
+      // Intentar obtener productos del localStorage
+      const products = getProducts()
+      const foundProduct = products.find((p) => p.id === params.id)
 
-    if (foundProduct) {
-      setProduct(foundProduct)
+      if (foundProduct) {
+        console.log(`Producto encontrado: ${foundProduct.name}`)
+        setProduct(foundProduct)
 
-      // Si el producto tiene variantes, seleccionar la primera por defecto
-      if (foundProduct.variants && foundProduct.variants.length > 0) {
-        setSelectedVariant(foundProduct.variants[0].name)
-        setSelectedVariantPrice(foundProduct.variants[0].price)
+        // Si el producto tiene variantes, seleccionar la primera por defecto
+        if (foundProduct.variants && foundProduct.variants.length > 0) {
+          setSelectedVariant(foundProduct.variants[0].name)
+          setSelectedVariantPrice(foundProduct.variants[0].price)
+        }
+      } else {
+        console.log(`Producto no encontrado en localStorage, buscando en productos iniciales: ${params.id}`)
+        // Si no se encuentra en localStorage, buscar en los productos iniciales
+        const initialProduct = initialProducts.find((p) => p.id === params.id)
+
+        if (initialProduct) {
+          console.log(`Producto encontrado en productos iniciales: ${initialProduct.name}`)
+          setProduct(initialProduct)
+
+          // Si el producto tiene variantes, seleccionar la primera por defecto
+          if (initialProduct.variants && initialProduct.variants.length > 0) {
+            setSelectedVariant(initialProduct.variants[0].name)
+            setSelectedVariantPrice(initialProduct.variants[0].price)
+          }
+        } else {
+          // Producto no encontrado, crear uno genérico
+          console.log(`Producto no encontrado, creando genérico: ${params.id}`)
+          setProduct({
+            id: params.id,
+            name: params.id
+              .split("-")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" "),
+            image: getDefaultImage(null, params.id),
+            price: 0,
+            description: "Lo sentimos, no pudimos encontrar este producto.",
+          })
+        }
       }
-    } else {
-      // Producto no encontrado, crear uno genérico
+    } catch (error) {
+      console.error("Error al cargar el producto:", error)
+      // En caso de error, crear un producto genérico
       setProduct({
         id: params.id,
-        name: "Producto no encontrado",
-        image: "/placeholder.svg",
+        name: params.id
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" "),
+        image: getDefaultImage(null, params.id),
         price: 0,
-        description: "Lo sentimos, no pudimos encontrar este producto.",
+        description: "Error al cargar el producto.",
       })
     }
   }, [params.id])
@@ -191,6 +228,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     setUser(authUser)
   }
 
+  // Función para manejar errores de carga de imagen
+  const handleImageError = () => {
+    console.warn(`Error loading image for product: ${product?.id}`)
+    setImageError(true)
+    setIsImageLoading(false)
+  }
+
   if (!product) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-montebello-navy">
@@ -217,7 +261,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const hasImage = !!product.image
 
   // Actualizar la función para obtener la URL de la imagen
-  const imageUrl = product.image || getDefaultImage(product.category, product.name)
+  const imageUrl = imageError
+    ? getDefaultImage(product.category, product.name)
+    : product.image || getDefaultImage(product.category, product.name)
 
   // Asegurarse de que la imagen de fallback sea una URL pública
   const getProductIcon = () => {
@@ -288,7 +334,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               )}
 
               {/* Indicador de carga */}
-              {isImageLoading && (
+              {isImageLoading && !imageError && (
                 <div className="absolute inset-0 flex items-center justify-center bg-montebello-navy/60">
                   <div className="animate-pulse text-montebello-gold">Cargando imagen...</div>
                 </div>
@@ -302,12 +348,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     alt={product.name}
                     className="object-cover w-full h-full"
                     onLoad={() => setIsImageLoading(false)}
-                    onError={(e) => {
-                      setIsImageLoading(false)
-                      // Si la imagen falla, usar una URL pública como fallback
-                      ;(e.currentTarget as HTMLImageElement).src =
-                        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-leaf-restaurant-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png"
-                    }}
+                    onError={handleImageError}
+                    loading="eager"
                   />
                 </div>
               ) : (

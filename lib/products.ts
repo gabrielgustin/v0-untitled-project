@@ -20,7 +20,7 @@ export interface Product {
 }
 
 // Actualizar los productos existentes para asegurar que tengan la información correcta
-const initialProducts: Product[] = [
+export const initialProducts: Product[] = [
   // ENTRADAS
   {
     id: "carpaccio-de-lomo",
@@ -844,4 +844,24 @@ export function getDefaultImage(category: ProductCategory | null, productName: s
 
   // Si no se puede determinar la categoría, usar la imagen por defecto
   return defaultImages.default
+}
+
+// Función para normalizar las dimensiones de las imágenes
+export function getNormalizedImageUrl(imageUrl: string): string {
+  // Si la imagen ya es una URL pública, devolverla tal cual
+  if (
+    imageUrl.startsWith("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/") ||
+    imageUrl.startsWith("https://v0.blob.com/")
+  ) {
+    return imageUrl
+  }
+
+  // Si es una imagen local, asegurarse de que tenga la ruta correcta
+  if (imageUrl.startsWith("/")) {
+    // Usar la imagen por defecto si no se encuentra la imagen local
+    return getDefaultImage(null, "default")
+  }
+
+  // Si no es una URL válida, usar la imagen por defecto
+  return getDefaultImage(null, "default")
 }

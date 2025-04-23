@@ -261,18 +261,18 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
 
                 {/* Vista previa de la imagen */}
                 {imagePreview && (
-                  <div className="mt-2 relative w-full h-40 bg-montebello-navy/30 rounded-md overflow-hidden border border-montebello-gold/20">
+                  <div className="mt-2 relative w-full aspect-square bg-montebello-navy/30 rounded-md overflow-hidden border border-montebello-gold/20">
                     <img
                       src={imagePreview || "/placeholder.svg"}
                       alt="Vista previa"
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover"
                       onError={() => setImagePreview(null)}
                     />
                   </div>
                 )}
 
                 {!imagePreview && (
-                  <div className="mt-2 flex items-center justify-center w-full h-40 bg-montebello-navy/30 rounded-md border border-montebello-gold/20">
+                  <div className="mt-2 flex items-center justify-center w-full aspect-square bg-montebello-navy/30 rounded-md border border-montebello-gold/20">
                     <div className="text-center text-montebello-light/50">
                       <ImageIcon className="h-10 w-10 mx-auto mb-2" />
                       <p>Sin imagen</p>
