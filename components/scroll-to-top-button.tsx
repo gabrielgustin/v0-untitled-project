@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { ArrowUp } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { floatingButtonAnimation } from "@/lib/animation-utils"
 
 export function ScrollToTopButton() {
   const [isVisible, setIsVisible] = useState(false)
@@ -34,12 +33,11 @@ export function ScrollToTopButton() {
         <motion.button
           className="fixed bottom-20 right-4 lg:bottom-8 lg:right-8 bg-montebello-gold text-montebello-navy p-3 rounded-full shadow-lg z-50"
           onClick={scrollToTop}
-          variants={floatingButtonAnimation}
-          initial="initial"
-          animate="animate"
-          whileHover="hover"
-          whileTap="tap"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
         >
           <ArrowUp className="h-5 w-5" />
         </motion.button>

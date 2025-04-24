@@ -48,34 +48,93 @@ export function FoodCategory({ title, iconType, isActive = false }: FoodCategory
     return formattedText
   }
 
+  // Variantes para el círculo del icono
+  const circleVariants = {
+    inactive: {
+      scale: 1,
+      borderColor: "rgba(212, 180, 90, 0.4)",
+      borderWidth: "1px",
+      backgroundColor: "#121628",
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+      },
+    },
+    active: {
+      scale: 1.1,
+      borderColor: "#d4b45a",
+      borderWidth: "2px",
+      backgroundColor: "#121628",
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+      },
+    },
+  }
+
+  // Variantes para el texto
+  const textVariants = {
+    inactive: {
+      fontWeight: 500,
+      color: "rgba(212, 180, 90, 0.8)",
+      transition: {
+        duration: 0.2,
+      },
+    },
+    active: {
+      fontWeight: 700,
+      color: "#d4b45a",
+      transition: {
+        duration: 0.2,
+      },
+    },
+  }
+
+  // Variantes para el icono
+  const iconVariants = {
+    inactive: {
+      scale: 1,
+      opacity: 0.8,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+      },
+    },
+    active: {
+      scale: 1.1,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+      },
+    },
+  }
+
   return (
     <div className="flex flex-col items-center w-16">
       <motion.div
-        className={`w-12 h-12 rounded-full flex items-center justify-center ${
-          isActive
-            ? "bg-montebello-navy border-2 border-montebello-gold" // Eliminado el efecto de sombra
-            : "bg-montebello-navy border border-montebello-gold/40"
-        }`}
-        animate={
-          isActive
-            ? {
-                scale: 1.1,
-                // Eliminado el boxShadow para quitar el efecto iluminado
-              }
-            : {
-                scale: 1,
-                boxShadow: "none",
-              }
-        }
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className="w-12 h-12 rounded-full flex items-center justify-center border border-montebello-gold/40"
+        variants={circleVariants}
+        initial="inactive"
+        animate={isActive ? "active" : "inactive"}
+        layout
       >
-        {renderIcon()}
+        <motion.div variants={iconVariants} initial="inactive" animate={isActive ? "active" : "inactive"} layout>
+          {renderIcon()}
+        </motion.div>
       </motion.div>
 
       <div className="mt-1 text-center w-full h-8 flex items-center justify-center">
         <motion.span
-          className={`text-[10px] leading-tight block text-montebello-gold ${isActive ? "font-bold" : "font-medium"}`}
-          animate={isActive ? { fontWeight: 700 } : { fontWeight: 500 }}
+          className="text-[10px] leading-tight block"
+          variants={textVariants}
+          initial="inactive"
+          animate={isActive ? "active" : "inactive"}
+          layout
         >
           {formatTitle(title)}
         </motion.span>

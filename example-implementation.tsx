@@ -39,6 +39,16 @@ export default function ExamplePage() {
 
       if (shouldBeSticky !== isCarouselSticky) {
         setIsCarouselSticky(shouldBeSticky)
+
+        // Aplicar la clase sticky directamente al elemento
+        const carousel = carouselWrapperRef.current.querySelector(".categories-carousel")
+        if (carousel) {
+          if (shouldBeSticky) {
+            carousel.classList.add("sticky")
+          } else {
+            carousel.classList.remove("sticky")
+          }
+        }
       }
     }
 
@@ -48,27 +58,55 @@ export default function ExamplePage() {
     }
   }, [isCarouselSticky, carouselHeight])
 
+  // Variantes para la animación del contenido
+  const contentVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  }
+
+  // Variantes para la animación del espaciador
+  const spacerVariants = {
+    collapsed: {
+      height: 0,
+      opacity: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+      },
+    },
+    expanded: {
+      height: carouselHeight,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+      },
+    },
+  }
+
   return (
     <div className="min-h-screen bg-montebello-navy">
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold text-montebello-gold mb-6">Ejemplo de Carrusel de Categorías</h1>
+        <motion.h1
+          className="text-2xl font-bold text-montebello-gold mb-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          Ejemplo de Carrusel de Categorías
+        </motion.h1>
 
         {/* Contenedor del carrusel */}
         <div className="categories-wrapper" ref={carouselWrapperRef}>
-          {/* Espaciador animado para mantener el flujo del documento */}
-          <motion.div
-            className="categories-spacer"
-            animate={{
-              height: isCarouselSticky ? carouselHeight : 0,
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 30,
-            }}
-          />
-
-          {/* Carrusel de categorías */}
           <CategoriesCarousel
             activeCategory={activeCategory}
             onCategoryChange={handleCategoryChange}
@@ -77,16 +115,85 @@ export default function ExamplePage() {
         </div>
 
         {/* Contenido de ejemplo para hacer scroll */}
-        <div className="mt-8 space-y-16">
-          {/* Aquí irían las secciones de categorías */}
-          <div className="h-96 bg-montebello-navy/50 rounded-lg border border-montebello-gold/20 flex items-center justify-center">
-            <p className="text-montebello-light">Sección de Entradas</p>
-          </div>
-          <div className="h-96 bg-montebello-navy/50 rounded-lg border border-montebello-gold/20 flex items-center justify-center">
-            <p className="text-montebello-light">Sección de Platos Principales</p>
-          </div>
-          {/* Más secciones... */}
-        </div>
+        <motion.div className="mt-8 space-y-16" variants={contentVariants} initial="hidden" animate="visible">
+          {/* Sección Entradas */}
+          <motion.div
+            className="h-96 bg-montebello-navy/50 rounded-lg border border-montebello-gold/20 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: activeCategory === "entradas" ? 1 : 0.7,
+              scale: activeCategory === "entradas" ? 1 : 0.98,
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className="text-montebello-light text-xl">Sección de Entradas</p>
+          </motion.div>
+
+          {/* Sección Platos Principales */}
+          <motion.div
+            className="h-96 bg-montebello-navy/50 rounded-lg border border-montebello-gold/20 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: activeCategory === "principales" ? 1 : 0.7,
+              scale: activeCategory === "principales" ? 1 : 0.98,
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className="text-montebello-light text-xl">Sección de Platos Principales</p>
+          </motion.div>
+
+          {/* Sección Postres */}
+          <motion.div
+            className="h-96 bg-montebello-navy/50 rounded-lg border border-montebello-gold/20 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: activeCategory === "postres" ? 1 : 0.7,
+              scale: activeCategory === "postres" ? 1 : 0.98,
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className="text-montebello-light text-xl">Sección de Postres</p>
+          </motion.div>
+
+          {/* Sección Bebidas */}
+          <motion.div
+            className="h-96 bg-montebello-navy/50 rounded-lg border border-montebello-gold/20 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: activeCategory === "bebidas" ? 1 : 0.7,
+              scale: activeCategory === "bebidas" ? 1 : 0.98,
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className="text-montebello-light text-xl">Sección de Bebidas</p>
+          </motion.div>
+
+          {/* Sección Vinos */}
+          <motion.div
+            className="h-96 bg-montebello-navy/50 rounded-lg border border-montebello-gold/20 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: activeCategory === "vinos" ? 1 : 0.7,
+              scale: activeCategory === "vinos" ? 1 : 0.98,
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className="text-montebello-light text-xl">Sección de Vinos</p>
+          </motion.div>
+
+          {/* Sección Cocktails */}
+          <motion.div
+            className="h-96 bg-montebello-navy/50 rounded-lg border border-montebello-gold/20 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: activeCategory === "cocktails" ? 1 : 0.7,
+              scale: activeCategory === "cocktails" ? 1 : 0.98,
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className="text-montebello-light text-xl">Sección de Cocktails</p>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   )

@@ -6,7 +6,6 @@ import { useState, useEffect, useRef } from "react"
 import { Search, X, Home, ShoppingBag, LogOut, Utensils, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { FoodCategory } from "@/components/food-category"
 import { BottomNavigation } from "@/components/bottom-navigation"
 import { MenuItemCard } from "@/components/menu-item-card"
 import { LoginForm } from "@/components/login-form"
@@ -21,22 +20,21 @@ import {
   addProduct,
   resetProducts,
   getDefaultCategory,
-  getFeaturedProducts,
   type Product,
   type ProductCategory,
 } from "@/lib/products"
 import { DesktopNavigation } from "@/components/desktop-navigation"
-import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 
 import { useSearchParams } from "next/navigation"
 import { RefreshDataButton } from "@/components/refresh-data-button"
 import { motion, AnimatePresence } from "framer-motion"
-import { fadeIn, mobileMenuAnimation, menuItemAnimation } from "@/lib/animation-utils"
+import { mobileMenuAnimation, menuItemAnimation } from "@/lib/animation-utils"
 
 // Importar el componente
 import { ScrollToTopButton } from "@/components/scroll-to-top-button"
 import { LogoContainer } from "@/components/logo-container"
+import { CategoriesCarousel } from "@/components/categories-carousel"
 
 // Definir el tipo para un item del carrito
 interface CartItem {
@@ -48,8 +46,7 @@ interface CartItem {
   variant?: string
 }
 
-// Reemplazar el componente HamburgerIcon actual con esta versión
-// que mantiene el tamaño del SVG pero tiene líneas más gruesas y prominentes
+// Reemplazar el componente HamburgerIcon actual con esta versión minimalista
 const HamburgerIcon = (props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -90,10 +87,9 @@ export default function MenuPage() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [activeCategory, setActiveCategory] = useState<ProductCategory>("entradas")
   const [cartItemCount, setCartItemCount] = useState(0)
+
   // Reemplazar las referencias y estados relacionados con el carrusel
-  const carouselRef = useRef<HTMLDivElement>(null)
   const carouselWrapperRef = useRef<HTMLDivElement>(null)
-  const [showScrollIndicator, setShowScrollIndicator] = useState(false)
   const [isCarouselSticky, setIsCarouselSticky] = useState(false)
   const [carouselHeight, setCarouselHeight] = useState(0)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -146,35 +142,14 @@ export default function MenuPage() {
     }
   }, [])
 
-  // Función para verificar si el carrusel necesita scroll
-  const checkCarouselOverflow = () => {
-    if (carouselRef.current) {
-      const isOverflowing = carouselRef.current.scrollWidth > carouselRef.current.clientWidth
-      setShowScrollIndicator(isOverflowing)
-    }
-  }
-
-  // Verificar el overflow del carrusel cuando cambia el tamaño de la ventana
-  useEffect(() => {
-    // Verificar inicialmente después de que el componente se monte
-    setTimeout(checkCarouselOverflow, 500) // Pequeño retraso para asegurar que el carrusel esté renderizado
-
-    // Verificar cuando cambie el tamaño de la ventana
-    const handleResize = () => {
-      checkCarouselOverflow()
-    }
-
-    window.addEventListener("resize", handleResize)
-    return () => {
-      window.removeEventListener("resize", handleResize)
-    }
-  }, [])
-
-  // Reemplazar el useEffect para la funcionalidad sticky
+  // Configurar el comportamiento sticky del carrusel
   useEffect(() => {
     // Guardar la altura original del carrusel
-    if (carouselRef.current) {
-      setCarouselHeight(carouselRef.current.offsetHeight)
+    if (carouselWrapperRef.current) {
+      const carousel = carouselWrapperRef.current.querySelector(".categories-carousel")
+      if (carousel) {
+        setCarouselHeight(carousel.clientHeight)
+      }
     }
 
     const handleScroll = () => {
@@ -193,7 +168,11 @@ export default function MenuPage() {
         // Actualizar el espaciador
         const spacer = document.querySelector(".categories-spacer")
         if (spacer) {
-          ;(spacer as HTMLElement).style.height = shouldBeSticky ? `${carouselHeight}px` : "0px"
+          if (shouldBeSticky) {
+            spacer.classList.add("active")
+          } else {
+            spacer.classList.remove("active")
+          }
         }
       }
     }
@@ -202,7 +181,7 @@ export default function MenuPage() {
     return () => {
       window.removeEventListener("scroll", handleScroll)
     }
-  }, [isCarouselSticky, carouselHeight])
+  }, [isCarouselSticky])
 
   // Verificar si hay un producto para editar desde la URL
   useEffect(() => {
@@ -232,33 +211,6 @@ export default function MenuPage() {
       console.error("Error accessing localStorage for cart", e)
     }
   }, [])
-
-  // Efecto para la animación inicial del carrusel
-  useEffect(() => {
-    // Mostrar una animación sutil después de cargar la página
-    const carousel = document.getElementById("categories-carousel")
-    if (carousel) {
-      // Asegurarse de que el carrusel sea visible inicialmente
-      setTimeout(() => {
-        carousel.scrollLeft = 0
-        checkCarouselOverflow() // Verificar si hay overflow después de inicializar
-      }, 500)
-    }
-  }, [])
-
-  // Función para desplazar el carrusel a la izquierda
-  const scrollLeft = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({ left: -150, behavior: "smooth" })
-    }
-  }
-
-  // Función para desplazar el carrusel a la derecha
-  const scrollRight = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({ left: 150, behavior: "smooth" })
-    }
-  }
 
   // Función para manejar el cierre de sesión
   const handleLogout = () => {
@@ -297,129 +249,6 @@ export default function MenuPage() {
       }
       setEditingProduct(newProduct)
       setShowEditModal(true)
-    }
-  }
-
-  // Modificar la función handleSaveProduct para actualizar inmediatamente la UI
-  const handleSaveProduct = (updatedProduct: Product) => {
-    try {
-      const updatedProducts = updateProduct(updatedProduct)
-      setProducts(updatedProducts)
-      setShowEditModal(false)
-      setEditingProduct(null)
-
-      // Actualizar la categoría si ha cambiado
-      if (updatedProduct.category && updatedProduct.category !== activeCategory) {
-        setActiveCategory(updatedProduct.category)
-        scrollToCategory(updatedProduct.category)
-      }
-
-      // Actualizar productos destacados si es necesario
-      if (updatedProduct.featured) {
-        setFeaturedProducts(getFeaturedProducts())
-      }
-
-      // Mostrar notificación de éxito
-      toast({
-        title: "Cambios guardados",
-        description: "Los cambios han sido guardados correctamente",
-        duration: 3000,
-      })
-    } catch (error) {
-      console.error("Error al guardar producto:", error)
-      toast({
-        title: "Error",
-        description: "No se pudieron guardar los cambios. Intenta nuevamente.",
-        duration: 3000,
-      })
-    }
-  }
-
-  // Función para añadir un nuevo producto
-  const handleAddProduct = (newProduct: Product) => {
-    try {
-      const updatedProducts = addProduct(newProduct)
-      setProducts(updatedProducts)
-
-      // Actualizar productos destacados si es necesario
-      if (newProduct.featured) {
-        setFeaturedProducts(getFeaturedProducts())
-      }
-
-      // Mostrar notificación de éxito
-      toast({
-        title: "Producto añadido",
-        description: "El nuevo producto ha sido añadido correctamente",
-        duration: 3000,
-      })
-    } catch (error) {
-      console.error("Error al añadir producto:", error)
-      toast({
-        title: "Error",
-        description: "No se pudo añadir el producto. Intenta nuevamente.",
-        duration: 3000,
-      })
-    }
-  }
-
-  // Función para eliminar un producto
-  const handleDeleteProduct = (productId: string) => {
-    try {
-      const updatedProducts = deleteProduct(productId)
-      setProducts(updatedProducts)
-      setShowEditModal(false)
-      setEditingProduct(null)
-
-      // Actualizar productos destacados
-      setFeaturedProducts(getFeaturedProducts())
-
-      // Mostrar notificación de éxito
-      toast({
-        title: "Producto eliminado",
-        description: "El producto ha sido eliminado correctamente",
-        duration: 3000,
-      })
-    } catch (error) {
-      console.error("Error al eliminar producto:", error)
-      toast({
-        title: "Error",
-        description: "No se pudo eliminar el producto. Intenta nuevamente.",
-        duration: 3000,
-      })
-    }
-  }
-
-  // Función para restablecer los productos
-  const handleResetProducts = () => {
-    try {
-      const originalProducts = resetProducts()
-      setProducts(originalProducts)
-      setFeaturedProducts(getFeaturedProducts())
-
-      toast({
-        title: "Productos restablecidos",
-        description: "Los productos han sido restablecidos correctamente",
-        duration: 3000,
-      })
-    } catch (error) {
-      console.error("Error al restablecer productos:", error)
-
-      // En caso de error, intentar establecer los productos iniciales directamente
-      setProducts(filteredInitialProducts)
-      setFeaturedProducts(filteredInitialProducts.filter((p) => p.featured === true))
-
-      // Intentar guardar en localStorage
-      try {
-        localStorage.setItem("products", JSON.stringify(filteredInitialProducts))
-      } catch (e) {
-        console.error("Error saving to localStorage:", e)
-      }
-
-      toast({
-        title: "Productos restablecidos",
-        description: "Los productos han sido restablecidos a los valores predeterminados",
-        duration: 3000,
-      })
     }
   }
 
@@ -489,30 +318,6 @@ export default function MenuPage() {
   const vinosProducts = products.filter((product) => product.category === "vinos")
   const cocktailsProducts = products.filter((product) => product.category === "cocktails")
 
-  // Función para recargar los productos
-  const handleReloadProducts = () => {
-    setIsLoading(true)
-    setLoadError(null)
-
-    // Restablecer productos a los valores iniciales
-    try {
-      localStorage.setItem("products", JSON.stringify(filteredInitialProducts))
-      setProducts(filteredInitialProducts)
-      setFeaturedProducts(filteredInitialProducts.filter((p) => p.featured === true))
-
-      toast({
-        title: "Productos cargados",
-        description: "Los productos han sido cargados correctamente",
-        duration: 3000,
-      })
-    } catch (error) {
-      console.error("Error al recargar productos:", error)
-      setLoadError("Error al recargar productos. Por favor, intenta nuevamente.")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   // Renderizar un estado de carga mientras se cargan los productos
   if (isLoading) {
     return (
@@ -534,7 +339,7 @@ export default function MenuPage() {
           <p className="text-montebello-light mb-6">{loadError}</p>
           <Button
             className="bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
-            onClick={handleReloadProducts}
+            onClick={() => window.location.reload()}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Recargar productos
@@ -546,8 +351,6 @@ export default function MenuPage() {
 
   return (
     <div className="bg-montebello-navy min-h-screen">
-      {/* Script externo eliminado para evitar conflictos con la implementación en React */}
-
       {/* Desktop Navigation con contador de carrito */}
       <DesktopNavigation user={user} onLoginSuccess={handleLoginSuccess} cartItemCount={cartItemCount} />
 
@@ -558,9 +361,7 @@ export default function MenuPage() {
             className={`cursor-pointer z-50 pl-4 ${isMenuOpen ? "opacity-0" : "opacity-100"} transition-opacity`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            <div className="w-7 h-0.5 bg-montebello-gold mb-1.5"></div>
-            <div className="w-7 h-0.5 bg-montebello-gold mb-1.5"></div>
-            <div className="w-7 h-0.5 bg-montebello-gold"></div>
+            <HamburgerIcon className="text-montebello-gold" />
           </div>
 
           <div className="flex-1">
@@ -583,10 +384,6 @@ export default function MenuPage() {
           )}
         </AnimatePresence>
 
-        {/* Modificar la sección del menú lateral para que se parezca al de LaCaphe
-        Buscar la sección que comienza con <motion.div className="fixed top-0 left-0 bottom-0... */}
-
-        {/* Reemplazar con este nuevo diseño */}
         <motion.div
           className="fixed top-0 left-0 bottom-0 w-80 bg-montebello-navy z-50 shadow-xl"
           variants={mobileMenuAnimation}
@@ -607,11 +404,7 @@ export default function MenuPage() {
           {/* Logo centrado */}
           <div className="flex justify-center items-center pt-12 pb-6">
             <div className="w-24 h-24 rounded-full bg-montebello-navy flex items-center justify-center border border-montebello-gold/30">
-              <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-leaf-restaurant-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png"
-                alt="Club Montebello Logo"
-                className="h-20 w-20 object-contain rounded-full"
-              />
+              <img src="/montebello-icon.png" alt="Club Montebello Logo" className="h-16 w-16 object-contain" />
             </div>
           </div>
 
@@ -678,36 +471,6 @@ export default function MenuPage() {
             </motion.ul>
           </motion.nav>
         </motion.div>
-
-        {/* Modal de inicio de sesión */}
-        {showLoginForm && (
-          <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-            <div className="relative w-full max-w-md">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-2 top-2 h-8 w-8 text-montebello-light z-20 bg-montebello-navy rounded-full"
-                onClick={() => setShowLoginForm(false)}
-              >
-                <X className="h-5 w-5" />
-              </Button>
-              <LoginForm onLoginSuccess={handleLoginSuccess} />
-            </div>
-          </div>
-        )}
-
-        {/* Modal de edición de producto */}
-        {showEditModal && (
-          <ProductEditModal
-            product={editingProduct}
-            onClose={() => {
-              setShowEditModal(false)
-              setEditingProduct(null)
-            }}
-            onSave={handleSaveProduct}
-            onDelete={handleDeleteProduct}
-          />
-        )}
       </header>
 
       {/* Search */}
@@ -736,10 +499,10 @@ export default function MenuPage() {
           <>
             <AdminPanel
               products={products}
-              onAddProduct={handleAddProduct}
-              onUpdateProduct={handleSaveProduct}
-              onDeleteProduct={handleDeleteProduct}
-              onResetProducts={handleResetProducts}
+              onAddProduct={addProduct}
+              onUpdateProduct={updateProduct}
+              onDeleteProduct={deleteProduct}
+              onResetProducts={resetProducts}
             />
             <div className="flex justify-end mb-4">
               <RefreshDataButton onRefresh={(updatedProducts) => setProducts(updatedProducts)} />
@@ -747,221 +510,14 @@ export default function MenuPage() {
           </>
         )}
 
-        {/* Categories Header - Similar al ejemplo */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-montebello-gold">Categorías</h2>
-          <AnimatePresence>
-            {showScrollIndicator && (
-              <motion.div
-                className="text-sm text-montebello-light/60 flex items-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <motion.span
-                  className="text-2xl"
-                  animate={{ x: [0, 3, 0] }}
-                  transition={{
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: "loop",
-                    duration: 1.5,
-                    ease: "easeInOut",
-                  }}
-                >
-                  »
-                </motion.span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
         {/* Categories Carousel - Nueva implementación sticky */}
         <div className="categories-wrapper" ref={carouselWrapperRef}>
-          {/* Espaciador para mantener el flujo del documento cuando el carrusel está fijo */}
-          <div className="categories-spacer"></div>
-
-          <div
-            className={`categories-carousel ${isCarouselSticky ? "sticky" : ""}`}
-            ref={carouselRef}
-            style={{
-              padding: "0.35rem 0",
-              borderBottom: "1px solid #121628",
-              minHeight: "auto",
-            }}
-          >
-            <div className="relative">
-              {/* Añadir el título "Categorías" cuando está en modo sticky */}
-              {isCarouselSticky && (
-                <div className="text-center mb-2 pt-1">
-                  <h2 className="text-montebello-gold font-bold text-lg inline-flex items-center">
-                    Categorías
-                    {showScrollIndicator && (
-                      <motion.span
-                        className="text-montebello-gold/70 ml-2 text-xl"
-                        animate={{ x: [0, 3, 0] }}
-                        transition={{
-                          repeat: Number.POSITIVE_INFINITY,
-                          repeatType: "loop",
-                          duration: 1.5,
-                          ease: "easeInOut",
-                        }}
-                      >
-                        »
-                      </motion.span>
-                    )}
-                  </h2>
-                </div>
-              )}
-
-              <div
-                className="overflow-x-auto pb-2 hide-scrollbar px-1 pt-2"
-                id="categories-carousel"
-                onScroll={() => {
-                  // Verificar si el usuario ha llegado al final del carrusel
-                  if (carouselRef.current) {
-                    const isAtEnd =
-                      carouselRef.current.scrollLeft + carouselRef.current.clientWidth >=
-                      carouselRef.current.scrollWidth - 10
-                    if (isAtEnd) {
-                      setShowScrollIndicator(false)
-                    } else {
-                      setShowScrollIndicator(true)
-                    }
-                  }
-                }}
-              >
-                <div className="flex space-x-6 min-w-max px-4 container mx-auto">
-                  <motion.button
-                    onClick={() => scrollToCategory("entradas")}
-                    className="focus:outline-none"
-                    aria-label="Seleccionar categoría Entradas"
-                    aria-pressed={activeCategory === "entradas"}
-                    variants={fadeIn}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FoodCategory title="Entradas" iconType="entradas" isActive={activeCategory === "entradas"} />
-                  </motion.button>
-
-                  <motion.button
-                    onClick={() => scrollToCategory("principales")}
-                    className="focus:outline-none"
-                    aria-label="Seleccionar categoría Platos Principales"
-                    aria-pressed={activeCategory === "principales"}
-                    variants={fadeIn}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FoodCategory
-                      title="Platos & Principales"
-                      iconType="principales"
-                      isActive={activeCategory === "principales"}
-                    />
-                  </motion.button>
-
-                  <motion.button
-                    onClick={() => scrollToCategory("postres")}
-                    className="focus:outline-none"
-                    aria-label="Seleccionar categoría Postres"
-                    aria-pressed={activeCategory === "postres"}
-                    variants={fadeIn}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FoodCategory title="Postres" iconType="postres" isActive={activeCategory === "postres"} />
-                  </motion.button>
-
-                  <motion.button
-                    onClick={() => scrollToCategory("bebidas")}
-                    className="focus:outline-none"
-                    aria-label="Seleccionar categoría Bebidas"
-                    aria-pressed={activeCategory === "bebidas"}
-                    variants={fadeIn}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FoodCategory
-                      title="Bebidas & Refrescos"
-                      iconType="bebidas"
-                      isActive={activeCategory === "bebidas"}
-                    />
-                  </motion.button>
-
-                  <motion.button
-                    onClick={() => scrollToCategory("vinos")}
-                    className="focus:outline-none"
-                    aria-label="Seleccionar categoría Vinos"
-                    aria-pressed={activeCategory === "vinos"}
-                    variants={fadeIn}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FoodCategory title="Vinos & Espumantes" iconType="vinos" isActive={activeCategory === "vinos"} />
-                  </motion.button>
-
-                  <motion.button
-                    onClick={() => scrollToCategory("cocktails")}
-                    className="focus:outline-none"
-                    aria-label="Seleccionar categoría Cocktails"
-                    aria-pressed={activeCategory === "cocktails"}
-                    variants={fadeIn}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FoodCategory
-                      title="Cocktails & Tragos"
-                      iconType="cocktails"
-                      isActive={activeCategory === "cocktails"}
-                    />
-                  </motion.button>
-                </div>
-              </div>
-
-              {/* Indicador de scroll mejorado */}
-              <AnimatePresence>
-                {showScrollIndicator && (
-                  <motion.div
-                    className="scroll-indicator"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <motion.svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      animate={{ x: [0, 5, 0] }}
-                      transition={{
-                        repeat: Number.POSITIVE_INFINITY,
-                        repeatType: "loop",
-                        duration: 1.5,
-                        ease: "easeInOut",
-                      }}
-                    >
-                      <path
-                        d="M13 17L18 12L13 7"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M6 17L11 12L6 7"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </motion.svg>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+          <CategoriesCarousel
+            activeCategory={activeCategory}
+            onCategoryChange={scrollToCategory}
+            isSticky={isCarouselSticky}
+          />
+          <div className={`categories-spacer ${isCarouselSticky ? "active" : ""}`}></div>
         </div>
 
         {/* Sección Entradas */}
@@ -970,7 +526,6 @@ export default function MenuPage() {
             <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
               {getCategoryTitle("entradas")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
             {entradasProducts && entradasProducts.length > 0 ? (
@@ -994,15 +549,6 @@ export default function MenuPage() {
                 <p className="text-montebello-light/70">
                   {isLoading ? "Cargando productos..." : "No hay productos en esta categoría"}
                 </p>
-                {!isLoading && (
-                  <Button
-                    className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
-                    onClick={handleResetProducts}
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Restablecer productos
-                  </Button>
-                )}
               </div>
             )}
           </div>
@@ -1014,7 +560,6 @@ export default function MenuPage() {
             <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
               {getCategoryTitle("principales")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
             {principalesProducts.length > 0 ? (
@@ -1036,13 +581,6 @@ export default function MenuPage() {
             ) : (
               <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
                 <p className="text-montebello-light/70">No hay productos en esta categoría</p>
-                <Button
-                  className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
-                  onClick={handleResetProducts}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Restablecer productos
-                </Button>
               </div>
             )}
           </div>
@@ -1054,7 +592,6 @@ export default function MenuPage() {
             <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
               {getCategoryTitle("postres")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
             {postresProducts.length > 0 ? (
@@ -1076,13 +613,6 @@ export default function MenuPage() {
             ) : (
               <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
                 <p className="text-montebello-light/70">No hay productos en esta categoría</p>
-                <Button
-                  className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
-                  onClick={handleResetProducts}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Restablecer productos
-                </Button>
               </div>
             )}
           </div>
@@ -1094,7 +624,6 @@ export default function MenuPage() {
             <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
               {getCategoryTitle("bebidas")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
             {bebidasProducts.length > 0 ? (
@@ -1116,13 +645,6 @@ export default function MenuPage() {
             ) : (
               <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
                 <p className="text-montebello-light/70">No hay productos en esta categoría</p>
-                <Button
-                  className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
-                  onClick={handleResetProducts}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Restablecer productos
-                </Button>
               </div>
             )}
           </div>
@@ -1134,7 +656,6 @@ export default function MenuPage() {
             <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
               {getCategoryTitle("vinos")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
             {vinosProducts.length > 0 ? (
@@ -1156,13 +677,6 @@ export default function MenuPage() {
             ) : (
               <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
                 <p className="text-montebello-light/70">No hay productos en esta categoría</p>
-                <Button
-                  className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
-                  onClick={handleResetProducts}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Restablecer productos
-                </Button>
               </div>
             )}
           </div>
@@ -1174,7 +688,6 @@ export default function MenuPage() {
             <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
               {getCategoryTitle("cocktails")}
             </h2>
-            <div className="w-20 h-1 bg-montebello-gold/30 rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
             {cocktailsProducts.length > 0 ? (
@@ -1196,13 +709,6 @@ export default function MenuPage() {
             ) : (
               <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
                 <p className="text-montebello-light/70">No hay productos en esta categoría</p>
-                <Button
-                  className="mt-4 bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy"
-                  onClick={handleResetProducts}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Restablecer productos
-                </Button>
               </div>
             )}
           </div>
@@ -1214,6 +720,23 @@ export default function MenuPage() {
         <BottomNavigation cartItemCount={cartItemCount} />
       </div>
 
+      {/* Modal de inicio de sesión */}
+      {showLoginForm && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+          <div className="relative w-full max-w-md">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-2 h-8 w-8 text-montebello-light z-20 bg-montebello-navy rounded-full"
+              onClick={() => setShowLoginForm(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+            <LoginForm onLoginSuccess={handleLoginSuccess} />
+          </div>
+        </div>
+      )}
+
       {/* Modal de edición de producto */}
       {showEditModal && (
         <ProductEditModal
@@ -1222,8 +745,8 @@ export default function MenuPage() {
             setShowEditModal(false)
             setEditingProduct(null)
           }}
-          onSave={handleSaveProduct}
-          onDelete={handleDeleteProduct}
+          onSave={updateProduct}
+          onDelete={deleteProduct}
         />
       )}
 

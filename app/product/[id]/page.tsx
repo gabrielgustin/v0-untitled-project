@@ -11,7 +11,6 @@ import { getAuthState, type User } from "@/lib/auth"
 import { getProducts, type Product, getDefaultImage, initialProducts } from "@/lib/products"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DesktopNavigation } from "@/components/desktop-navigation"
-import { VegetarianBadge } from "@/components/vegetarian-badge"
 
 import { motion, AnimatePresence } from "framer-motion"
 import { addToCartAnimation } from "@/lib/animation-utils"
@@ -364,11 +363,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 </div>
               )}
 
-              {product.isVegetarian && (
-                <div className="absolute bottom-2 left-2 bg-montebello-navy/60 p-1 rounded-full">
-                  <VegetarianBadge className="h-5 w-5" />
-                </div>
-              )}
+              {/* Eliminado el ícono vegetariano */}
             </div>
           </div>
         </div>
