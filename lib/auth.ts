@@ -7,7 +7,7 @@ export interface User {
 // Credenciales fijas para el administrador
 export const ADMIN_CREDENTIALS = {
   username: "Admin1",
-  password: "Admin",
+  password: "Montebello",
 }
 
 // Función para verificar las credenciales

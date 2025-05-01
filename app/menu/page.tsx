@@ -35,6 +35,7 @@ import { mobileMenuAnimation, menuItemAnimation } from "@/lib/animation-utils"
 import { ScrollToTopButton } from "@/components/scroll-to-top-button"
 import { LogoContainer } from "@/components/logo-container"
 import { CategoriesCarousel } from "@/components/categories-carousel"
+import { CategoryEditModal, type Category } from "@/components/category-edit-modal"
 
 // Definir el tipo para un item del carrito
 interface CartItem {
@@ -107,6 +108,42 @@ export default function MenuPage() {
   const vinosRef = useRef<HTMLDivElement>(null)
   const cocktailsRef = useRef<HTMLDivElement>(null)
 
+  // Añadir estado para categorías y modal de categoría
+  const [categories, setCategories] = useState<Category[]>([])
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [showCategoryModal, setShowCategoryModal] = useState(false)
+
+  // Añadir funciones para manejar categorías
+  const handleAddCategory = (category: Category) => {
+    const updatedCategories = [...categories, category]
+    setCategories(updatedCategories)
+    try {
+      localStorage.setItem("categories", JSON.stringify(updatedCategories))
+    } catch (e) {
+      console.error("Error saving categories to localStorage", e)
+    }
+  }
+
+  const handleUpdateCategory = (updatedCategory: Category) => {
+    const updatedCategories = categories.map((cat) => (cat.id === updatedCategory.id ? updatedCategory : cat))
+    setCategories(updatedCategories)
+    try {
+      localStorage.setItem("categories", JSON.stringify(updatedCategories))
+    } catch (e) {
+      console.error("Error saving categories to localStorage", e)
+    }
+  }
+
+  const handleDeleteCategory = (categoryId: string) => {
+    const updatedCategories = categories.filter((cat) => cat.id !== categoryId)
+    setCategories(updatedCategories)
+    try {
+      localStorage.setItem("categories", JSON.stringify(updatedCategories))
+    } catch (e) {
+      console.error("Error saving categories to localStorage", e)
+    }
+  }
+
   // Cargar el estado de autenticación y productos al iniciar
   useEffect(() => {
     const authUser = getAuthState()
@@ -139,6 +176,18 @@ export default function MenuPage() {
     } finally {
       // Finalizar carga
       setIsLoading(false)
+    }
+  }, [])
+
+  // Cargar categorías al iniciar
+  useEffect(() => {
+    try {
+      const savedCategories = localStorage.getItem("categories")
+      if (savedCategories) {
+        setCategories(JSON.parse(savedCategories))
+      }
+    } catch (e) {
+      console.error("Error loading categories from localStorage", e)
     }
   }, [])
 
@@ -503,6 +552,9 @@ export default function MenuPage() {
               onUpdateProduct={updateProduct}
               onDeleteProduct={deleteProduct}
               onResetProducts={resetProducts}
+              onAddCategory={handleAddCategory}
+              onUpdateCategory={handleUpdateCategory}
+              onDeleteCategory={handleDeleteCategory}
             />
             <div className="flex justify-end mb-4">
               <RefreshDataButton onRefresh={(updatedProducts) => setProducts(updatedProducts)} />
@@ -747,6 +799,18 @@ export default function MenuPage() {
           }}
           onSave={updateProduct}
           onDelete={deleteProduct}
+        />
+      )}
+
+      {showCategoryModal && (
+        <CategoryEditModal
+          category={editingCategory}
+          onClose={() => {
+            setShowCategoryModal(false)
+            setEditingCategory(null)
+          }}
+          onSave={handleUpdateCategory}
+          onDelete={handleDeleteCategory}
         />
       )}
 
