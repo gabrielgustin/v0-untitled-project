@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { useEffect } from "react"
+import { motion, useAnimation } from "framer-motion"
 import Image from "next/image"
 
 interface LoadingScreenProps {
@@ -15,26 +15,31 @@ export function LoadingScreen({
   duration = 2000,
   onLoadingComplete,
 }: LoadingScreenProps) {
-  const [progress, setProgress] = useState(0)
+  // Usar useAnimation para tener más control sobre la animación
+  const circleAnimation = useAnimation()
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prevProgress) => {
-        if (prevProgress >= 100) {
-          clearInterval(interval)
-          if (onLoadingComplete) {
-            setTimeout(() => {
-              onLoadingComplete()
-            }, 300)
-          }
-          return 100
-        }
-        return prevProgress + 5
+    // Iniciar la animación del círculo
+    const animateCircle = async () => {
+      // Animar el círculo de 0 a 1 (una vuelta completa)
+      await circleAnimation.start({
+        pathLength: 1,
+        transition: {
+          duration: duration / 1000, // Convertir ms a segundos
+          ease: "linear",
+        },
       })
-    }, duration / 20)
 
-    return () => clearInterval(interval)
-  }, [duration, onLoadingComplete])
+      // Una vez completada la animación, llamar a onLoadingComplete
+      if (onLoadingComplete) {
+        setTimeout(() => {
+          onLoadingComplete()
+        }, 0)
+      }
+    }
+
+    animateCircle()
+  }, [circleAnimation, duration, onLoadingComplete])
 
   return (
     <div className="fixed inset-0 bg-montebello-navy flex flex-col items-center justify-center z-50">
@@ -70,7 +75,7 @@ export function LoadingScreen({
             className="absolute -top-3 -left-3 -right-3 -bottom-3 w-[calc(100%+24px)] h-[calc(100%+24px)]"
             viewBox="0 0 100 100"
           >
-            <motion.circle cx="50" cy="50" r="45" fill="none" stroke="rgba(212, 180, 90, 0.3)" strokeWidth="2" />
+            <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(212, 180, 90, 0.3)" strokeWidth="2" />
             <motion.circle
               cx="50"
               cy="50"
@@ -79,11 +84,8 @@ export function LoadingScreen({
               stroke="#d4b45a"
               strokeWidth="2"
               strokeLinecap="round"
-              initial={{ pathLength: 0, rotate: -90 }}
-              animate={{
-                pathLength: progress / 100,
-                transition: { duration: 0.2, ease: "easeOut" },
-              }}
+              initial={{ pathLength: 0 }}
+              animate={circleAnimation}
               style={{
                 transformOrigin: "center",
                 transform: "rotate(-90deg)",
@@ -101,16 +103,6 @@ export function LoadingScreen({
         >
           {message}
         </motion.p>
-
-        {/* Progress bar (optional, can be removed if using only circular progress) */}
-        <div className="w-full bg-montebello-navy/30 h-2 rounded-full overflow-hidden border border-montebello-gold/20">
-          <motion.div
-            className="h-full bg-montebello-gold"
-            initial={{ width: "0%" }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-          />
-        </div>
       </div>
     </div>
   )

@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
-import { Search, X, Home, ShoppingBag, LogOut, Utensils, RefreshCw } from "lucide-react"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { Search, X, Home, ShoppingBag, LogOut, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BottomNavigation } from "@/components/bottom-navigation"
@@ -67,8 +67,9 @@ const HamburgerIcon = (props: React.SVGProps<SVGSVGElement>) => {
   )
 }
 
+// Modificar la lista de productos excluidos para añadir "gaseosas" y "flan-casero"
 // Productos a excluir
-const excludedProductIds = ["crumble-de-manzana", "chardonnay", "carpaccio-de-lomo"]
+const excludedProductIds = ["crumble-de-manzana", "chardonnay", "carpaccio-de-lomo", "gaseosas", "flan-casero"]
 
 // Función para filtrar productos excluidos
 const filterExcludedProducts = (products: Product[]): Product[] => {
@@ -107,6 +108,40 @@ export default function MenuPage() {
   const bebidasRef = useRef<HTMLDivElement>(null)
   const vinosRef = useRef<HTMLDivElement>(null)
   const cocktailsRef = useRef<HTMLDivElement>(null)
+
+  // Añadir esta función después de la declaración de las referencias de categorías
+  const updateActiveCategory = useCallback(() => {
+    // Obtener las posiciones de cada sección
+    const sections = [
+      { ref: entradasRef, category: "entradas" },
+      { ref: principalesRef, category: "principales" },
+      { ref: postresRef, category: "postres" },
+      { ref: bebidasRef, category: "bebidas" },
+      { ref: vinosRef, category: "vinos" },
+      { ref: cocktailsRef, category: "cocktails" },
+    ]
+
+    // Encontrar la sección más cercana a la parte superior de la ventana
+    let closestSection = sections[0]
+    let minDistance = Number.POSITIVE_INFINITY
+
+    sections.forEach((section) => {
+      if (section.ref.current) {
+        const rect = section.ref.current.getBoundingClientRect()
+        // Calcular la distancia desde la parte superior de la ventana
+        // Añadimos un offset para mejorar la detección
+        const distance = Math.abs(rect.top - 150)
+
+        if (distance < minDistance) {
+          minDistance = distance
+          closestSection = section
+        }
+      }
+    })
+
+    // Actualizar la categoría activa
+    setActiveCategory(closestSection.category as ProductCategory)
+  }, [entradasRef, principalesRef, postresRef, bebidasRef, vinosRef, cocktailsRef])
 
   // Añadir estado para categorías y modal de categoría
   const [categories, setCategories] = useState<Category[]>([])
@@ -231,6 +266,26 @@ export default function MenuPage() {
       window.removeEventListener("scroll", handleScroll)
     }
   }, [isCarouselSticky])
+
+  // Añadir este useEffect después del useEffect del carrusel sticky
+  useEffect(() => {
+    // Función para manejar el evento de scroll
+    const handleScroll = () => {
+      // Usar requestAnimationFrame para optimizar el rendimiento
+      window.requestAnimationFrame(updateActiveCategory)
+    }
+
+    // Agregar el event listener
+    window.addEventListener("scroll", handleScroll)
+
+    // Llamar una vez para establecer la categoría inicial
+    updateActiveCategory()
+
+    // Limpiar el event listener
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [updateActiveCategory])
 
   // Verificar si hay un producto para editar desde la URL
   useEffect(() => {
@@ -452,8 +507,8 @@ export default function MenuPage() {
 
           {/* Logo centrado */}
           <div className="flex justify-center items-center pt-12 pb-6">
-            <div className="w-24 h-24 rounded-full bg-montebello-navy flex items-center justify-center border border-montebello-gold/30">
-              <img src="/montebello-icon.png" alt="Club Montebello Logo" className="h-16 w-16 object-contain" />
+            <div className="w-24 h-24 rounded-full bg-montebello-navy flex items-center justify-center border-2 border-montebello-gold/40 shadow-md overflow-hidden">
+              <img src="/montebello-icon.png" alt="Club Montebello Logo" className="h-28 w-28 object-cover" />
             </div>
           </div>
 
@@ -490,15 +545,6 @@ export default function MenuPage() {
                 >
                   <Home className="mr-4 h-6 w-6" />
                   <span className="text-lg">Home</span>
-                </Link>
-              </motion.li>
-              <motion.li variants={menuItemAnimation}>
-                <Link
-                  href="/menu"
-                  className="flex items-center text-montebello-light hover:text-montebello-gold transition-colors"
-                >
-                  <Utensils className="mr-4 h-6 w-6" />
-                  <span className="text-lg">Menú</span>
                 </Link>
               </motion.li>
               <motion.li variants={menuItemAnimation}>

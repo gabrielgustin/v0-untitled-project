@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { BottomNavigation } from "@/components/bottom-navigation"
 import { DesktopNavigation } from "@/components/desktop-navigation"
 import { getAuthState, type User } from "@/lib/auth"
-import { LeafIcon } from "@/components/icons"
 import { getProducts, getDefaultImage } from "@/lib/products"
 import { Toaster } from "@/components/ui/toaster"
 import { toast } from "@/components/ui/use-toast"
@@ -247,11 +246,6 @@ export default function CartPage() {
                               fill
                               className="object-cover"
                             />
-                            {productInfo?.isVegetarian && (
-                              <div className="absolute bottom-0 left-0 bg-montebello-navy/80 p-0.5 rounded-tr-md">
-                                <LeafIcon className="h-3 w-3 text-green-600" />
-                              </div>
-                            )}
                           </div>
                           <div className="flex-1">
                             <h3 className="font-medium text-montebello-light text-sm sm:text-base">{item.name}</h3>

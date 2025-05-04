@@ -11,13 +11,22 @@ export default function HomePage() {
   useEffect(() => {
     // Redirigir automáticamente a la página del menú con un pequeño retraso
     // para asegurar que la navegación funcione correctamente
-    const redirectTimer = setTimeout(() => {
-      router.push("/menu")
-    }, 2000)
+    if (!isLoading) {
+      const redirectTimer = setTimeout(() => {
+        router.push("/menu")
+      }, 100)
 
-    return () => clearTimeout(redirectTimer)
-  }, [router])
+      return () => clearTimeout(redirectTimer)
+    }
+  }, [isLoading, router])
+
+  const handleLoadingComplete = () => {
+    // Usar setTimeout para evitar actualizar el estado durante el renderizado
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 0)
+  }
 
   // Mostrar la pantalla de carga mientras se realiza la redirección
-  return <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
+  return <LoadingScreen onLoadingComplete={handleLoadingComplete} />
 }

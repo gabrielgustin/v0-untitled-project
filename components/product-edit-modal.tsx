@@ -65,13 +65,6 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
     }))
   }
 
-  const handleVegetarianChange = (checked: boolean) => {
-    setEditedProduct((prev) => ({
-      ...prev,
-      isVegetarian: checked,
-    }))
-  }
-
   const handleCategoryChange = (value: string) => {
     setEditedProduct((prev) => ({
       ...prev,
@@ -298,17 +291,6 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                     <SelectItem value="large">Grande</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="isVegetarian"
-                  checked={editedProduct.isVegetarian || false}
-                  onCheckedChange={handleVegetarianChange}
-                />
-                <Label htmlFor="isVegetarian" className="text-montebello-light">
-                  Vegetariano
-                </Label>
               </div>
 
               {/* Variantes */}

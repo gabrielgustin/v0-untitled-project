@@ -14,7 +14,6 @@ interface MenuItemCardProps {
   description: string
   price: number
   image?: string
-  isVegetarian?: boolean
   variants?: Array<{
     name: string
     price: number
@@ -30,7 +29,6 @@ export function MenuItemCard({
   description,
   price,
   image,
-  isVegetarian = false,
   variants = [],
   size = "normal",
   isAdmin = false,
