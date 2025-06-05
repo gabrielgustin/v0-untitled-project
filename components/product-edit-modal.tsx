@@ -156,14 +156,14 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <Card className="bg-montebello-navy border border-montebello-gold/20">
-          <CardHeader className="pb-3">
+        <Card className="bg-white border border-gray-200 shadow-lg">
+          <CardHeader className="pb-3 border-b border-gray-100">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-xl font-bold text-montebello-gold">Editar Producto</CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-800">Editar Producto</CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-montebello-light rounded-full"
+                className="h-8 w-8 text-gray-500 rounded-full hover:bg-gray-100"
                 onClick={onClose}
               >
                 <X className="h-5 w-5" />
@@ -173,7 +173,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-montebello-light">
+                <Label htmlFor="name" className="text-gray-700">
                   Nombre
                 </Label>
                 <Input
@@ -181,13 +181,13 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   name="name"
                   value={editedProduct.name}
                   onChange={handleChange}
-                  className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light"
+                  className="border-gray-200 bg-white text-gray-700"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category" className="text-montebello-light">
+                <Label htmlFor="category" className="text-gray-700">
                   Categoría
                 </Label>
                 <Select
@@ -195,10 +195,10 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   onValueChange={handleCategoryChange}
                   defaultValue={editedProduct.category || ""}
                 >
-                  <SelectTrigger className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light">
+                  <SelectTrigger className="border-gray-200 bg-white text-gray-700">
                     <SelectValue placeholder="Selecciona una categoría" />
                   </SelectTrigger>
-                  <SelectContent className="bg-montebello-navy border-montebello-gold/20 text-montebello-light">
+                  <SelectContent className="bg-white border-gray-200 text-gray-700">
                     <SelectItem value="entradas">Entradas</SelectItem>
                     <SelectItem value="principales">Platos Principales</SelectItem>
                     <SelectItem value="postres">Postres</SelectItem>
@@ -210,7 +210,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-montebello-light">
+                <Label htmlFor="description" className="text-gray-700">
                   Descripción
                 </Label>
                 <Textarea
@@ -218,12 +218,12 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   name="description"
                   value={typeof editedProduct.description === "string" ? editedProduct.description : ""}
                   onChange={handleChange}
-                  className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light min-h-[80px]"
+                  className="border-gray-200 bg-white text-gray-700 min-h-[80px]"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="price" className="text-montebello-light">
+                <Label htmlFor="price" className="text-gray-700">
                   Precio
                 </Label>
                 <Input
@@ -232,13 +232,13 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   type="number"
                   value={editedProduct.price}
                   onChange={handleChange}
-                  className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light"
+                  className="border-gray-200 bg-white text-gray-700"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="image" className="text-montebello-light">
+                <Label htmlFor="image" className="text-gray-700">
                   URL de la imagen
                 </Label>
                 <div className="flex gap-2">
@@ -247,7 +247,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                     name="image"
                     value={editedProduct.image || ""}
                     onChange={handleImageChange}
-                    className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light flex-1"
+                    className="border-gray-200 bg-white text-gray-700 flex-1"
                     placeholder="/placeholder.svg"
                   />
                 </div>
@@ -275,7 +275,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="size" className="text-montebello-light">
+                <Label htmlFor="size" className="text-gray-700">
                   Tamaño
                 </Label>
                 <Select
@@ -283,10 +283,10 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   onValueChange={handleSizeChange}
                   defaultValue={editedProduct.size || "normal"}
                 >
-                  <SelectTrigger className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light">
+                  <SelectTrigger className="border-gray-200 bg-white text-gray-700">
                     <SelectValue placeholder="Selecciona un tamaño" />
                   </SelectTrigger>
-                  <SelectContent className="bg-montebello-navy border-montebello-gold/20 text-montebello-light">
+                  <SelectContent className="bg-white border-gray-200 text-gray-700">
                     <SelectItem value="normal">Normal</SelectItem>
                     <SelectItem value="large">Grande</SelectItem>
                   </SelectContent>
@@ -296,7 +296,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
               {/* Variantes */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <Label className="text-montebello-light font-medium">Variantes</Label>
+                  <Label className="text-gray-700 font-medium">Variantes</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -314,20 +314,20 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                     {editedProduct.variants.map((variant, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-2 border p-2 rounded-md border-montebello-gold/20 bg-montebello-navy/30"
+                        className="flex items-center gap-2 border p-2 rounded-md border-gray-200 bg-gray-50"
                       >
                         <div className="flex-1">
                           <Input
                             value={variant.name}
                             onChange={(e) => handleVariantChange(index, "name", e.target.value)}
-                            className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light mb-1"
+                            className="border-gray-200 bg-white text-gray-700 mb-1"
                             placeholder="Nombre de la variante"
                           />
                           <Input
                             type="number"
                             value={variant.price}
                             onChange={(e) => handleVariantChange(index, "price", e.target.value)}
-                            className="border-montebello-gold/20 bg-montebello-navy/50 text-montebello-light"
+                            className="border-gray-200 bg-white text-gray-700"
                             placeholder="Precio"
                           />
                         </div>
@@ -359,7 +359,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                     }))
                   }}
                 />
-                <Label htmlFor="isFeatured" className="text-montebello-light">
+                <Label htmlFor="isFeatured" className="text-gray-700">
                   Producto destacado
                 </Label>
               </div>
@@ -369,7 +369,7 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-red-800/30 text-red-400 hover:bg-red-900/20"
+                    className="border-red-200 text-red-500 hover:bg-red-50"
                     onClick={handleDelete}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
@@ -380,15 +380,12 @@ export function ProductEditModal({ product, onClose, onSave, onDelete }: Product
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-montebello-gold/20 text-montebello-light"
+                    className="border-gray-200 text-gray-700 hover:bg-gray-50"
                     onClick={onClose}
                   >
                     Cancelar
                   </Button>
-                  <Button
-                    type="submit"
-                    className="bg-montebello-gold hover:bg-montebello-gold/90 text-montebello-navy font-medium"
-                  >
+                  <Button type="submit" className="bg-[#2a4287] hover:bg-[#1e3370] text-white font-medium">
                     Guardar cambios
                   </Button>
                 </div>

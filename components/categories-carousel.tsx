@@ -58,7 +58,7 @@ export function CategoriesCarousel({ activeCategory, onCategoryChange, isSticky 
   }, [activeCategory])
 
   return (
-    <div className={`categories-carousel ${isSticky ? "sticky" : ""}`}>
+    <div className={`categories-carousel ${isSticky ? "sticky" : ""} bg-[#121628]`}>
       <div className="relative">
         {/* Título "Categorías" cuando está en modo sticky */}
         <AnimatePresence>
@@ -70,13 +70,15 @@ export function CategoriesCarousel({ activeCategory, onCategoryChange, isSticky 
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <h2 className="text-montebello-gold font-bold text-lg inline-flex items-center">Categorías</h2>
+              <h2 className="text-[var(--app-color-secondary)] font-bold text-lg inline-flex items-center">
+                Categorías
+              </h2>
             </motion.div>
           )}
         </AnimatePresence>
 
         <div
-          className="overflow-x-auto pb-2 hide-scrollbar px-1 pt-2"
+          className="overflow-x-auto pb-2 hide-scrollbar px-1 pt-2 bg-[#121628]"
           ref={carouselRef}
           onScroll={() => {
             // Verificar si el usuario ha llegado al final del carrusel
@@ -151,8 +153,6 @@ export function CategoriesCarousel({ activeCategory, onCategoryChange, isSticky 
             </button>
           </div>
         </div>
-
-        {/* Eliminado el indicador de scroll con flechas animadas */}
       </div>
     </div>
   )

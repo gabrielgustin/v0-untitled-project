@@ -1,9 +1,10 @@
 "use client"
 
+import { CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import type React from "react"
-
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Search, X, Home, ShoppingBag, LogOut, RefreshCw } from "lucide-react"
+import { Search, X, Home, ShoppingBag, LogOut, RefreshCw, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BottomNavigation } from "@/components/bottom-navigation"
@@ -12,7 +13,7 @@ import { LoginForm } from "@/components/login-form"
 import { AdminPanel } from "@/components/admin-panel"
 import { ProductEditModal } from "@/components/product-edit-modal"
 import Link from "next/link"
-import { getAuthState, logout, type User } from "@/lib/auth"
+import { getAuthState, logout, type User, saveAuthState } from "@/lib/auth"
 import {
   initialProducts,
   updateProduct,
@@ -25,15 +26,14 @@ import {
 } from "@/lib/products"
 import { DesktopNavigation } from "@/components/desktop-navigation"
 import { Toaster } from "@/components/ui/toaster"
+import { useToast } from "@/components/ui/use-toast"
 
 import { useSearchParams } from "next/navigation"
-import { RefreshDataButton } from "@/components/refresh-data-button"
 import { motion, AnimatePresence } from "framer-motion"
 import { mobileMenuAnimation, menuItemAnimation } from "@/lib/animation-utils"
 
 // Importar el componente
 import { ScrollToTopButton } from "@/components/scroll-to-top-button"
-import { LogoContainer } from "@/components/logo-container"
 import { CategoriesCarousel } from "@/components/categories-carousel"
 import { CategoryEditModal, type Category } from "@/components/category-edit-modal"
 
@@ -80,6 +80,7 @@ const filterExcludedProducts = (products: Product[]): Product[] => {
 const filteredInitialProducts = filterExcludedProducts(initialProducts)
 
 export default function MenuPage() {
+  const { toast } = useToast()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [showLoginForm, setShowLoginForm] = useState(false)
@@ -89,6 +90,8 @@ export default function MenuPage() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [activeCategory, setActiveCategory] = useState<ProductCategory>("entradas")
   const [cartItemCount, setCartItemCount] = useState(0)
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [storeName, setStoreName] = useState("CLUB MONTEBELLO")
 
   // Reemplazar las referencias y estados relacionados con el carrusel
   const carouselWrapperRef = useRef<HTMLDivElement>(null)
@@ -108,6 +111,29 @@ export default function MenuPage() {
   const bebidasRef = useRef<HTMLDivElement>(null)
   const vinosRef = useRef<HTMLDivElement>(null)
   const cocktailsRef = useRef<HTMLDivElement>(null)
+
+  // Función para entrar directamente al panel de administración
+  const enterAdminPanel = () => {
+    // Guardar estado de autenticación como Admin
+    saveAuthState({
+      username: "Admin",
+      isLoggedIn: true,
+    })
+
+    // Establecer la bandera para mostrar el panel
+    localStorage.setItem("show_admin_panel", "true")
+
+    // Actualizar el estado local
+    setUser({ username: "Admin", isLoggedIn: true })
+    setShowAdminPanel(true)
+
+    // Mostrar notificación
+    toast({
+      title: "Modo administrador activado",
+      description: "Has ingresado al panel de administración",
+      duration: 3000,
+    })
+  }
 
   // Añadir esta función después de la declaración de las referencias de categorías
   const updateActiveCategory = useCallback(() => {
@@ -184,6 +210,13 @@ export default function MenuPage() {
     const authUser = getAuthState()
     if (authUser) {
       setUser(authUser)
+      // Verificar si debe mostrar el panel de administración
+      const shouldShowAdmin = localStorage.getItem("show_admin_panel") === "true"
+      // Permitir que cualquier usuario autenticado acceda al panel si la bandera está establecida
+      if (shouldShowAdmin) {
+        setShowAdminPanel(true)
+        console.log("Panel de administración activado para:", authUser.username)
+      }
     }
 
     // Iniciar carga
@@ -211,6 +244,31 @@ export default function MenuPage() {
     } finally {
       // Finalizar carga
       setIsLoading(false)
+    }
+  }, [])
+
+  // Cargar el nombre de la tienda desde localStorage
+  useEffect(() => {
+    // Cargar el nombre de la tienda desde localStorage al iniciar
+    const savedName = localStorage.getItem("storeName")
+    if (savedName) {
+      setStoreName(savedName.toUpperCase())
+    }
+
+    // Función para manejar cambios en el nombre de la tienda
+    const handleStoreNameChange = (event: Event) => {
+      const customEvent = event as CustomEvent
+      if (customEvent.detail) {
+        setStoreName(customEvent.detail.toUpperCase())
+      }
+    }
+
+    // Añadir event listener
+    document.addEventListener("storeNameChanged", handleStoreNameChange)
+
+    // Limpiar event listener al desmontar
+    return () => {
+      document.removeEventListener("storeNameChanged", handleStoreNameChange)
     }
   }, [])
 
@@ -320,6 +378,7 @@ export default function MenuPage() {
   const handleLogout = () => {
     logout()
     setUser(null)
+    setShowAdminPanel(false)
     setIsMenuOpen(false)
   }
 
@@ -327,6 +386,9 @@ export default function MenuPage() {
   const handleLoginSuccess = () => {
     const authUser = getAuthState()
     setUser(authUser)
+    if (authUser && authUser.username === "Admin1") {
+      setShowAdminPanel(true)
+    }
     setShowLoginForm(false) // Asegurarse de que el modal se cierre
     setIsMenuOpen(false) // Cerrar el menú móvil si está abierto
   }
@@ -453,13 +515,31 @@ export default function MenuPage() {
     )
   }
 
+  // Si el usuario es administrador y showAdminPanel es true, mostrar el panel de administración
+  if (showAdminPanel) {
+    return (
+      <AdminPanel
+        products={products}
+        onAddProduct={addProduct}
+        onUpdateProduct={updateProduct}
+        onDeleteProduct={deleteProduct}
+        onResetProducts={resetProducts}
+        onAddCategory={handleAddCategory}
+        onUpdateCategory={handleUpdateCategory}
+        onDeleteCategory={handleDeleteCategory}
+      />
+    )
+  }
+
   return (
     <div className="bg-montebello-navy min-h-screen">
-      {/* Desktop Navigation con contador de carrito */}
-      <DesktopNavigation user={user} onLoginSuccess={handleLoginSuccess} cartItemCount={cartItemCount} />
+      {/* Desktop Navigation con contador de carrito - Solo visible en pantallas grandes */}
+      <div className="hidden lg:block">
+        <DesktopNavigation user={user} onLoginSuccess={handleLoginSuccess} cartItemCount={cartItemCount} />
+      </div>
 
-      {/* Mobile Header */}
-      <header className="lg:hidden pt-6 pb-2">
+      {/* Mobile Header - Solo visible en pantallas pequeñas y medianas */}
+      <header className="block lg:hidden pt-6 pb-2">
         <div className="flex justify-between items-center mb-6 container mx-auto">
           <div
             className={`cursor-pointer z-50 pl-4 ${isMenuOpen ? "opacity-0" : "opacity-100"} transition-opacity`}
@@ -468,8 +548,8 @@ export default function MenuPage() {
             <HamburgerIcon className="text-montebello-gold" />
           </div>
 
-          <div className="flex-1">
-            <LogoContainer size="large" />
+          <div className="flex-1 text-center">
+            <h1 className="text-2xl font-bold text-montebello-gold">{storeName}</h1>
           </div>
 
           <div className="w-7"></div>
@@ -524,6 +604,15 @@ export default function MenuPage() {
             ) : (
               <div className="text-center">
                 <p className="text-montebello-gold font-medium text-lg">{user.username}</p>
+                {isAdmin && (
+                  <Button
+                    variant="outline"
+                    className="mt-2 w-full border-montebello-gold/20 text-montebello-gold"
+                    onClick={() => setShowAdminPanel(true)}
+                  >
+                    Panel de Administración
+                  </Button>
+                )}
                 <Button variant="ghost" className="mt-2 text-red-400 hover:bg-red-900/20" onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Cerrar Sesión
@@ -563,6 +652,15 @@ export default function MenuPage() {
                   <span className="text-lg">Mi Pedido</span>
                 </Link>
               </motion.li>
+              <motion.li variants={menuItemAnimation}>
+                <button
+                  onClick={enterAdminPanel}
+                  className="flex items-center text-montebello-light hover:text-montebello-gold transition-colors w-full text-left"
+                >
+                  <Settings className="mr-4 h-6 w-6" />
+                  <span className="text-lg">Panel Admin</span>
+                </button>
+              </motion.li>
             </motion.ul>
           </motion.nav>
         </motion.div>
@@ -589,25 +687,6 @@ export default function MenuPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 pb-20 lg:pb-10">
-        {/* Panel de Administración (solo visible para administradores) */}
-        {isAdmin && (
-          <>
-            <AdminPanel
-              products={products}
-              onAddProduct={addProduct}
-              onUpdateProduct={updateProduct}
-              onDeleteProduct={deleteProduct}
-              onResetProducts={resetProducts}
-              onAddCategory={handleAddCategory}
-              onUpdateCategory={handleUpdateCategory}
-              onDeleteCategory={handleDeleteCategory}
-            />
-            <div className="flex justify-end mb-4">
-              <RefreshDataButton onRefresh={(updatedProducts) => setProducts(updatedProducts)} />
-            </div>
-          </>
-        )}
-
         {/* Categories Carousel - Nueva implementación sticky */}
         <div className="categories-wrapper" ref={carouselWrapperRef}>
           <CategoriesCarousel
@@ -818,19 +897,28 @@ export default function MenuPage() {
         <BottomNavigation cartItemCount={cartItemCount} />
       </div>
 
-      {/* Modal de inicio de sesión */}
+      {/* Modal de inicio de sesión - Mantener el diseño original para mobile */}
       {showLoginForm && (
-        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-          <div className="relative w-full max-w-md">
+        <div
+          className="fixed inset-0 bg-black/70 z-[99999] flex items-center justify-center p-4"
+          style={{ position: "fixed", zIndex: 99999 }}
+        >
+          <div className="relative w-full max-w-md" style={{ zIndex: 99999 }}>
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-2 top-2 h-8 w-8 text-montebello-light z-20 bg-montebello-navy rounded-full"
+              className="absolute right-2 top-2 h-8 w-8 text-montebello-light z-[99999] bg-montebello-navy rounded-full"
               onClick={() => setShowLoginForm(false)}
+              style={{ zIndex: 100000 }}
             >
               <X className="h-5 w-5" />
             </Button>
-            <LoginForm onLoginSuccess={handleLoginSuccess} />
+            <Card className="w-full max-w-md mx-auto bg-montebello-navy border border-montebello-gold/30 shadow-xl relative z-[99999]">
+              <CardContent className="p-6">
+                <h2 className="text-2xl font-bold text-montebello-gold text-center mb-6">Iniciar Sesión</h2>
+                <LoginForm onLoginSuccess={handleLoginSuccess} />
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}

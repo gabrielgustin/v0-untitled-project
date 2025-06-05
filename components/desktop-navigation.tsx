@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import type React from "react"
+
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { ShoppingBag, User, LogOut } from "lucide-react"
+import { ShoppingBag, X, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { logout, type User as UserType } from "@/lib/auth"
+import { logout, type User as UserType, getAuthState } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
-import { LogoContainer } from "@/components/logo-container"
 
 interface DesktopNavigationProps {
   user: UserType | null
@@ -16,138 +16,190 @@ interface DesktopNavigationProps {
   cartAnimation?: boolean
 }
 
-export function DesktopNavigation({
-  user,
-  onLoginSuccess,
-  cartItemCount = 0,
-  cartAnimation = false,
-}: DesktopNavigationProps) {
+export function DesktopNavigation() {
+  const [storeName, setStoreName] = useState("CLUB MONTEBELLO")
   const [showLoginForm, setShowLoginForm] = useState(false)
   const [showCartBadge, setShowCartBadge] = useState(false)
   const [animateCart, setAnimateCart] = useState(false)
+  const modalRef = useRef<HTMLDivElement>(null)
+  const [user, setUser] = useState<UserType | null>(null)
+
+  useEffect(() => {
+    // Cargar el nombre de la tienda desde localStorage al iniciar
+    const savedName = localStorage.getItem("storeName")
+    if (savedName) {
+      setStoreName(savedName.toUpperCase())
+    }
+
+    // Función para manejar cambios en el nombre de la tienda
+    const handleStoreNameChange = (event: Event) => {
+      const customEvent = event as CustomEvent
+      if (customEvent.detail) {
+        setStoreName(customEvent.detail.toUpperCase())
+        // También actualizar el título del documento
+        document.title = customEvent.detail
+      }
+    }
+
+    // Añadir event listener
+    document.addEventListener("storeNameChanged", handleStoreNameChange)
+
+    // Limpiar event listener al desmontar
+    return () => {
+      document.removeEventListener("storeNameChanged", handleStoreNameChange)
+    }
+  }, [])
 
   // Efecto para mostrar el badge del carrito si hay items
   useEffect(() => {
-    setShowCartBadge(cartItemCount > 0)
-  }, [cartItemCount])
+    setShowCartBadge(0 > 0)
+  }, [0])
 
   // Efecto para la animación cuando se agrega un producto
   useEffect(() => {
-    if (cartAnimation) {
+    if (false) {
       setAnimateCart(true)
       const timer = setTimeout(() => {
         setAnimateCart(false)
       }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [cartAnimation])
+  }, [false])
+
+  // Efecto para bloquear el scroll cuando el modal está abierto
+  useEffect(() => {
+    if (showLoginForm) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [showLoginForm])
 
   const handleLogout = () => {
     logout()
     window.location.reload()
   }
 
-  const isAdmin = user?.username === "Admin1"
-
   const handleLoginSuccess = () => {
-    setShowLoginForm(false) // Asegurarse de que el modal se cierre
+    // Cerrar el modal
+    setShowLoginForm(false)
+
+    // Obtener el estado de autenticación actualizado
+    const authUser = getAuthState()
+
+    // Actualizar el estado local del usuario
+    if (authUser) {
+      setUser(authUser)
+
+      // Establecer la bandera para mostrar el panel de administración
+      localStorage.setItem("show_admin_panel", "true")
+
+      // Añadir un pequeño retraso antes de la redirección
+      setTimeout(() => {
+        // Forzar la redirección
+        window.location.href = "/menu"
+      }, 100)
+    }
   }
 
+  const handleCloseModal = () => {
+    setShowLoginForm(false)
+  }
+
+  // Cerrar el modal si se hace clic fuera de él
+  const handleOutsideClick = (e: React.MouseEvent) => {
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      setShowLoginForm(false)
+    }
+  }
+
+  // Verificar el estado de autenticación al cargar el componente
+  useEffect(() => {
+    const authUser = getAuthState()
+    if (authUser) {
+      setUser(authUser)
+    }
+  }, [])
+
   return (
-    <div className="hidden lg:block w-full border-b border-montebello-gold/30 bg-montebello-navy sticky top-0 z-30">
-      <div className="container mx-auto py-3">
-        <div className="flex items-center justify-between">
-          {/* Logo y navegación principal */}
-          <div className="flex items-center gap-8 w-1/3">
-            <nav className="flex items-center space-x-8">
-              <Link href="/" className="text-montebello-light hover:text-montebello-gold font-medium">
-                Inicio
-              </Link>
-              <Link href="/menu" className="text-montebello-light hover:text-montebello-gold font-medium">
-                Menú
-              </Link>
-            </nav>
-          </div>
-
-          {/* Logo centrado */}
-          <div className="w-1/3 flex justify-center">
-            <LogoContainer size="medium" className="justify-center" />
-          </div>
-
-          {/* Carrito y perfil de usuario */}
-          <div className="flex items-center space-x-4 justify-end w-1/3">
-            <Link
-              href="/cart"
-              className="text-montebello-light hover:text-montebello-gold font-medium flex items-center px-4 py-2 rounded-full border border-transparent hover:border-montebello-gold/20"
-            >
-              <div className={`relative ${animateCart ? "animate-bounce" : ""}`}>
-                <ShoppingBag className="h-5 w-5 mr-2" />
-                {showCartBadge && (
-                  <span
-                    className={`absolute -top-2 -right-1 bg-montebello-gold text-montebello-navy text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center ${animateCart ? "scale-125" : ""} transition-transform`}
-                  >
-                    {cartItemCount > 9 ? "9+" : cartItemCount}
-                  </span>
-                )}
-              </div>
-              Mi Pedido
-            </Link>
-
-            {user ? (
-              <div className="flex items-center gap-3">
-                <Avatar className="h-8 w-8 border border-montebello-gold">
-                  <AvatarImage src="/la-capke-logo.png" alt={user.username} />
-                  <AvatarFallback className="bg-montebello-gold text-montebello-navy">
-                    {user.username.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-sm font-medium text-montebello-light">{user.username}</div>
-                <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-900/20" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
+    <div className="hidden md:flex items-center justify-between px-8 py-4 bg-montebello-navy text-white">
+      <div className="flex items-center space-x-8">
+        <Link href="/" className="text-lg font-medium hover:text-montebello-gold transition-colors">
+          Inicio
+        </Link>
+        <Link href="/menu" className="text-lg font-medium hover:text-montebello-gold transition-colors">
+          Menú
+        </Link>
+      </div>
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-montebello-gold">{storeName}</h1>
+      </div>
+      <div className="flex items-center space-x-4">
+        <Link href="/cart" className="relative">
+          <ShoppingBag className="h-6 w-6 text-white hover:text-montebello-gold transition-colors" />
+          <span className="absolute -top-2 -right-2 bg-montebello-gold text-montebello-navy rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+            0
+          </span>
+        </Link>
+        {!user ? (
+          <Button
+            variant="outline"
+            className="bg-montebello-navy border-montebello-gold text-white hover:bg-montebello-gold hover:text-montebello-navy transition-colors"
+            onClick={() => setShowLoginForm(true)}
+          >
+            Iniciar sesión
+          </Button>
+        ) : (
+          <div className="flex items-center space-x-2">
+            <span className="text-montebello-gold">{user.username}</span>
+            {user.username === "Admin" || user.username === "Admin1" ? (
               <Button
-                variant="ghost"
-                className="rounded-full border border-montebello-gold/20 text-montebello-light/80 hover:bg-montebello-navy/60 hover:text-montebello-light transition-colors"
-                onClick={() => setShowLoginForm(true)}
+                variant="outline"
+                size="sm"
+                className="border-montebello-gold/20 text-montebello-gold hover:bg-montebello-gold/10"
+                onClick={() => {
+                  localStorage.setItem("show_admin_panel", "true")
+                  window.location.href = "/menu"
+                }}
               >
-                <User className="h-4 w-4 mr-2 text-montebello-gold/70" />
-                Iniciar Sesión
+                Panel Admin
               </Button>
-            )}
+            ) : null}
+            <Button variant="ghost" size="sm" className="text-red-400 hover:bg-red-900/20" onClick={handleLogout}>
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Modal de inicio de sesión */}
+      {/* Modal de inicio de sesión - Nuevo diseño solo para desktop */}
       {showLoginForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="relative w-full max-w-md">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-2 h-8 w-8 text-montebello-charcoal z-20 bg-white rounded-full"
-              onClick={() => setShowLoginForm(false)}
-            >
-              <span className="sr-only">Cerrar</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-5 w-5"
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]" onClick={handleOutsideClick}>
+          <div className="fixed inset-0 bg-black opacity-80"></div>
+          <div
+            ref={modalRef}
+            className="bg-montebello-navy w-full max-w-md mx-auto rounded-lg border-2 border-montebello-gold shadow-2xl relative z-[10000]"
+          >
+            <div className="absolute top-4 right-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCloseModal}
+                className="h-8 w-8 rounded-full bg-montebello-navy hover:bg-montebello-gold/20 text-montebello-gold"
               >
-                <path d="M18 6 6 18"></path>
-                <path d="m6 6 12 12"></path>
-              </svg>
-            </Button>
-            <LoginForm onLoginSuccess={handleLoginSuccess} />
+                <X className="h-5 w-5" />
+                <span className="sr-only">Cerrar</span>
+              </Button>
+            </div>
+
+            <div className="p-8">
+              <h2 className="text-2xl font-bold text-montebello-gold text-center mb-6">Iniciar Sesión</h2>
+              <LoginForm onLoginSuccess={handleLoginSuccess} />
+            </div>
           </div>
         </div>
       )}

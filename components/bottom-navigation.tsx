@@ -2,9 +2,10 @@
 
 import { Home, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
+import { useSmoothNavigation } from "@/hooks/use-smooth-navigation"
 
 interface BottomNavigationProps {
   cartItemCount?: number
@@ -17,6 +18,7 @@ export function BottomNavigation({ cartItemCount = 0, cartAnimation = false }: B
   const [isProductDetailPage, setIsProductDetailPage] = useState(false)
   const [showCartBadge, setShowCartBadge] = useState(false)
   const [animateCart, setAnimateCart] = useState(false)
+  const { navigate } = useSmoothNavigation()
 
   // Efecto para determinar si estamos en una página de detalle de producto
   useEffect(() => {
@@ -81,31 +83,49 @@ export function BottomNavigation({ cartItemCount = 0, cartAnimation = false }: B
   const navStyles = getNavStyles()
 
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 w-full bg-montebello-navy border-t border-montebello-gold/20 flex justify-around items-center py-3 z-20 transition-all duration-300"
+    <motion.div
+      className="fixed bottom-0 left-0 right-0 w-full bg-[#121628] border-t border-montebello-gold/20 flex justify-around items-center py-3 z-20"
       style={{
         ...navStyles,
       }}
+      initial={{ y: 100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
-      <Link href="/menu">
-        <Button variant="ghost" size="icon" className="text-montebello-gold hover:bg-montebello-gold/10">
-          <Home className="h-5 w-5" />
-        </Button>
-      </Link>
-      <Link href="/cart">
-        <Button variant="ghost" size="icon" className="text-montebello-gold hover:bg-montebello-gold/10 relative">
-          <div className={`relative ${animateCart ? "animate-bounce" : ""}`}>
-            <ShoppingBag className="h-5 w-5" />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="text-montebello-gold hover:bg-montebello-gold/10"
+        onClick={() => navigate("/menu")}
+      >
+        <Home className="h-5 w-5" />
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        className="text-montebello-gold hover:bg-montebello-gold/10 relative"
+        onClick={() => navigate("/cart")}
+      >
+        <div className={`relative ${animateCart ? "animate-bounce" : ""}`}>
+          <ShoppingBag className="h-5 w-5" />
+          <AnimatePresence>
             {showCartBadge && (
-              <span
-                className={`absolute -top-2 -right-2 bg-montebello-gold text-montebello-navy text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center ${animateCart ? "scale-125" : ""} transition-transform`}
+              <motion.span
+                className={`absolute -top-2 -right-2 bg-montebello-gold text-montebello-navy text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center ${
+                  animateCart ? "scale-125" : ""
+                } transition-transform`}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                transition={{ type: "spring", stiffness: 500, damping: 25 }}
               >
                 {cartItemCount > 9 ? "9+" : cartItemCount}
-              </span>
+              </motion.span>
             )}
-          </div>
-        </Button>
-      </Link>
-    </div>
+          </AnimatePresence>
+        </div>
+      </Button>
+    </motion.div>
   )
 }

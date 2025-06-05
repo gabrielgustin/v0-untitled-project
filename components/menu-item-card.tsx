@@ -2,23 +2,23 @@
 
 import type React from "react"
 
-import { useState, useMemo } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { Edit } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { VegetarianBadge } from "@/components/vegetarian-badge"
+import { motion } from "framer-motion"
+import { cardHoverAnimation } from "@/lib/animation-utils"
+import { OptimizedImage } from "@/components/optimized-image"
+import { useSmoothNavigation } from "@/hooks/use-smooth-navigation"
 
 interface MenuItemCardProps {
   id: string
   name: string
-  description: string
+  description?: string | React.ReactNode
   price: number
   image?: string
-  variants?: Array<{
-    name: string
-    price: number
-  }>
-  size?: "normal" | "large"
+  isVegetarian?: boolean
+  variants?: { name: string; price: number }[]
+  size?: "small" | "medium" | "large"
   isAdmin?: boolean
   onEdit?: (id: string) => void
 }
@@ -29,109 +29,96 @@ export function MenuItemCard({
   description,
   price,
   image,
-  variants = [],
-  size = "normal",
+  isVegetarian = false,
+  variants,
+  size = "medium",
   isAdmin = false,
   onEdit,
 }: MenuItemCardProps) {
-  const formattedId = id.toLowerCase().replace(/\s+/g, "-")
-  const [isImageLoading, setIsImageLoading] = useState(true)
-  const [imageError, setImageError] = useState(false)
+  const { navigate } = useSmoothNavigation()
 
-  // Determinar el tamaño de fuente basado en la longitud del nombre
-  const titleFontSize = useMemo(() => {
-    if (name.length <= 15) {
-      return "text-sm sm:text-base"
-    } else if (name.length <= 25) {
-      return "text-xs sm:text-sm"
-    } else {
-      return "text-[10px] sm:text-xs"
-    }
-  }, [name])
-
-  // Función para obtener una imagen por defecto
-  const getDefaultImage = () => {
-    return "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/golden-leaf-restaurant-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9.png"
+  const handleClick = () => {
+    navigate(`/product/${id}`)
   }
 
-  // Asegurar que siempre tengamos una imagen válida
-  const imageUrl = image || getDefaultImage()
-
-  // Función para manejar el clic en el botón de edición
   const handleEditClick = (e: React.MouseEvent) => {
-    e.preventDefault()
     e.stopPropagation()
     if (onEdit) {
       onEdit(id)
     }
   }
 
-  // Función para manejar errores de carga de imagen
-  const handleImageError = () => {
-    console.warn(`Error loading image for product: ${id}`)
-    setImageError(true)
-    setIsImageLoading(false)
-  }
+  // Formatear el precio para mostrar siempre dos decimales
+  const formattedPrice = price.toLocaleString("es-AR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 
   return (
-    <Link href={`/product/${formattedId}`} className="block h-full">
-      <div className="bg-montebello-navy/80 rounded-xl overflow-hidden shadow-sm flex flex-col relative border border-montebello-gold/20 hover:shadow-md hover:-translate-y-1 transition-all duration-300 h-[280px] sm:h-[320px] lg:h-[360px]">
-        {/* Botón de edición para administradores */}
-        {isAdmin && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 z-10 h-7 w-7 sm:h-8 sm:w-8 bg-montebello-gold/20 hover:bg-montebello-gold/30 text-montebello-light rounded-full shadow-sm"
-            onClick={handleEditClick}
-          >
-            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-          </Button>
-        )}
+    <motion.div
+      className="relative cursor-pointer"
+      onClick={handleClick}
+      variants={cardHoverAnimation}
+      initial="rest"
+      whileHover="hover"
+      whileTap={{ scale: 0.98 }}
+    >
+      <div className="bg-montebello-navy/80 rounded-lg overflow-hidden border border-montebello-gold/20 h-full flex flex-col">
+        {/* Imagen del producto */}
+        <div className="relative aspect-square w-full overflow-hidden">
+          <OptimizedImage
+            src={image || "/diverse-products-still-life.png"}
+            alt={name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            objectFit="cover"
+            className="transition-transform duration-300 group-hover:scale-105"
+          />
 
-        {/* Contenedor de imagen */}
-        <div className="relative w-full aspect-square">
-          {/* Indicador de carga */}
-          {isImageLoading && !imageError && (
-            <div className="absolute inset-0 flex items-center justify-center bg-montebello-navy/60 z-10">
-              <div className="animate-pulse text-montebello-gold text-xs">Cargando...</div>
+          {/* Badge vegetariano */}
+          {isVegetarian && (
+            <div className="absolute top-2 left-2">
+              <VegetarianBadge />
             </div>
           )}
 
-          <img
-            src={imageError ? getDefaultImage() : imageUrl}
-            alt={name}
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-            onLoad={() => setIsImageLoading(false)}
-            onError={handleImageError}
-            loading="lazy"
-          />
+          {/* Botón de edición para administradores */}
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 h-8 w-8 bg-montebello-gold/20 hover:bg-montebello-gold/30 text-montebello-light rounded-full shadow-sm"
+              onClick={handleEditClick}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          )}
         </div>
 
         {/* Información del producto */}
-        <div className="p-3 flex flex-col flex-grow bg-gradient-to-t from-montebello-navy/95 to-montebello-navy/80 absolute bottom-0 w-full">
-          <div className="flex flex-col h-full">
-            <div>
-              <h3 className={cn("font-bold text-montebello-gold leading-tight break-words", titleFontSize)}>{name}</h3>
+        <div className="p-3 flex flex-col flex-grow">
+          <h3 className="font-medium text-montebello-light mb-1 line-clamp-2">{name}</h3>
 
-              {variants.length > 0 && (
-                <span className="text-montebello-light/70 text-[10px] sm:text-xs italic mt-0.5 block">
-                  {variants.length} {variants.length === 1 ? "opción" : "opciones"}
-                </span>
-              )}
+          {description && (
+            <p className="text-xs text-montebello-light/70 mb-2 line-clamp-2">
+              {typeof description === "string" ? description.split("•")[0] : description}
+            </p>
+          )}
 
-              <p className="text-montebello-light/80 text-[10px] sm:text-xs line-clamp-2 mt-1">{description}</p>
-            </div>
-
-            <div className="mt-auto pt-2 flex justify-end">
-              {!variants.length && (
-                <span className="font-bold text-montebello-gold text-xs sm:text-sm bg-montebello-navy/40 px-1.5 py-0.5 rounded">
-                  ${price}
-                </span>
-              )}
-            </div>
+          <div className="mt-auto">
+            {variants && variants.length > 0 ? (
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-montebello-light/70">Desde</span>
+                <span className="font-bold text-montebello-gold">${formattedPrice}</span>
+              </div>
+            ) : (
+              <div className="flex justify-end">
+                <span className="font-bold text-montebello-gold">${formattedPrice}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </Link>
+    </motion.div>
   )
 }

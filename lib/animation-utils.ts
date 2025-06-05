@@ -3,11 +3,11 @@ export const fadeIn = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.3 },
+    transition: { duration: 0.4, ease: "easeOut" },
   },
   exit: {
     opacity: 0,
-    transition: { duration: 0.2 },
+    transition: { duration: 0.3, ease: "easeIn" },
   },
 }
 
@@ -24,6 +24,42 @@ export const slideUp = {
   },
   exit: {
     y: 20,
+    opacity: 0,
+    transition: { duration: 0.2 },
+  },
+}
+
+export const slideInFromRight = {
+  hidden: { x: 30, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 30,
+    },
+  },
+  exit: {
+    x: 30,
+    opacity: 0,
+    transition: { duration: 0.2 },
+  },
+}
+
+export const slideInFromLeft = {
+  hidden: { x: -30, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 30,
+    },
+  },
+  exit: {
+    x: -30,
     opacity: 0,
     transition: { duration: 0.2 },
   },
@@ -109,4 +145,63 @@ export const floatingButtonAnimation = {
     },
   },
   tap: { scale: 0.9 },
+}
+
+// Nuevas animaciones para transiciones de página
+export const pageTransition = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.5, ease: "easeInOut" },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.3, ease: "easeInOut" },
+  },
+}
+
+// Animación para tarjetas con efecto de elevación
+export const cardHoverAnimation = {
+  rest: {
+    scale: 1,
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    transition: {
+      duration: 0.2,
+      ease: "easeInOut",
+    },
+  },
+  hover: {
+    scale: 1.03,
+    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+    transition: {
+      duration: 0.2,
+      ease: "easeInOut",
+    },
+  },
+}
+
+// Animación para el cambio de título
+export const titleChangeAnimation = {
+  exit: {
+    y: -20,
+    opacity: 0,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
+  enter: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.3, ease: "easeOut", delay: 0.1 },
+  },
+}
+
+// Animación para el indicador de carga
+export const loadingIndicatorAnimation = {
+  animate: {
+    rotate: 360,
+    transition: {
+      repeat: Number.POSITIVE_INFINITY,
+      duration: 1,
+      ease: "linear",
+    },
+  },
 }
