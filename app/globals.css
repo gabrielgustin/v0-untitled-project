@@ -2,38 +2,131 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Colores del backoffice (panel de administración) - NO SE MODIFICAN */
-  --admin-color-primary: #2a4287;
-  --admin-color-secondary: #d4b45a;
-  --admin-color-accent: #f5f0e0;
-  --admin-color-background: #f8f8f8;
-  --admin-color-text: #2a2a2a;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
 
-  /* Colores de la aplicación principal (vista de cliente) - SE PUEDEN PERSONALIZAR */
-  --app-color-primary: #2a4287;
-  --app-color-secondary: #d4b45a;
-  --app-color-accent: #f5f0e0;
-  --app-color-background: #f8f8f8;
-  --app-color-text: #2a2a2a;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
 
-  /* Variables de compatibilidad - Apuntan a los colores de la aplicación principal */
-  --color-primary: var(--app-color-primary);
-  --color-secondary: var(--app-color-secondary);
-  --color-accent: var(--app-color-accent);
-  --color-background: var(--app-color-background);
-  --color-text: var(--app-color-text);
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
 
-  /* Variables específicas de Montebello */
-  --montebello-navy: var(--app-color-primary);
-  --montebello-gold: var(--app-color-secondary);
-  --montebello-light: var(--app-color-accent);
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 240 5.9% 10%;
+
+    --radius: 0.5rem;
+
+    /* Custom Montebello colors */
+    --montebello-gold: 45 88% 58%;
+    --montebello-navy: 220 20% 10%;
+    --montebello-light: 0 0% 98%;
+    --montebello-dark: 220 20% 5%;
+
+    /* Shadcn Sidebar colors */
+    --sidebar-background: var(--montebello-navy);
+    --sidebar-foreground: var(--montebello-light);
+    --sidebar-primary: var(--montebello-gold);
+    --sidebar-primary-foreground: var(--montebello-navy);
+    --sidebar-accent: 240 3.7% 15.9%; /* A slightly lighter navy for accent */
+    --sidebar-accent-foreground: var(--montebello-light);
+    --sidebar-border: var(--montebello-gold);
+    --sidebar-ring: var(--montebello-gold);
+
+    /* Success colors for toast and other components */
+    --success: 142.1 76.2% 36.3%; /* A standard green */
+    --success-foreground: 0 0% 98%; /* White/light color for text */
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+
+    /* Custom Montebello colors for dark mode (same as light for consistency) */
+    --montebello-gold: 45 88% 58%;
+    --montebello-navy: 220 20% 10%;
+    --montebello-light: 0 0% 98%;
+    --montebello-dark: 220 20% 5%;
+
+    /* Shadcn Sidebar colors for dark mode */
+    --sidebar-background: var(--montebello-navy);
+    --sidebar-foreground: var(--montebello-light);
+    --sidebar-primary: var(--montebello-gold);
+    --sidebar-primary-foreground: var(--montebello-navy);
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: var(--montebello-light);
+    --sidebar-border: var(--montebello-gold);
+    --sidebar-ring: var(--montebello-gold);
+
+    /* Success colors for toast and other components in dark mode */
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 0 0% 98%;
+  }
 }
 
-body {
-  color: var(--color-text);
-  background-color: var(--color-background);
-  overflow-x: hidden;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Override toast text color to ensure legibility against dark backgrounds */
+/* This targets the title and description within any toast */
+.ToastViewport > div[data-state="open"] [data-radix-toast-title],
+.ToastViewport > div[data-state="open"] [data-radix-toast-description] {
+  color: hsl(var(--montebello-light)) !important;
+}
+
+/* Optionally, if the toast background is not green for success variant, force it to montebello-navy */
+/* This might be desired if the user wants all toasts to have the app's dark theme */
+.ToastViewport > div[data-state="open"][data-variant="success"] {
+  background-color: hsl(var(--montebello-navy)) !important;
+  border-color: hsl(var(--montebello-gold)) !important;
 }
 
 /* Estilos para el contenedor de la aplicación */
@@ -63,7 +156,7 @@ body {
 
 .categories-carousel.sticky {
   position: fixed;
-  top: 0;
+  /* top: 0; REMOVED - now handled by inline style */
   left: 0;
   right: 0;
   padding: 0.5rem 1rem;

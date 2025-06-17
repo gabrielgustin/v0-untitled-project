@@ -11,6 +11,7 @@ import { getAuthState, type User } from "@/lib/auth"
 import { getProducts, type Product, getDefaultImage, initialProducts } from "@/lib/products"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DesktopNavigation } from "@/components/desktop-navigation"
+import { toast } from "@/components/ui/use-toast"
 
 import { motion, AnimatePresence } from "framer-motion"
 import { addToCartAnimation } from "@/lib/animation-utils"
@@ -52,7 +53,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       const foundProduct = products.find((p) => p.id === params.id)
 
       if (foundProduct) {
-        console.log(`Producto encontrado: ${foundProduct.name}`)
+        console.log(`ProductPage: Producto encontrado: ${foundProduct.name}`)
         setProduct(foundProduct)
 
         // Si el producto tiene variantes, seleccionar la primera por defecto
@@ -61,12 +62,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           setSelectedVariantPrice(foundProduct.variants[0].price)
         }
       } else {
-        console.log(`Producto no encontrado en localStorage, buscando en productos iniciales: ${params.id}`)
+        console.log(
+          `ProductPage: Producto no encontrado en localStorage, buscando en productos iniciales: ${params.id}`,
+        )
         // Si no se encuentra en localStorage, buscar en los productos iniciales
         const initialProduct = initialProducts.find((p) => p.id === params.id)
 
         if (initialProduct) {
-          console.log(`Producto encontrado en productos iniciales: ${initialProduct.name}`)
+          console.log(`ProductPage: Producto encontrado en productos iniciales: ${initialProduct.name}`)
           setProduct(initialProduct)
 
           // Si el producto tiene variantes, seleccionar la primera por defecto
@@ -75,24 +78,30 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             setSelectedVariantPrice(initialProduct.variants[0].price)
           }
         } else {
-          // Producto no encontrado, crear uno genérico
-          console.log(`Producto no encontrado, creando genérico: ${params.id}`)
-          setProduct({
+          // Producto no encontrado, crear uno genérico y mostrar toast
+          const genericProduct = {
             id: params.id,
             name: params.id
               .split("-")
               .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
               .join(" "),
             image: getDefaultImage(null, params.id),
-            price: 0,
+            price: 0, // Precio 0 para indicar que no es un producto válido para comprar
             description: "Lo sentimos, no pudimos encontrar este producto.",
+          }
+          setProduct(genericProduct)
+          toast({
+            title: "Producto no encontrado",
+            description: "El producto que buscas no está disponible.",
+            duration: 3000,
+            variant: "destructive",
           })
         }
       }
     } catch (error) {
-      console.error("Error al cargar el producto:", error)
-      // En caso de error, crear un producto genérico
-      setProduct({
+      console.error("ProductPage: Error al cargar el producto:", error)
+      // En caso de error, crear un producto genérico y mostrar toast
+      const genericProduct = {
         id: params.id,
         name: params.id
           .split("-")
@@ -101,6 +110,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         image: getDefaultImage(null, params.id),
         price: 0,
         description: "Error al cargar el producto.",
+      }
+      setProduct(genericProduct)
+      toast({
+        title: "Error al cargar producto",
+        description: "Hubo un problema al cargar la información del producto.",
+        duration: 3000,
+        variant: "destructive",
       })
     }
   }, [params.id])
@@ -116,9 +132,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         // Calcular la cantidad total de items en el carrito
         const totalItems = parsedCart.reduce((sum: number, item: CartItem) => sum + item.quantity, 0)
         setCartItemCount(totalItems)
+        console.log("ProductPage: Cart loaded from localStorage on mount. Total items:", totalItems) // Log para depuración
       } catch (e) {
-        console.error("Error parsing cart from localStorage", e)
+        console.error("ProductPage: Error parsing cart from localStorage on mount", e)
       }
+    } else {
+      console.log("ProductPage: No cart found in localStorage on mount. Total items: 0") // Log para depuración
     }
 
     // Cargar usuario
@@ -175,7 +194,19 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   // Función para agregar al carrito
   const addToCart = () => {
-    if (!product) return
+    // Deshabilitar la adición si el producto no es válido
+    if (
+      !product ||
+      (product.price === 0 && product.description === "Lo sentimos, no pudimos encontrar este producto.")
+    ) {
+      toast({
+        title: "Error al agregar",
+        description: "No se puede agregar un producto no válido al carrito.",
+        duration: 3000,
+        variant: "destructive",
+      })
+      return
+    }
 
     // Crear el nuevo item
     const newItem: CartItem = {
@@ -203,11 +234,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
     // Actualizar el estado y localStorage
     setCart(updatedCart)
+    console.log("ProductPage: Carrito actualizado en estado:", updatedCart) // Depuración
     localStorage.setItem("cart", JSON.stringify(updatedCart))
+    console.log("ProductPage: Carrito guardado en localStorage:", localStorage.getItem("cart")) // Depuración
 
     // Calcular la nueva cantidad total de items
     const newTotalItems = updatedCart.reduce((sum, item) => sum + item.quantity, 0)
     setCartItemCount(newTotalItems)
+    console.log("ProductPage: Cart item count updated to:", newTotalItems) // Log para depuración
 
     // Activar la animación del carrito
     setCartAnimation(true)
@@ -215,10 +249,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     // Mostrar feedback visual
     setIsAddingToCart(true)
 
-    // Redirigir al inicio después de un breve retraso para que se vea la animación
-    setTimeout(() => {
-      router.push("/menu")
-    }, 800)
+    // Eliminar el toast de confirmación
+    // toast({
+    //   title: "Producto agregado",
+    //   description: "El producto ha sido añadido a tu pedido.",
+    //   duration: 2000,
+    //   variant: "success",
+    // })
+
+    // Redirigir al menú inmediatamente después de añadir
+    router.replace("/menu") // Usar replace para evitar añadir a la historia de navegación
   }
 
   // Función para manejar el inicio de sesión exitoso
@@ -233,6 +273,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     setImageError(true)
     setIsImageLoading(false)
   }
+
+  // Determinar si el producto es el genérico "no encontrado"
+  const isProductNotFound =
+    product && product.price === 0 && product.description === "Lo sentimos, no pudimos encontrar este producto."
 
   if (!product) {
     return (
@@ -290,7 +334,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         cartItemCount={cartItemCount}
         cartAnimation={cartAnimation}
       />
-
       <div className="container-app flex-1 flex flex-col lg:flex-row lg:gap-8 lg:py-8">
         {/* Contenedor para la imagen y el botón con el mismo margen superior */}
         <div className="pt-16 relative lg:w-1/2 lg:pt-0">
@@ -309,8 +352,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {/* Botón de retroceso - Solo visible en desktop */}
           <div className="hidden lg:block mb-4 mt-4">
             <Button
-              variant="outline"
-              className="text-montebello-light hover:bg-montebello-navy border-montebello-gold/20"
+              variant="ghost" // Cambiado a ghost para un look más sutil
+              className="text-montebello-gold hover:bg-montebello-gold/10" // Colores ajustados
               onClick={() => router.back()}
             >
               <ArrowLeft className="h-5 w-5 mr-2" />
@@ -555,66 +598,52 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </div>
           )}
 
-          {/* Quantity Selector con colores pastel - Solo visible en desktop */}
-          <div className="hidden lg:flex items-center justify-between mb-4 sm:mb-6 mt-auto">
-            <div className="text-base sm:text-lg lg:text-xl font-medium text-montebello-gold">
-              ${(selectedVariantPrice !== null ? selectedVariantPrice : product.price).toFixed(2)}
-              <span className="text-xs sm:text-sm text-montebello-light/70">/ unidad</span>
+          {/* Quantity Selector y Botón de Agregar al Carrito - Solo visible en desktop */}
+          <div className="hidden lg:flex flex-col gap-6 mt-auto">
+            {" "}
+            {/* Ajustado para mejor posicionamiento */}
+            <div className="flex items-center justify-between">
+              <div className="text-base sm:text-lg lg:text-xl font-medium text-montebello-gold">
+                ${(selectedVariantPrice !== null ? selectedVariantPrice : product.price).toFixed(2)}
+                <span className="text-xs sm:text-sm text-montebello-light/70">/ unidad</span>
+              </div>
+
+              <div className="flex items-center">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg border-montebello-gold/20 bg-montebello-gold/20 text-montebello-navy hover:bg-montebello-gold/30"
+                  onClick={decrementQuantity}
+                >
+                  <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+
+                <span
+                  className={cn(
+                    "mx-3 sm:mx-4 font-medium text-base sm:text-xl w-5 sm:w-6 text-center text-montebello-light transition-transform duration-300",
+                  )}
+                >
+                  {quantity}
+                </span>
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg border-montebello-gold/20 bg-montebello-gold/20 text-montebello-navy hover:bg-montebello-gold/30"
+                  onClick={incrementQuantity}
+                >
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+              </div>
             </div>
-
-            <div className="flex items-center">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg border-montebello-gold/20 bg-montebello-gold/20 text-montebello-light hover:bg-montebello-gold/30"
-                onClick={decrementQuantity}
-              >
-                <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
-
-              <span
-                className={cn(
-                  "mx-3 sm:mx-4 font-medium text-base sm:text-xl w-5 sm:w-6 text-center text-montebello-light transition-transform duration-300",
-                  isChanging && "transform scale-110",
-                )}
-              >
-                {quantity}
-              </span>
-
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg border-montebello-gold/20 bg-montebello-gold/20 text-montebello-light hover:bg-montebello-gold/30"
-                onClick={incrementQuantity}
-              >
-                <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Modificar el botón de agregar al carrito */}
-          <motion.div
-            className="hidden lg:flex items-center justify-between mt-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-          >
-            <motion.div
-              className={cn(
-                "text-2xl font-bold text-montebello-gold transition-all duration-300",
-                isChanging && "scale-110 text-montebello-gold",
-              )}
-              animate={isChanging ? { scale: 1.1 } : { scale: 1 }}
-            >
-              ${totalPrice.toFixed(2)}
-            </motion.div>
+            {/* Modificar el botón de agregar al carrito */}
             <motion.button
               className={cn(
-                "bg-montebello-gold/20 hover:bg-montebello-gold/30 text-montebello-light border-montebello-gold/20 border px-6 py-6 rounded-lg flex items-center gap-2 transition-all duration-300",
+                "bg-montebello-gold text-montebello-navy font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 text-lg", // Colores y tamaño ajustados
                 isAddingToCart && "bg-green-900/20 text-green-400 border-green-800/30",
               )}
               onClick={addToCart}
-              disabled={isAddingToCart}
+              disabled={isAddingToCart || isProductNotFound} // Deshabilitar si el producto no es válido
               variants={addToCartAnimation}
               whileHover="hover"
               whileTap="tap"
@@ -647,10 +676,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 </>
               )}
             </motion.button>
-          </motion.div>
+          </div>
         </div>
       </div>
-
       {/* Barra inferior con animación */}
       <AnimatePresence>
         <motion.div
@@ -671,14 +699,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 className="w-10 h-10 flex items-center justify-center bg-montebello-gold/20 rounded-full"
                 onClick={decrementQuantity}
               >
-                <Minus className="h-5 w-5 text-montebello-light" />
+                <Minus className="h-5 w-5 text-montebello-navy" />
               </button>
               <span className="font-bold text-xl text-montebello-light">{quantity}</span>
               <button
                 className="w-10 h-10 flex items-center justify-center bg-montebello-gold/20 rounded-full"
                 onClick={incrementQuantity}
               >
-                <Plus className="h-5 w-5 text-montebello-light" />
+                <Plus className="h-5 w-5 text-montebello-navy" />
               </button>
             </div>
           </div>
@@ -686,11 +714,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {/* Botón de agregar con el nuevo estilo */}
           <button
             className={cn(
-              "flex-1 ml-4 bg-montebello-gold/20 text-montebello-light font-bold py-3 px-4 rounded-lg text-center transition-all border border-montebello-gold/20",
+              "flex-1 ml-4 bg-montebello-gold/20 text-montebello-navy font-bold py-3 px-4 rounded-lg text-center transition-all border border-montebello-gold/20",
               isAddingToCart && "bg-green-900/20 text-green-400 border-green-800/30",
             )}
             onClick={addToCart}
-            disabled={isAddingToCart}
+            disabled={isAddingToCart || isProductNotFound} // Deshabilitar si el producto no es válido
           >
             {isAddingToCart ? (
               <span className="flex items-center justify-center">
@@ -703,8 +731,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           </button>
         </motion.div>
       </AnimatePresence>
-
-      {/* No incluimos el BottomNavigation aquí ya que estamos en una página de detalle de producto */}
     </motion.div>
   )
 }

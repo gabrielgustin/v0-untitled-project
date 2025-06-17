@@ -20,22 +20,25 @@ import {
   deleteProduct,
   addProduct,
   resetProducts,
-  getDefaultCategory,
   type Product,
   type ProductCategory,
+  getProducts,
+  getFeaturedProducts,
 } from "@/lib/products"
 import { DesktopNavigation } from "@/components/desktop-navigation"
 import { Toaster } from "@/components/ui/toaster"
 import { useToast } from "@/components/ui/use-toast"
 
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { mobileMenuAnimation, menuItemAnimation } from "@/lib/animation-utils"
+import { mobileMenuAnimation, menuItemAnimation, staggerContainer } from "@/lib/animation-utils"
 
 // Importar el componente
 import { ScrollToTopButton } from "@/components/scroll-to-top-button"
 import { CategoriesCarousel } from "@/components/categories-carousel"
 import { CategoryEditModal, type Category } from "@/components/category-edit-modal"
+import { FloatingPreviewButton } from "@/components/floating-preview-button"
+import { useSmoothNavigation } from "@/hooks/use-smooth-navigation"
 
 // Definir el tipo para un item del carrito
 interface CartItem {
@@ -81,10 +84,14 @@ const filteredInitialProducts = filterExcludedProducts(initialProducts)
 
 export default function MenuPage() {
   const { toast } = useToast()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { navigate } = useSmoothNavigation()
+
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [showLoginForm, setShowLoginForm] = useState(false)
-  const [products, setProducts] = useState<Product[]>(filteredInitialProducts) // Inicializar con productos filtrados
+  const [products, setProducts] = useState<Product[]>(getProducts()) // Inicializar con productos filtrados
   const [isLoading, setIsLoading] = useState(true)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -92,6 +99,12 @@ export default function MenuPage() {
   const [cartItemCount, setCartItemCount] = useState(0)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [storeName, setStoreName] = useState("CLUB MONTEBELLO")
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<ProductCategory | "destacados" | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingProductId, setEditingProductId] = useState<string | null>(null)
+  const [cartAnimation, setCartAnimation] = useState(false)
+  const [stickyTopOffset, setStickyTopOffset] = useState(0) // Nuevo estado para el offset
 
   // Reemplazar las referencias y estados relacionados con el carrusel
   const carouselWrapperRef = useRef<HTMLDivElement>(null)
@@ -101,7 +114,6 @@ export default function MenuPage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
 
   // Añadir después de la declaración de carouselRef
-  const searchParams = useSearchParams()
   const editProductId = searchParams.get("edit")
 
   // Referencias para las secciones de categoría
@@ -210,6 +222,7 @@ export default function MenuPage() {
     const authUser = getAuthState()
     if (authUser) {
       setUser(authUser)
+      setIsAdmin(authUser.username === "Admin1")
       // Verificar si debe mostrar el panel de administración
       const shouldShowAdmin = localStorage.getItem("show_admin_panel") === "true"
       // Permitir que cualquier usuario autenticado acceda al panel si la bandera está establecida
@@ -226,8 +239,8 @@ export default function MenuPage() {
     try {
       console.log("Cargando productos iniciales...")
       // Usar directamente los productos iniciales filtrados
-      setProducts(filteredInitialProducts)
-      setFeaturedProducts(filteredInitialProducts.filter((p) => p.featured === true))
+      setProducts(getProducts())
+      setFeaturedProducts(getFeaturedProducts())
 
       // Intentar guardar en localStorage para futuras visitas
       if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
@@ -298,32 +311,36 @@ export default function MenuPage() {
       if (!carouselWrapperRef.current) return
 
       const rect = carouselWrapperRef.current.getBoundingClientRect()
-      const isDesktop = window.innerWidth >= 1024
-      const desktopOffset = isDesktop ? 72 : 0 // 72px es la altura de la barra de navegación de escritorio
+      // El offset superior siempre será 0 para que se pegue a la parte superior de la ventana
+      const currentTopOffset = 0
 
       // Determinar si el carrusel debe ser sticky
-      const shouldBeSticky = rect.top <= desktopOffset
+      const shouldBeSticky = rect.top <= currentTopOffset
 
       if (shouldBeSticky !== isCarouselSticky) {
         setIsCarouselSticky(shouldBeSticky)
+      }
+      // Actualizar el offset para el estilo en línea
+      setStickyTopOffset(currentTopOffset)
 
-        // Actualizar el espaciador
-        const spacer = document.querySelector(".categories-spacer")
-        if (spacer) {
-          if (shouldBeSticky) {
-            spacer.classList.add("active")
-          } else {
-            spacer.classList.remove("active")
-          }
+      // Actualizar el espaciador
+      const spacer = document.querySelector(".categories-spacer")
+      if (spacer) {
+        if (shouldBeSticky) {
+          spacer.classList.add("active")
+        } else {
+          spacer.classList.remove("active")
         }
       }
     }
 
     window.addEventListener("scroll", handleScroll)
+    // Ejecutar una vez al montar para establecer el estado inicial
+    handleScroll()
     return () => {
       window.removeEventListener("scroll", handleScroll)
     }
-  }, [isCarouselSticky])
+  }, [isCarouselSticky]) // Dependency array includes isCarouselSticky
 
   // Añadir este useEffect después del useEffect del carrusel sticky
   useEffect(() => {
@@ -354,23 +371,40 @@ export default function MenuPage() {
         setShowEditModal(true)
       }
     }
-  }, [editProductId, products])
+  }, [editProductId, products, isAdmin])
 
   // Cargar carrito y calcular cantidad de items
   useEffect(() => {
-    try {
+    const loadCart = () => {
       const savedCart = localStorage.getItem("cart")
       if (savedCart) {
         try {
           const parsedCart = JSON.parse(savedCart) as CartItem[]
           const totalItems = parsedCart.reduce((sum, item) => sum + item.quantity, 0)
           setCartItemCount(totalItems)
+          console.log("MenuPage: Cart loaded from localStorage. Total items:", totalItems) // Log para depuración
         } catch (e) {
           console.error("Error parsing cart from localStorage", e)
         }
+      } else {
+        setCartItemCount(0)
+        console.log("MenuPage: No cart found in localStorage. Total items: 0") // Log para depuración
       }
-    } catch (e) {
-      console.error("Error accessing localStorage for cart", e)
+    }
+
+    loadCart() // Cargar el carrito al montar
+
+    // Opcional: Añadir un listener para el evento 'storage' si quieres que el carrito se actualice
+    // en tiempo real si se modifica en otra pestaña/ventana del mismo origen.
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "cart") {
+        loadCart()
+      }
+    }
+    window.addEventListener("storage", handleStorageChange)
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
     }
   }, [])
 
@@ -386,6 +420,7 @@ export default function MenuPage() {
   const handleLoginSuccess = () => {
     const authUser = getAuthState()
     setUser(authUser)
+    setIsAdmin(authUser.username === "Admin1")
     if (authUser && authUser.username === "Admin1") {
       setShowAdminPanel(true)
     }
@@ -394,28 +429,38 @@ export default function MenuPage() {
   }
 
   // Función para editar un producto
-  const handleEditProduct = (productId: string) => {
-    const productToEdit = products.find((p) => p.id === productId)
-    if (productToEdit) {
-      setEditingProduct(productToEdit)
-      setShowEditModal(true)
-    } else {
-      // Si no se encuentra en la lista de productos, crear uno nuevo con ese ID
-      const productName = productId
-        .split("-")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ")
+  const handleEditProduct = (id: string) => {
+    setEditingProductId(id)
+    setIsModalOpen(true)
+  }
 
-      const newProduct: Product = {
-        id: productId,
-        name: productName,
-        description: "",
-        price: 0,
-        category: getDefaultCategory(productId, productName),
-      }
-      setEditingProduct(newProduct)
-      setShowEditModal(true)
-    }
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setEditingProductId(null)
+    // Recargar productos después de cerrar el modal para reflejar cambios
+    setProducts(getProducts())
+  }
+
+  const handleProductUpdated = () => {
+    // Recargar productos después de una actualización exitosa
+    setProducts(getProducts())
+    handleCloseModal()
+  }
+
+  const handleProductAdded = () => {
+    // Recargar productos después de añadir uno nuevo
+    setProducts(getProducts())
+    handleCloseModal()
+  }
+
+  const handleProductDeleted = () => {
+    // Recargar productos después de eliminar uno
+    setProducts(getProducts())
+    handleCloseModal()
+  }
+
+  const handleCategorySelect = (category: ProductCategory | "destacados" | null) => {
+    setSelectedCategory(category)
   }
 
   // Función para hacer scroll a la categoría seleccionada
@@ -453,9 +498,6 @@ export default function MenuPage() {
     }
   }
 
-  // Verificar si el usuario es administrador
-  const isAdmin = user?.username === "Admin1"
-
   // Obtener títulos de categorías
   const getCategoryTitle = (category: ProductCategory): string => {
     switch (category) {
@@ -483,6 +525,12 @@ export default function MenuPage() {
   const bebidasProducts = products.filter((product) => product.category === "bebidas")
   const vinosProducts = products.filter((product) => product.category === "vinos")
   const cocktailsProducts = products.filter((product) => product.category === "cocktails")
+
+  const filteredProducts = selectedCategory
+    ? selectedCategory === "destacados"
+      ? getFeaturedProducts()
+      : products.filter((product) => product.category === selectedCategory)
+    : products
 
   // Renderizar un estado de carga mientras se cargan los productos
   if (isLoading) {
@@ -532,11 +580,14 @@ export default function MenuPage() {
   }
 
   return (
-    <div className="bg-montebello-navy min-h-screen">
+    <div className="bg-montebello-navy min-h-screen flex flex-col">
       {/* Desktop Navigation con contador de carrito - Solo visible en pantallas grandes */}
-      <div className="hidden lg:block">
-        <DesktopNavigation user={user} onLoginSuccess={handleLoginSuccess} cartItemCount={cartItemCount} />
-      </div>
+      <DesktopNavigation
+        user={user}
+        onLoginSuccess={handleLoginSuccess}
+        cartItemCount={cartItemCount}
+        cartAnimation={cartAnimation}
+      />
 
       {/* Mobile Header - Solo visible en pantallas pequeñas y medianas */}
       <header className="block lg:hidden pt-6 pb-2">
@@ -686,215 +737,75 @@ export default function MenuPage() {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 pb-20 lg:pb-10">
-        {/* Categories Carousel - Nueva implementación sticky */}
-        <div className="categories-wrapper" ref={carouselWrapperRef}>
-          <CategoriesCarousel
-            activeCategory={activeCategory}
-            onCategoryChange={scrollToCategory}
-            isSticky={isCarouselSticky}
-          />
-          <div className={`categories-spacer ${isCarouselSticky ? "active" : ""}`}></div>
-        </div>
+      <div className="container-app flex-1 pb-20 lg:pb-10">
+        <header className="px-4 pt-6 pb-4 lg:pt-8 lg:pb-6">
+          <h1 className="text-3xl font-bold text-montebello-gold mb-4 lg:text-4xl">Nuestro Menú</h1>
+          <div className="categories-wrapper" ref={carouselWrapperRef}>
+            <CategoriesCarousel
+              activeCategory={activeCategory} // Mantener esta prop para el scroll automático
+              onCategoryChange={scrollToCategory} // Mantener esta prop para el scroll automático
+              isSticky={isCarouselSticky}
+              stickyTopOffset={stickyTopOffset} // Pasar el offset dinámico (ahora 0)
+            />
+            <div className={`categories-spacer ${isCarouselSticky ? "active" : ""}`}></div>
+          </div>
+        </header>
 
-        {/* Sección Entradas */}
-        <div ref={entradasRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
-              {getCategoryTitle("entradas")}
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
-            {entradasProducts && entradasProducts.length > 0 ? (
-              entradasProducts.map((product) => (
-                <MenuItemCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  description={product.description}
-                  price={product.price}
-                  image={product.image}
-                  isVegetarian={product.isVegetarian}
-                  variants={product.variants}
-                  size={product.size}
-                  isAdmin={isAdmin}
-                  onEdit={handleEditProduct}
-                />
-              ))
-            ) : (
-              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
-                <p className="text-montebello-light/70">
-                  {isLoading ? "Cargando productos..." : "No hay productos en esta categoría"}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+        <main className="px-4 lg:px-0 py-4">
+          {filteredProducts.length === 0 ? (
+            <motion.div
+              className="text-center text-montebello-light/70 py-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <p>No hay productos en esta categoría.</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+            >
+              {filteredProducts.map((product) => (
+                <MenuItemCard key={product.id} {...product} isAdmin={isAdmin} onEdit={handleEditProduct} />
+              ))}
+            </motion.div>
+          )}
+        </main>
+      </div>
 
-        {/* Sección Platos Principales */}
-        <div ref={principalesRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
-              {getCategoryTitle("principales")}
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
-            {principalesProducts.length > 0 ? (
-              principalesProducts.map((product) => (
-                <MenuItemCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  description={product.description}
-                  price={product.price}
-                  image={product.image}
-                  isVegetarian={product.isVegetarian}
-                  variants={product.variants}
-                  size={product.size}
-                  isAdmin={isAdmin}
-                  onEdit={handleEditProduct}
-                />
-              ))
-            ) : (
-              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
-                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
-              </div>
-            )}
-          </div>
-        </div>
+      {isAdmin && (
+        <FloatingPreviewButton
+          onAddProduct={() => {
+            setEditingProductId(null) // Para asegurar que es un nuevo producto
+            setIsModalOpen(true)
+          }}
+          onResetProducts={() => {
+            // Lógica para resetear productos
+            // Esto podría ser un modal de confirmación o un toast
+            if (confirm("¿Estás seguro de que quieres resetear todos los productos a los valores iniciales?")) {
+              resetProducts() // Descomentar y usar la función si existe
+              setProducts(getProducts()) // Recargar los productos iniciales
+              alert("Productos reseteados.")
+            }
+          }}
+        />
+      )}
 
-        {/* Sección Postres */}
-        <div ref={postresRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
-              {getCategoryTitle("postres")}
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
-            {postresProducts.length > 0 ? (
-              postresProducts.map((product) => (
-                <MenuItemCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  description={product.description}
-                  price={product.price}
-                  image={product.image}
-                  isVegetarian={product.isVegetarian}
-                  variants={product.variants}
-                  size={product.size}
-                  isAdmin={isAdmin}
-                  onEdit={handleEditProduct}
-                />
-              ))
-            ) : (
-              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
-                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Sección Bebidas */}
-        <div ref={bebidasRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
-              {getCategoryTitle("bebidas")}
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
-            {bebidasProducts.length > 0 ? (
-              bebidasProducts.map((product) => (
-                <MenuItemCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  description={product.description}
-                  price={product.price}
-                  image={product.image}
-                  isVegetarian={product.isVegetarian}
-                  variants={product.variants}
-                  size={product.size}
-                  isAdmin={isAdmin}
-                  onEdit={handleEditProduct}
-                />
-              ))
-            ) : (
-              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
-                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Sección Vinos */}
-        <div ref={vinosRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
-              {getCategoryTitle("vinos")}
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
-            {vinosProducts.length > 0 ? (
-              vinosProducts.map((product) => (
-                <MenuItemCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  description={product.description}
-                  price={product.price}
-                  image={product.image}
-                  isVegetarian={product.isVegetarian}
-                  variants={product.variants}
-                  size={product.size}
-                  isAdmin={isAdmin}
-                  onEdit={handleEditProduct}
-                />
-              ))
-            ) : (
-              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
-                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Sección Cocktails */}
-        <div ref={cocktailsRef} className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-montebello-gold uppercase tracking-wide mb-2">
-              {getCategoryTitle("cocktails")}
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-fr">
-            {cocktailsProducts.length > 0 ? (
-              cocktailsProducts.map((product) => (
-                <MenuItemCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  description={product.description}
-                  price={product.price}
-                  image={product.image}
-                  isVegetarian={product.isVegetarian}
-                  variants={product.variants}
-                  size={product.size}
-                  isAdmin={isAdmin}
-                  onEdit={handleEditProduct}
-                />
-              ))
-            ) : (
-              <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center py-8">
-                <p className="text-montebello-light/70">No hay productos en esta categoría</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
+      <ProductEditModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        productId={editingProductId}
+        onProductUpdated={handleProductUpdated}
+        onProductAdded={handleProductAdded}
+        onProductDeleted={handleProductDeleted}
+      />
 
       {/* Bottom Navigation - Solo visible en móvil */}
       <div>
-        <BottomNavigation cartItemCount={cartItemCount} />
+        <BottomNavigation cartItemCount={cartItemCount} cartAnimation={cartAnimation} />
       </div>
 
       {/* Modal de inicio de sesión - Mantener el diseño original para mobile */}

@@ -9,7 +9,7 @@ import { BottomNavigation } from "@/components/bottom-navigation"
 import { DesktopNavigation } from "@/components/desktop-navigation"
 import { getAuthState, type User } from "@/lib/auth"
 import { getProducts, getDefaultImage } from "@/lib/products"
-import { Toaster } from "@/components/ui/toaster"
+// import { Toaster } from "@/components/ui/toaster" // Eliminar importación de Toaster
 import { toast } from "@/components/ui/use-toast"
 
 // Importar motion y las utilidades de animación
@@ -188,11 +188,18 @@ export default function CartPage() {
     })
   }
 
+  // Calcular el cartItemCount para pasar a la navegación
+  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+
   return (
     <div className="bg-montebello-navy min-h-screen">
       {/* Desktop Navigation */}
-      <DesktopNavigation user={user} onLoginSuccess={handleLoginSuccess} />
-
+      <DesktopNavigation
+        user={user}
+        onLoginSuccess={handleLoginSuccess}
+        cartItemCount={cartItemCount}
+        cartAnimation={false}
+      />
       <div className="container-app pb-20 lg:pb-10">
         {/* Header - Solo visible en móvil */}
         <header className="px-4 pt-6 pb-4 flex items-center lg:hidden">
@@ -455,9 +462,9 @@ export default function CartPage() {
         </AnimatePresence>
 
         {/* Bottom Navigation */}
-        <BottomNavigation />
+        <BottomNavigation cartItemCount={cartItemCount} cartAnimation={false} />
       </div>
-      <Toaster />
+      {/* <Toaster /> */} {/* Eliminar Toaster de aquí */}
     </div>
   )
 }

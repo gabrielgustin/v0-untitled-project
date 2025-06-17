@@ -8,21 +8,29 @@ import { ShoppingBag, X, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { logout, type User as UserType, getAuthState } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
+import { useRouter } from "next/navigation" // Importar useRouter
+import { AnimatePresence, motion } from "framer-motion" // Importar motion y AnimatePresence
 
 interface DesktopNavigationProps {
   user: UserType | null
   onLoginSuccess: () => void
-  cartItemCount?: number
-  cartAnimation?: boolean
+  cartItemCount?: number // Esta es la prop que usaremos
+  cartAnimation?: boolean // Esta es la prop que usaremos
 }
 
-export function DesktopNavigation() {
+export function DesktopNavigation({
+  user,
+  onLoginSuccess,
+  cartItemCount = 0,
+  cartAnimation = false,
+}: DesktopNavigationProps) {
   const [storeName, setStoreName] = useState("CLUB MONTEBELLO")
   const [showLoginForm, setShowLoginForm] = useState(false)
-  const [showCartBadge, setShowCartBadge] = useState(false)
-  const [animateCart, setAnimateCart] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
-  const [user, setUser] = useState<UserType | null>(null)
+  const router = useRouter() // Inicializar useRouter
+
+  // Estado local para la animación del badge del carrito
+  const [animateCartBadge, setAnimateCartBadge] = useState(false)
 
   useEffect(() => {
     // Cargar el nombre de la tienda desde localStorage al iniciar
@@ -50,21 +58,16 @@ export function DesktopNavigation() {
     }
   }, [])
 
-  // Efecto para mostrar el badge del carrito si hay items
+  // Efecto para la animación cuando se agrega un producto (usando la prop cartAnimation)
   useEffect(() => {
-    setShowCartBadge(0 > 0)
-  }, [0])
-
-  // Efecto para la animación cuando se agrega un producto
-  useEffect(() => {
-    if (false) {
-      setAnimateCart(true)
+    if (cartAnimation) {
+      setAnimateCartBadge(true)
       const timer = setTimeout(() => {
-        setAnimateCart(false)
+        setAnimateCartBadge(false)
       }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [false])
+  }, [cartAnimation])
 
   // Efecto para bloquear el scroll cuando el modal está abierto
   useEffect(() => {
@@ -81,7 +84,8 @@ export function DesktopNavigation() {
 
   const handleLogout = () => {
     logout()
-    window.location.reload()
+    // Usar router.push para una navegación suave sin recarga completa
+    router.push("/menu")
   }
 
   const handleLoginSuccess = () => {
@@ -93,17 +97,18 @@ export function DesktopNavigation() {
 
     // Actualizar el estado local del usuario
     if (authUser) {
-      setUser(authUser)
+      // No actualizamos el user aquí, ya que se pasa como prop desde MenuPage
+      // y se espera que MenuPage maneje la autenticación.
+      // setUser(authUser); // Esto ya no es necesario aquí
 
       // Establecer la bandera para mostrar el panel de administración
       localStorage.setItem("show_admin_panel", "true")
 
-      // Añadir un pequeño retraso antes de la redirección
-      setTimeout(() => {
-        // Forzar la redirección
-        window.location.href = "/menu"
-      }, 100)
+      // Usar router.push para una navegación suave sin recarga completa
+      router.push("/menu")
     }
+    // Llamar a la función onLoginSuccess pasada por prop
+    onLoginSuccess()
   }
 
   const handleCloseModal = () => {
@@ -119,11 +124,19 @@ export function DesktopNavigation() {
 
   // Verificar el estado de autenticación al cargar el componente
   useEffect(() => {
-    const authUser = getAuthState()
-    if (authUser) {
-      setUser(authUser)
+    // Este useEffect es para el estado inicial del usuario en DesktopNavigation
+    // Si el user prop ya viene, no es necesario cargarlo de nuevo.
+    if (!user) {
+      const authUser = getAuthState()
+      if (authUser) {
+        // Solo actualizamos el estado local si no se pasó un user por prop
+        // Esto es para el caso de que DesktopNavigation se use de forma independiente
+        // o en una ruta donde el user no se pasa directamente.
+        // En el contexto de MenuPage, el user ya se pasa como prop.
+        // setUser(authUser);
+      }
     }
-  }, [])
+  }, [user]) // Depende de la prop user
 
   return (
     <div className="hidden md:flex items-center justify-between px-8 py-4 bg-montebello-navy text-white">
@@ -140,10 +153,24 @@ export function DesktopNavigation() {
       </div>
       <div className="flex items-center space-x-4">
         <Link href="/cart" className="relative">
-          <ShoppingBag className="h-6 w-6 text-white hover:text-montebello-gold transition-colors" />
-          <span className="absolute -top-2 -right-2 bg-montebello-gold text-montebello-navy rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-            0
-          </span>
+          <div className={`relative ${animateCartBadge ? "animate-bounce" : ""}`}>
+            <ShoppingBag className="h-6 w-6 text-white hover:text-montebello-gold transition-colors" />
+            <AnimatePresence>
+              {cartItemCount > 0 && (
+                <motion.span
+                  className={`absolute -top-2 -right-2 bg-montebello-gold text-montebello-navy rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold ${
+                    animateCartBadge ? "scale-125" : ""
+                  } transition-transform`}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                >
+                  {cartItemCount > 9 ? "9+" : cartItemCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
         </Link>
         {!user ? (
           <Button
@@ -163,7 +190,7 @@ export function DesktopNavigation() {
                 className="border-montebello-gold/20 text-montebello-gold hover:bg-montebello-gold/10"
                 onClick={() => {
                   localStorage.setItem("show_admin_panel", "true")
-                  window.location.href = "/menu"
+                  router.push("/menu") // Usar router.push aquí también
                 }}
               >
                 Panel Admin

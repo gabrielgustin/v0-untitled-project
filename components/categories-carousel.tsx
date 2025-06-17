@@ -4,16 +4,37 @@ import { useRef, useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { FoodCategory } from "@/components/food-category"
 import type { ProductCategory } from "@/lib/products"
+import { cn } from "@/lib/utils"
 
 interface CategoriesCarouselProps {
   activeCategory: ProductCategory
   onCategoryChange: (category: ProductCategory) => void
-  isSticky?: boolean
+  isSticky: boolean
+  stickyTopOffset: number // Prop para el offset superior
 }
 
-export function CategoriesCarousel({ activeCategory, onCategoryChange, isSticky = false }: CategoriesCarouselProps) {
+export function CategoriesCarousel({
+  activeCategory,
+  onCategoryChange,
+  isSticky,
+  stickyTopOffset, // Recibir la nueva prop
+}: CategoriesCarouselProps) {
   const carouselRef = useRef<HTMLDivElement>(null)
   const [showScrollIndicator, setShowScrollIndicator] = useState(false)
+
+  // Definición de las categorías con sus tipos de icono
+  const categories: {
+    id: ProductCategory
+    title: string
+    iconType: "entradas" | "principales" | "postres" | "bebidas" | "vinos" | "cocktails"
+  }[] = [
+    { id: "entradas", title: "Entradas", iconType: "entradas" },
+    { id: "principales", title: "Platos & Principales", iconType: "principales" },
+    { id: "postres", title: "Postres", iconType: "postres" },
+    { id: "bebidas", title: "Bebidas & Refrescos", iconType: "bebidas" },
+    { id: "vinos", title: "Vinos & Espumantes", iconType: "vinos" },
+    { id: "cocktails", title: "Cocktails & Tragos", iconType: "cocktails" },
+  ]
 
   // Verificar si el carrusel necesita scroll
   const checkCarouselOverflow = () => {
@@ -58,7 +79,19 @@ export function CategoriesCarousel({ activeCategory, onCategoryChange, isSticky 
   }, [activeCategory])
 
   return (
-    <div className={`categories-carousel ${isSticky ? "sticky" : ""} bg-[#121628]`}>
+    <motion.div
+      className={cn(
+        "categories-carousel w-full bg-montebello-navy transition-all duration-300 ease-in-out",
+        isSticky && "sticky",
+      )}
+      style={isSticky ? { top: stickyTopOffset, zIndex: 50 } : {}} // Aplicar el offset dinámico y zIndex alto
+      initial={false} // Deshabilitar animaciones iniciales para evitar parpadeos
+      animate={{
+        paddingTop: isSticky ? "0.5rem" : "0",
+        paddingBottom: isSticky ? "0.5rem" : "0",
+      }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="relative">
         {/* Título "Categorías" cuando está en modo sticky */}
         <AnimatePresence>
@@ -94,66 +127,24 @@ export function CategoriesCarousel({ activeCategory, onCategoryChange, isSticky 
           }}
         >
           <div className="flex space-x-3 min-w-max px-2 container mx-auto">
-            <button
-              onClick={() => onCategoryChange("entradas")}
-              className="focus:outline-none"
-              aria-label="Seleccionar categoría Entradas"
-              aria-pressed={activeCategory === "entradas"}
-            >
-              <FoodCategory title="Entradas" iconType="entradas" isActive={activeCategory === "entradas"} />
-            </button>
-
-            <button
-              onClick={() => onCategoryChange("principales")}
-              className="focus:outline-none"
-              aria-label="Seleccionar categoría Platos Principales"
-              aria-pressed={activeCategory === "principales"}
-            >
-              <FoodCategory
-                title="Platos & Principales"
-                iconType="principales"
-                isActive={activeCategory === "principales"}
-              />
-            </button>
-
-            <button
-              onClick={() => onCategoryChange("postres")}
-              className="focus:outline-none"
-              aria-label="Seleccionar categoría Postres"
-              aria-pressed={activeCategory === "postres"}
-            >
-              <FoodCategory title="Postres" iconType="postres" isActive={activeCategory === "postres"} />
-            </button>
-
-            <button
-              onClick={() => onCategoryChange("bebidas")}
-              className="focus:outline-none"
-              aria-label="Seleccionar categoría Bebidas"
-              aria-pressed={activeCategory === "bebidas"}
-            >
-              <FoodCategory title="Bebidas & Refrescos" iconType="bebidas" isActive={activeCategory === "bebidas"} />
-            </button>
-
-            <button
-              onClick={() => onCategoryChange("vinos")}
-              className="focus:outline-none"
-              aria-label="Seleccionar categoría Vinos"
-              aria-pressed={activeCategory === "vinos"}
-            >
-              <FoodCategory title="Vinos & Espumantes" iconType="vinos" isActive={activeCategory === "vinos"} />
-            </button>
-
-            <button
-              onClick={() => onCategoryChange("cocktails")}
-              className="focus:outline-none"
-              aria-label="Seleccionar categoría Cocktails"
-              aria-pressed={activeCategory === "cocktails"}
-            >
-              <FoodCategory title="Cocktails & Tragos" iconType="cocktails" isActive={activeCategory === "cocktails"} />
-            </button>
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => onCategoryChange(category.id)}
+                className="focus:outline-none"
+                aria-label={`Seleccionar categoría ${category.title}`}
+                aria-pressed={activeCategory === category.id}
+              >
+                <FoodCategory
+                  title={category.title}
+                  iconType={category.iconType}
+                  isActive={activeCategory === category.id}
+                />
+              </button>
+            ))}
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
