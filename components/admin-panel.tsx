@@ -23,7 +23,6 @@ import {
   X,
   ChevronLeft,
   Settings,
-  Palette,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -405,17 +404,6 @@ export function AdminPanel({
                       >
                         <Package className="h-5 w-5 mr-3" />
                         <span>Formas de entrega</span>
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        className={`flex items-center w-full px-3 py-2 rounded-md ${
-                          activeConfigSection === "theme-colors" ? "admin-button" : "text-gray-700 hover:bg-gray-100"
-                        }`}
-                        onClick={() => setActiveConfigSection("theme-colors")}
-                      >
-                        <Palette className="h-5 w-5 mr-3" />
-                        <span>Personalización de colores</span>
                       </button>
                     </li>
                   </ul>
@@ -868,21 +856,6 @@ export function AdminPanel({
                         <Package className="h-5 w-5 text-gray-500" />
                       </div>
                       <h3 className="text-base md:text-lg font-medium text-gray-800">Formas de entrega</h3>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Theme Colors */}
-                <Card
-                  className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
-                  onClick={() => setActiveConfigSection("theme-colors")}
-                >
-                  <CardContent className="p-4 md:p-6">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-4">
-                        <Palette className="h-5 w-5 text-gray-500" />
-                      </div>
-                      <h3 className="text-base md:text-lg font-medium text-gray-800">Personalización de colores</h3>
                     </div>
                   </CardContent>
                 </Card>

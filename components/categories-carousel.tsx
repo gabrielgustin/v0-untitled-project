@@ -103,9 +103,7 @@ export function CategoriesCarousel({
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <h2 className="text-[var(--app-color-secondary)] font-bold text-lg inline-flex items-center">
-                Categorías
-              </h2>
+              <h2 className="text-montebello-gold font-bold text-lg inline-flex items-center">Categorías</h2>
             </motion.div>
           )}
         </AnimatePresence>
