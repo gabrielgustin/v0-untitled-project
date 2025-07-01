@@ -19,7 +19,6 @@ import {
   Coffee,
   Wine,
   CoffeeIcon as Cocktail,
-  MenuIcon,
   X,
   ChevronLeft,
 } from "lucide-react"
@@ -812,14 +811,6 @@ export function AdminPanel({
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             {/* Botón de menú hamburguesa para móvil */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="mr-2 md:hidden text-white hover:bg-white/20"
-              onClick={() => setMobileMenuOpen(true)}
-            >
-              <MenuIcon className="h-6 w-6" />
-            </Button>
 
             <img src="/autogestiva-logo-new.png" alt="Autogestiva" className="h-16 md:h-24" />
           </div>
@@ -828,7 +819,7 @@ export function AdminPanel({
           <div className="hidden md:flex md:items-center">
             <Button
               onClick={handleExitAdminMode}
-              className="bg-white text-primary hover:bg-gray-100 rounded-full px-6 py-2"
+              className="bg-white text-blue-700 hover:bg-gray-100 rounded-full px-6 py-2"
             >
               Ver tienda en modo cliente
             </Button>
