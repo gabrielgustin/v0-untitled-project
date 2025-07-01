@@ -4,7 +4,6 @@ import type React from "react"
 
 import { Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { VegetarianBadge } from "@/components/vegetarian-badge"
 import { motion } from "framer-motion"
 import { cardHoverAnimation } from "@/lib/animation-utils"
 import { OptimizedImage } from "@/components/optimized-image"
@@ -74,13 +73,6 @@ export function MenuItemCard({
             objectFit="cover"
             className="transition-transform duration-300 group-hover:scale-105"
           />
-
-          {/* Badge vegetariano */}
-          {isVegetarian && (
-            <div className="absolute top-2 left-2">
-              <VegetarianBadge />
-            </div>
-          )}
 
           {/* Botón de edición para administradores */}
           {isAdmin && (

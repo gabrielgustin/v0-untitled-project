@@ -1,399 +1,346 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
-import { X, Plus, Trash2, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { Product, ProductCategory } from "@/lib/products"
+import { Switch } from "@/components/ui/switch"
+import { Plus, X, Upload } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
-interface ProductEditModalProps {
-  product: Product | null
-  onClose: () => void
-  onSave: (product: Product) => void
-  onDelete?: (productId: string) => void
+interface Product {
+  id: string
+  name: string
+  description: string
+  price: number
+  category: string
+  image: string | null
+  isAvailable: boolean
+  isFeatured: boolean
+  isVegetarian: boolean
+  isVegan: boolean
+  isGlutenFree: boolean
+  tags: string[]
 }
 
-export function ProductEditModal({ product, onClose, onSave, onDelete }: ProductEditModalProps) {
-  const [editedProduct, setEditedProduct] = useState<Product>({
-    id: "",
-    name: "",
-    description: "",
-    price: 0,
-    image: "",
-    isVegetarian: false,
-    variants: [],
-    category: null,
-    featured: false,
-  })
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+interface ProductEditModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onSave: (product: Product) => void
+  product?: Product // Optional, for editing existing product
+}
 
-  // Cargar los datos del producto cuando se abre el modal
+export function ProductEditModal({ isOpen, onClose, onSave, product }: ProductEditModalProps) {
+  const [formData, setFormData] = useState<Product>(
+    product || {
+      id: "",
+      name: "",
+      description: "",
+      price: 0,
+      category: "",
+      image: null,
+      isAvailable: true,
+      isFeatured: false,
+      isVegetarian: false,
+      isVegan: false,
+      isGlutenFree: false,
+      tags: [],
+    },
+  )
+  const [newTag, setNewTag] = useState("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
+
   useEffect(() => {
     if (product) {
-      // Asegurarse de que la categoría esté definida
-      const category = product.category || "entradas"
-
-      // Asegurarse de que la descripción sea una cadena de texto
-      const description = typeof product.description === "string" ? product.description : ""
-
-      setEditedProduct({
-        ...product,
-        description,
-        variants: product.variants || [],
-        category: category as ProductCategory,
+      setFormData(product)
+    } else {
+      setFormData({
+        id: "",
+        name: "",
+        description: "",
+        price: 0,
+        category: "",
+        image: null,
+        isAvailable: true,
+        isFeatured: false,
+        isVegetarian: false,
+        isVegan: false,
+        isGlutenFree: false,
+        tags: [],
       })
-
-      // Establecer la vista previa de la imagen
-      if (product.image) {
-        setImagePreview(product.image)
-      }
     }
-  }, [product])
+  }, [product, isOpen])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setEditedProduct((prev) => ({
-      ...prev,
-      [name]: name === "price" ? Number.parseFloat(value) || 0 : value,
-    }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleCategoryChange = (value: string) => {
-    setEditedProduct((prev) => ({
-      ...prev,
-      category: value as ProductCategory,
-    }))
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: Number.parseFloat(value) || 0 }))
   }
 
-  const handleSizeChange = (value: string) => {
-    setEditedProduct((prev) => ({
-      ...prev,
-      size: value as "normal" | "large",
-    }))
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleVariantChange = (index: number, field: "name" | "price", value: string) => {
-    setEditedProduct((prev) => {
-      const updatedVariants = [...(prev.variants || [])]
-      updatedVariants[index] = {
-        ...updatedVariants[index],
-        [field]: field === "price" ? Number.parseFloat(value) || 0 : value,
-      }
-      return {
-        ...prev,
-        variants: updatedVariants,
-      }
-    })
-  }
-
-  const addVariant = () => {
-    setEditedProduct((prev) => ({
-      ...prev,
-      variants: [...(prev.variants || []), { name: "", price: 0 }],
-    }))
-  }
-
-  const removeVariant = (index: number) => {
-    setEditedProduct((prev) => {
-      const updatedVariants = [...(prev.variants || [])]
-      updatedVariants.splice(index, 1)
-      return {
-        ...prev,
-        variants: updatedVariants,
-      }
-    })
+  const handleSwitchChange = (name: keyof Product, checked: boolean) => {
+    setFormData((prev) => ({ ...prev, [name]: checked }))
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setEditedProduct((prev) => ({
-      ...prev,
-      image: value,
-    }))
-
-    // Actualizar la vista previa de la imagen
-    if (value) {
-      setImagePreview(value)
-    } else {
-      setImagePreview(null)
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setImageFile(file)
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        if (event.target && event.target.result) {
+          setFormData((prev) => ({ ...prev, image: event.target.result as string }))
+        }
+      }
+      reader.readAsDataURL(file)
     }
+  }
+
+  const handleAddTag = () => {
+    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+      setFormData((prev) => ({ ...prev, tags: [...prev.tags, newTag.trim()] }))
+      setNewTag("")
+    }
+  }
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData((prev) => ({ ...prev, tags: prev.tags.filter((tag) => tag !== tagToRemove) }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Validar que los campos requeridos estén completos
-    if (!editedProduct.name || editedProduct.price <= 0) {
-      alert("Por favor completa todos los campos requeridos")
-      return
-    }
-
-    // Asegurarse de que la descripción sea una cadena de texto
-    const sanitizedProduct = {
-      ...editedProduct,
-      description: String(editedProduct.description || ""),
-    }
-
-    // Guardar el producto
-    onSave(sanitizedProduct)
+    onSave(formData)
+    onClose()
   }
-
-  const handleDelete = () => {
-    if (onDelete && product && confirm("¿Estás seguro de que deseas eliminar este producto?")) {
-      onDelete(product.id)
-    }
-  }
-
-  if (!product) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <Card className="bg-white border border-gray-200 shadow-lg">
-          <CardHeader className="pb-3 border-b border-gray-100">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-xl font-bold text-gray-800">Editar Producto</CardTitle>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px] p-0">
+        <DialogHeader className="p-4 border-b">
+          <DialogTitle className="text-xl font-bold text-gray-800">
+            {product ? "Editar Producto" : "Nuevo Producto"}
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-gray-800 font-medium">
+              Nombre del Producto
+            </Label>
+            <Input
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Ej: Hamburguesa Clásica"
+              required
+              className="bg-transparent border border-gray-200"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-gray-800 font-medium">
+              Descripción
+            </Label>
+            <Textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Una deliciosa hamburguesa con queso, lechuga y tomate."
+              className="bg-transparent border border-gray-200"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="price" className="text-gray-800 font-medium">
+                Precio
+              </Label>
+              <Input
+                id="price"
+                name="price"
+                type="number"
+                value={formData.price}
+                onChange={handleNumberChange}
+                placeholder="0.00"
+                step="0.01"
+                required
+                className="bg-transparent border border-gray-200"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category" className="text-gray-800 font-medium">
+                Categoría
+              </Label>
+              <Select value={formData.category} onValueChange={(value) => handleSelectChange("category", value)}>
+                <SelectTrigger className="bg-transparent border border-gray-200">
+                  <SelectValue placeholder="Selecciona una categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="entradas">Entradas</SelectItem>
+                  <SelectItem value="platos-principales">Platos Principales</SelectItem>
+                  <SelectItem value="postres">Postres</SelectItem>
+                  <SelectItem value="bebidas">Bebidas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <Label className="text-gray-800 font-medium">Imagen del Producto</Label>
+            <div className="flex flex-col items-center border rounded-lg p-4 bg-gray-50">
+              <div className="w-32 h-32 flex items-center justify-center mb-4">
+                {formData.image ? (
+                  <img
+                    src={formData.image || "/placeholder.svg"}
+                    alt="Product Image"
+                    className="max-w-full max-h-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center text-gray-600">
+                    <Upload className="h-10 w-10 mx-auto mb-2" />
+                    <p>Sin imagen</p>
+                  </div>
+                )}
+              </div>
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-gray-500 rounded-full hover:bg-gray-100"
-                onClick={onClose}
+                variant="outline"
+                className="w-full text-[#2a4287] font-medium border-[#2a4287] hover:bg-[#2a4287] hover:text-white bg-transparent"
+                type="button"
+                onClick={() => document.getElementById("image-upload")?.click()}
               >
-                <X className="h-5 w-5" />
+                {formData.image ? "Cambiar Imagen" : "Agregar Imagen"}
+              </Button>
+              <input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-medium text-gray-800">Opciones de Visibilidad</h3>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="isAvailable" className="text-gray-700">
+                Disponible
+              </Label>
+              <Switch
+                id="isAvailable"
+                checked={formData.isAvailable}
+                onCheckedChange={(checked) => handleSwitchChange("isAvailable", checked)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="isFeatured" className="text-gray-700">
+                Destacado
+              </Label>
+              <Switch
+                id="isFeatured"
+                checked={formData.isFeatured}
+                onCheckedChange={(checked) => handleSwitchChange("isFeatured", checked)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-medium text-gray-800">Características Especiales</h3>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="isVegetarian" className="text-gray-700">
+                Vegetariano
+              </Label>
+              <Switch
+                id="isVegetarian"
+                checked={formData.isVegetarian}
+                onCheckedChange={(checked) => handleSwitchChange("isVegetarian", checked)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="isVegan" className="text-gray-700">
+                Vegano
+              </Label>
+              <Switch
+                id="isVegan"
+                checked={formData.isVegan}
+                onCheckedChange={(checked) => handleSwitchChange("isVegan", checked)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="isGlutenFree" className="text-gray-700">
+                Sin Gluten
+              </Label>
+              <Switch
+                id="isGlutenFree"
+                checked={formData.isGlutenFree}
+                onCheckedChange={(checked) => handleSwitchChange("isGlutenFree", checked)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="newTag" className="text-gray-800 font-medium">
+              Etiquetas
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                id="newTag"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                placeholder="Añadir etiqueta (ej: picante, nuevo)"
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    handleAddTag()
+                  }
+                }}
+                className="bg-transparent border border-gray-200"
+              />
+              <Button
+                type="button"
+                onClick={handleAddTag}
+                variant="outline"
+                className="text-[#2a4287] border-[#2a4287] hover:bg-[#2a4287] hover:text-white bg-transparent"
+              >
+                <Plus className="h-4 w-4" />
               </Button>
             </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-gray-700">
-                  Nombre
-                </Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={editedProduct.name}
-                  onChange={handleChange}
-                  className="border-gray-200 bg-white text-gray-700"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category" className="text-gray-700">
-                  Categoría
-                </Label>
-                <Select
-                  value={editedProduct.category || ""}
-                  onValueChange={handleCategoryChange}
-                  defaultValue={editedProduct.category || ""}
-                >
-                  <SelectTrigger className="border-gray-200 bg-white text-gray-700">
-                    <SelectValue placeholder="Selecciona una categoría" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-gray-200 text-gray-700">
-                    <SelectItem value="entradas">Entradas</SelectItem>
-                    <SelectItem value="principales">Platos Principales</SelectItem>
-                    <SelectItem value="postres">Postres</SelectItem>
-                    <SelectItem value="bebidas">Bebidas</SelectItem>
-                    <SelectItem value="vinos">Vinos</SelectItem>
-                    <SelectItem value="cocktails">Cocktails</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description" className="text-gray-700">
-                  Descripción
-                </Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={typeof editedProduct.description === "string" ? editedProduct.description : ""}
-                  onChange={handleChange}
-                  className="border-gray-200 bg-white text-gray-700 min-h-[80px]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="price" className="text-gray-700">
-                  Precio
-                </Label>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  value={editedProduct.price}
-                  onChange={handleChange}
-                  className="border-gray-200 bg-white text-gray-700"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="image" className="text-gray-700">
-                  URL de la imagen
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="image"
-                    name="image"
-                    value={editedProduct.image || ""}
-                    onChange={handleImageChange}
-                    className="border-gray-200 bg-white text-gray-700 flex-1"
-                    placeholder="/placeholder.svg"
-                  />
-                </div>
-
-                {/* Vista previa de la imagen */}
-                {imagePreview && (
-                  <div className="mt-2 relative w-full aspect-square bg-montebello-navy/30 rounded-md overflow-hidden border border-montebello-gold/20">
-                    <img
-                      src={imagePreview || "/placeholder.svg"}
-                      alt="Vista previa"
-                      className="w-full h-full object-cover"
-                      onError={() => setImagePreview(null)}
-                    />
-                  </div>
-                )}
-
-                {!imagePreview && (
-                  <div className="mt-2 flex items-center justify-center w-full aspect-square bg-montebello-navy/30 rounded-md border border-montebello-gold/20">
-                    <div className="text-center text-montebello-light/50">
-                      <ImageIcon className="h-10 w-10 mx-auto mb-2" />
-                      <p>Sin imagen</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="size" className="text-gray-700">
-                  Tamaño
-                </Label>
-                <Select
-                  value={editedProduct.size || "normal"}
-                  onValueChange={handleSizeChange}
-                  defaultValue={editedProduct.size || "normal"}
-                >
-                  <SelectTrigger className="border-gray-200 bg-white text-gray-700">
-                    <SelectValue placeholder="Selecciona un tamaño" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-gray-200 text-gray-700">
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="large">Grande</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Variantes */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-gray-700 font-medium">Variantes</Label>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {formData.tags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="flex items-center gap-1 bg-gray-200 text-gray-800">
+                  {tag}
                   <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-xs border-montebello-gold/20 text-montebello-light"
-                    onClick={addVariant}
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900"
+                    onClick={() => handleRemoveTag(tag)}
                   >
-                    <Plus className="h-3.5 w-3.5 mr-1" />
-                    Añadir variante
+                    <X className="h-3 w-3" />
                   </Button>
-                </div>
-
-                {editedProduct.variants && editedProduct.variants.length > 0 ? (
-                  <div className="space-y-3">
-                    {editedProduct.variants.map((variant, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 border p-2 rounded-md border-gray-200 bg-gray-50"
-                      >
-                        <div className="flex-1">
-                          <Input
-                            value={variant.name}
-                            onChange={(e) => handleVariantChange(index, "name", e.target.value)}
-                            className="border-gray-200 bg-white text-gray-700 mb-1"
-                            placeholder="Nombre de la variante"
-                          />
-                          <Input
-                            type="number"
-                            value={variant.price}
-                            onChange={(e) => handleVariantChange(index, "price", e.target.value)}
-                            className="border-gray-200 bg-white text-gray-700"
-                            placeholder="Precio"
-                          />
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-red-500"
-                          onClick={() => removeVariant(index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-montebello-light/70 italic">No hay variantes</p>
-                )}
-              </div>
-
-              <div className="flex items-center space-x-2 mt-4">
-                <Switch
-                  id="isFeatured"
-                  checked={editedProduct.featured || false}
-                  onCheckedChange={(checked) => {
-                    setEditedProduct((prev) => ({
-                      ...prev,
-                      featured: checked,
-                    }))
-                  }}
-                />
-                <Label htmlFor="isFeatured" className="text-gray-700">
-                  Producto destacado
-                </Label>
-              </div>
-
-              <div className="flex justify-between pt-4">
-                {onDelete && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-red-200 text-red-500 hover:bg-red-50"
-                    onClick={handleDelete}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Eliminar
-                  </Button>
-                )}
-                <div className="flex gap-2 ml-auto">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-gray-200 text-gray-700 hover:bg-gray-50"
-                    onClick={onClose}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button type="submit" className="bg-[#2a4287] hover:bg-[#1e3370] text-white font-medium">
-                    Guardar cambios
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </form>
+        <DialogFooter className="p-4 border-t flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose} className="text-gray-700 font-medium bg-transparent">
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            onClick={handleSubmit}
+            className="bg-[#2a4287] hover:bg-[#1e3370] text-white font-medium"
+          >
+            Guardar Cambios
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

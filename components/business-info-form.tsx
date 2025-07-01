@@ -183,7 +183,7 @@ export function BusinessInfoForm({ onBack, onSave }: BusinessInfoFormProps) {
               }
             }}
             placeholder="Ingresa el nombre de tu tienda"
-            className="border-blue-200 focus:border-blue-400 transition-colors text-gray-900 font-medium text-base"
+            className="border-blue-200 focus:border-blue-400 transition-colors text-gray-900 font-medium text-base bg-transparent border"
           />
         </div>
 
@@ -200,7 +200,7 @@ export function BusinessInfoForm({ onBack, onSave }: BusinessInfoFormProps) {
               name="subdomain"
               value={formData.subdomain}
               onChange={handleSubdomainChange}
-              className="rounded-l-none text-gray-900 font-medium text-base"
+              className="rounded-l-none text-gray-900 font-medium text-base bg-transparent border border-gray-300"
             />
           </div>
           <p className="text-sm text-gray-700">
@@ -237,7 +237,7 @@ export function BusinessInfoForm({ onBack, onSave }: BusinessInfoFormProps) {
               <div className="flex gap-3 w-full">
                 <Button
                   variant="outline"
-                  className="flex-1 text-[#2a4287] font-medium border-[#2a4287] hover:bg-[#2a4287] hover:text-white"
+                  className="flex-1 text-[#2a4287] font-medium border-[#2a4287] hover:bg-[#2a4287] hover:text-white bg-transparent"
                   type="button"
                   onClick={() => document.getElementById("logo-upload")?.click()}
                 >
@@ -247,7 +247,7 @@ export function BusinessInfoForm({ onBack, onSave }: BusinessInfoFormProps) {
                 {formData.logo && (
                   <Button
                     variant="outline"
-                    className="flex-1 text-red-600 font-medium border-red-300 hover:bg-red-600 hover:text-white"
+                    className="flex-1 text-red-600 font-medium border-red-300 hover:bg-red-600 hover:text-white bg-transparent"
                     onClick={() => setFormData((prev) => ({ ...prev, logo: null, logoFile: null }))}
                   >
                     Cancelar
@@ -294,6 +294,7 @@ export function BusinessInfoForm({ onBack, onSave }: BusinessInfoFormProps) {
             value={formData.whatsappNumber}
             onChange={handleChange}
             placeholder="Ej: +54 9 11 1234 5678"
+            className="bg-transparent border border-gray-200"
           />
           <p className="text-sm text-gray-700">Número de WhatsApp que utilizas para recibir los pedidos.</p>
         </div>
@@ -303,7 +304,7 @@ export function BusinessInfoForm({ onBack, onSave }: BusinessInfoFormProps) {
             Moneda
           </Label>
           <Select value={formData.currency} onValueChange={(value) => handleSelectChange("currency", value)}>
-            <SelectTrigger className="text-gray-800">
+            <SelectTrigger className="text-gray-800 bg-transparent border border-gray-200">
               <SelectValue placeholder="Selecciona una moneda" />
             </SelectTrigger>
             <SelectContent>
@@ -327,7 +328,7 @@ export function BusinessInfoForm({ onBack, onSave }: BusinessInfoFormProps) {
             value={formData.location}
             onChange={handleChange}
             placeholder="Dirección completa de tu tienda"
-            className="text-gray-800"
+            className="text-gray-800 bg-transparent border border-gray-200"
           />
         </div>
 
@@ -349,7 +350,7 @@ export function BusinessInfoForm({ onBack, onSave }: BusinessInfoFormProps) {
                 value={formData.website}
                 onChange={handleChange}
                 placeholder="https://www.tusitio.com"
-                className="text-gray-800"
+                className="text-gray-800 bg-transparent border border-gray-200"
               />
             </div>
 
@@ -363,7 +364,7 @@ export function BusinessInfoForm({ onBack, onSave }: BusinessInfoFormProps) {
                 value={formData.instagram}
                 onChange={handleChange}
                 placeholder="https://www.instagram.com/tuusuario"
-                className="text-gray-800"
+                className="text-gray-800 bg-transparent border border-gray-200"
               />
             </div>
 
@@ -377,7 +378,7 @@ export function BusinessInfoForm({ onBack, onSave }: BusinessInfoFormProps) {
                 value={formData.facebook}
                 onChange={handleChange}
                 placeholder="https://www.facebook.com/tuusuario"
-                className="text-gray-800"
+                className="text-gray-800 bg-transparent border border-gray-200"
               />
             </div>
 
@@ -391,7 +392,7 @@ export function BusinessInfoForm({ onBack, onSave }: BusinessInfoFormProps) {
                 value={formData.twitter}
                 onChange={handleChange}
                 placeholder="https://twitter.com/tuusuario"
-                className="text-gray-800"
+                className="text-gray-800 bg-transparent border border-gray-200"
               />
             </div>
           </div>

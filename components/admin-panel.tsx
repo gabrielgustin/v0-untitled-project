@@ -22,7 +22,6 @@ import {
   MenuIcon,
   X,
   ChevronLeft,
-  Settings,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -36,8 +35,6 @@ import { BusinessHoursForm } from "@/components/business-hours-form"
 import { PaymentMethodsForm } from "@/components/payment-methods-form"
 import { DiscountCouponsForm } from "@/components/discount-coupons-form"
 import { QRCodeForm } from "@/components/qr-code-form"
-import { DeliveryMethodsForm } from "@/components/delivery-methods-form"
-import { ThemeColorForm } from "@/components/theme-color-form"
 import { FloatingPreviewButton } from "@/components/floating-preview-button"
 import React from "react"
 
@@ -71,7 +68,6 @@ export function AdminPanel({
   const [categories, setCategories] = useState<Category[]>([])
   const [activeConfigSection, setActiveConfigSection] = useState<string | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [showTitle, setShowTitle] = useState(true)
 
   // Cargar categorías predefinidas al iniciar
   useEffect(() => {
@@ -91,34 +87,6 @@ export function AdminPanel({
       top: 0,
       behavior: "smooth",
     })
-  }, [activeSection, activeConfigSection])
-
-  // Efecto para controlar la visibilidad del título según la sección y el scroll
-  useEffect(() => {
-    // Solo mostrar el título en la página de inicio (dashboard) y cuando no hay sección de configuración activa
-    const shouldShowTitle = activeSection === "dashboard" && activeConfigSection === null
-    setShowTitle(shouldShowTitle)
-
-    // Si no estamos en la página de inicio, no necesitamos el listener de scroll
-    if (!shouldShowTitle) return
-
-    // Función para manejar el evento de scroll
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setShowTitle(false)
-      } else {
-        // Solo mostrar el título si estamos en la página de inicio y no hay sección de configuración activa
-        setShowTitle(activeSection === "dashboard" && activeConfigSection === null)
-      }
-    }
-
-    // Añadir el evento de scroll
-    window.addEventListener("scroll", handleScroll)
-
-    // Limpiar el evento al desmontar
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-    }
   }, [activeSection, activeConfigSection])
 
   const handleAddProduct = () => {
@@ -215,19 +183,19 @@ export function AdminPanel({
   const getCategoryIcon = (iconType: string | undefined) => {
     switch (iconType) {
       case "entradas":
-        return <Sandwich className="h-5 w-5 text-gray-500" />
+        return <Sandwich className="h-5 w-5 admin-icon" />
       case "principales":
-        return <UtensilsCrossed className="h-5 w-5 text-gray-500" />
+        return <UtensilsCrossed className="h-5 w-5 admin-icon" />
       case "postres":
-        return <Cake className="h-5 w-5 text-gray-500" />
+        return <Cake className="h-5 w-5 admin-icon" />
       case "bebidas":
-        return <Coffee className="h-5 w-5 text-gray-500" />
+        return <Coffee className="h-5 w-5 admin-icon" />
       case "vinos":
-        return <Wine className="h-5 w-5 text-gray-500" />
+        return <Wine className="h-5 w-5 admin-icon" />
       case "cocktails":
-        return <Cocktail className="h-5 w-5 text-gray-500" />
+        return <Cocktail className="h-5 w-5 admin-icon" />
       default:
-        return <Grid className="h-5 w-5 text-gray-500" />
+        return <Grid className="h-5 w-5 admin-icon" />
     }
   }
 
@@ -245,10 +213,6 @@ export function AdminPanel({
           return "Cupones de descuento"
         case "qr-code":
           return "Código QR"
-        case "delivery-methods":
-          return "Formas de entrega"
-        case "theme-colors":
-          return "Personalización de colores"
         default:
           return "Configuración"
       }
@@ -280,7 +244,7 @@ export function AdminPanel({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex flex-col h-full">
-            <div className="p-4 border-b flex items-center justify-between admin-header text-white">
+            <div className="p-4 border-b flex items-center justify-between admin-header">
               <h2 className="text-xl font-bold">Menú</h2>
               <Button
                 variant="ghost"
@@ -393,19 +357,6 @@ export function AdminPanel({
                         <span>Código QR</span>
                       </button>
                     </li>
-                    <li>
-                      <button
-                        className={`flex items-center w-full px-3 py-2 rounded-md ${
-                          activeConfigSection === "delivery-methods"
-                            ? "admin-button"
-                            : "text-gray-700 hover:bg-gray-100"
-                        }`}
-                        onClick={() => setActiveConfigSection("delivery-methods")}
-                      >
-                        <Package className="h-5 w-5 mr-3" />
-                        <span>Formas de entrega</span>
-                      </button>
-                    </li>
                   </ul>
                 </div>
               </div>
@@ -414,7 +365,7 @@ export function AdminPanel({
             <div className="border-t p-4">
               <Button
                 variant="outline"
-                className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 bg-transparent"
                 onClick={handleLogout}
               >
                 <LogOut className="h-5 w-5 mr-3" />
@@ -442,10 +393,6 @@ export function AdminPanel({
           return <DiscountCouponsForm onBack={() => setActiveConfigSection(null)} onSave={handleSaveConfig} />
         case "qr-code":
           return <QRCodeForm onBack={() => setActiveConfigSection(null)} />
-        case "delivery-methods":
-          return <DeliveryMethodsForm onBack={() => setActiveConfigSection(null)} onSave={handleSaveConfig} />
-        case "theme-colors":
-          return <ThemeColorForm onBack={() => setActiveConfigSection(null)} onSave={handleSaveConfig} />
         default:
           return null
       }
@@ -456,7 +403,7 @@ export function AdminPanel({
         return (
           <div className="flex flex-col md:flex-row md:flex-1">
             {/* Sidebar de navegación - solo visible en desktop */}
-            <div className="hidden md:block w-[350px] admin-header text-white p-6 rounded-lg">
+            <div className="hidden md:block w-[350px] admin-header p-6 rounded-lg">
               <h2 className="text-xl font-bold mb-8">Navegación</h2>
               <nav>
                 <ul className="space-y-6">
@@ -465,7 +412,7 @@ export function AdminPanel({
                       className="flex items-center text-white hover:text-gray-200 transition-colors w-full text-left"
                       onClick={() => setActiveSection("dashboard")}
                     >
-                      <Home className="mr-3 h-5 w-5" />
+                      <Home className="h-5 w-5 mr-3" />
                       <span className="text-lg">Inicio</span>
                     </button>
                   </li>
@@ -474,7 +421,7 @@ export function AdminPanel({
                       className="flex items-center text-white hover:text-gray-200 transition-colors w-full text-left font-bold"
                       onClick={() => setActiveSection("categories")}
                     >
-                      <Grid className="mr-3 h-5 w-5" />
+                      <Grid className="h-5 w-5 mr-3" />
                       <span className="text-lg">Categorías</span>
                     </button>
                   </li>
@@ -483,7 +430,7 @@ export function AdminPanel({
                       className="flex items-center text-white hover:text-gray-200 transition-colors w-full text-left"
                       onClick={() => setActiveSection("products")}
                     >
-                      <Package className="mr-3 h-5 w-5" />
+                      <Package className="h-5 w-5 mr-3" />
                       <span className="text-lg">Productos</span>
                     </button>
                   </li>
@@ -492,7 +439,7 @@ export function AdminPanel({
                       className="flex items-center text-white hover:text-gray-200 transition-colors w-full text-left"
                       onClick={handleLogout}
                     >
-                      <LogOut className="mr-3 h-5 w-5" />
+                      <LogOut className="h-5 w-5 mr-3" />
                       <span className="text-lg">Sesión cerrada</span>
                     </button>
                   </li>
@@ -531,10 +478,7 @@ export function AdminPanel({
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {categories.map((category) => (
-                    <Card
-                      key={category.id}
-                      className="border border-gray-200 hover:shadow-md transition-shadow admin-card"
-                    >
+                    <Card key={category.id} className="border rounded-lg hover:shadow-md transition-shadow admin-card">
                       <CardContent className="p-4 relative">
                         {/* Badge siempre en la esquina superior derecha */}
                         <div className="absolute top-2 right-2">
@@ -560,7 +504,7 @@ export function AdminPanel({
                             <Button
                               variant="outline"
                               size="sm"
-                              className="admin-button-outline"
+                              className="admin-button-outline bg-transparent"
                               onClick={() => {
                                 setSelectedCategory(category)
                                 setShowCategoryModal(true)
@@ -582,7 +526,7 @@ export function AdminPanel({
         return (
           <div className="flex flex-col md:flex-row md:flex-1">
             {/* Sidebar de navegación - solo visible en desktop */}
-            <div className="hidden md:block w-[350px] admin-header text-white p-6 rounded-lg">
+            <div className="hidden md:block w-[350px] admin-header p-6 rounded-lg">
               <h2 className="text-xl font-bold mb-8">Navegación</h2>
               <nav>
                 <ul className="space-y-6">
@@ -657,10 +601,7 @@ export function AdminPanel({
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {products.map((product) => (
-                    <Card
-                      key={product.id}
-                      className="border border-gray-200 hover:shadow-md transition-shadow admin-card"
-                    >
+                    <Card key={product.id} className="border rounded-lg hover:shadow-md transition-shadow admin-card">
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
@@ -696,7 +637,7 @@ export function AdminPanel({
                           <Button
                             variant="outline"
                             size="sm"
-                            className="admin-button-outline"
+                            className="admin-button-outline bg-transparent"
                             onClick={() => {
                               setSelectedProduct(product)
                               setShowModal(true)
@@ -716,12 +657,10 @@ export function AdminPanel({
       default:
         return (
           <>
-            {/* Navigation Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {/* Top Section: Navigation Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
               <Card
-                className={`border rounded-lg cursor-pointer hover:shadow-md transition-shadow admin-card ${
-                  activeSection === "categories" ? "border-primary shadow-md" : "border-gray-200"
-                }`}
+                className="border rounded-lg cursor-pointer hover:shadow-md transition-shadow admin-card"
                 onClick={() => setActiveSection("categories")}
               >
                 <CardContent className="p-4 md:p-6 flex flex-col items-center justify-center">
@@ -731,9 +670,7 @@ export function AdminPanel({
               </Card>
 
               <Card
-                className={`border rounded-lg cursor-pointer hover:shadow-md transition-shadow admin-card ${
-                  activeSection === "products" ? "border-primary shadow-md" : "border-gray-200"
-                }`}
+                className="border rounded-lg cursor-pointer hover:shadow-md transition-shadow admin-card"
                 onClick={() => setActiveSection("products")}
               >
                 <CardContent className="p-4 md:p-6 flex flex-col items-center justify-center">
@@ -743,24 +680,12 @@ export function AdminPanel({
               </Card>
 
               <Card
-                className={`border rounded-lg cursor-pointer hover:shadow-md transition-shadow admin-card ${
-                  activeSection === "settings" ? "border-primary shadow-md" : "border-gray-200"
-                }`}
-                onClick={() => setActiveConfigSection("business-info")}
-              >
-                <CardContent className="p-4 md:p-6 flex flex-col items-center justify-center">
-                  <Settings className="h-8 w-8 admin-icon mb-2" />
-                  <h2 className="text-lg font-medium text-gray-800">Configuración</h2>
-                </CardContent>
-              </Card>
-
-              <Card
-                className="border border-gray-200 rounded-lg cursor-pointer hover:shadow-md transition-shadow hover:border-red-500"
+                className="border rounded-lg cursor-pointer hover:shadow-md transition-shadow hover:border-red-500 admin-card"
                 onClick={handleLogout}
               >
                 <CardContent className="p-4 md:p-6 flex flex-col items-center justify-center">
                   <LogOut className="h-8 w-8 text-red-500 mb-2" />
-                  <h2 className="text-lg font-medium text-gray-800">Cerrar Sesión</h2>
+                  <h2 className="text-lg font-medium text-gray-800">Cerrar sesión</h2>
                 </CardContent>
               </Card>
             </div>
@@ -769,16 +694,16 @@ export function AdminPanel({
             <div className="mb-8">
               <h2 className="text-xl font-bold text-gray-800 mb-4 md:mb-6">Personaliza tu tienda</h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                 {/* Business Information */}
                 <Card
-                  className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
+                  className="border rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
                   onClick={() => setActiveConfigSection("business-info")}
                 >
                   <CardContent className="p-4 md:p-6">
                     <div className="flex items-center">
                       <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-4">
-                        <Info className="h-5 w-5 text-gray-500" />
+                        <Info className="h-5 w-5 admin-icon" />
                       </div>
                       <h3 className="text-base md:text-lg font-medium text-gray-800">Información del negocio</h3>
                     </div>
@@ -787,13 +712,13 @@ export function AdminPanel({
 
                 {/* Hours of Attention */}
                 <Card
-                  className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
+                  className="border rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
                   onClick={() => setActiveConfigSection("business-hours")}
                 >
                   <CardContent className="p-4 md:p-6">
                     <div className="flex items-center">
                       <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-4">
-                        <Clock className="h-5 w-5 text-gray-500" />
+                        <Clock className="h-5 w-5 admin-icon" />
                       </div>
                       <h3 className="text-base md:text-lg font-medium text-gray-800">Horarios de atención</h3>
                     </div>
@@ -802,13 +727,13 @@ export function AdminPanel({
 
                 {/* Payment Methods */}
                 <Card
-                  className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
+                  className="border rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
                   onClick={() => setActiveConfigSection("payment-methods")}
                 >
                   <CardContent className="p-4 md:p-6">
                     <div className="flex items-center">
                       <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-4">
-                        <CreditCard className="h-5 w-5 text-gray-500" />
+                        <CreditCard className="h-5 w-5 admin-icon" />
                       </div>
                       <h3 className="text-base md:text-lg font-medium text-gray-800">Métodos de pago</h3>
                     </div>
@@ -817,13 +742,13 @@ export function AdminPanel({
 
                 {/* Discount Coupons */}
                 <Card
-                  className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
+                  className="border rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
                   onClick={() => setActiveConfigSection("discount-coupons")}
                 >
                   <CardContent className="p-4 md:p-6">
                     <div className="flex items-center">
                       <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-4">
-                        <Tag className="h-5 w-5 text-gray-500" />
+                        <Tag className="h-5 w-5 admin-icon" />
                       </div>
                       <h3 className="text-base md:text-lg font-medium text-gray-800">Cupones de descuento</h3>
                     </div>
@@ -832,61 +757,48 @@ export function AdminPanel({
 
                 {/* QR Code */}
                 <Card
-                  className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
+                  className="border rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
                   onClick={() => setActiveConfigSection("qr-code")}
                 >
                   <CardContent className="p-4 md:p-6">
                     <div className="flex items-center">
                       <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-4">
-                        <QrCode className="h-5 w-5 text-gray-500" />
+                        <QrCode className="h-5 w-5 admin-icon" />
                       </div>
                       <h3 className="text-base md:text-lg font-medium text-gray-800">Código QR</h3>
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Delivery Methods */}
-                <Card
-                  className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
-                  onClick={() => setActiveConfigSection("delivery-methods")}
-                >
-                  <CardContent className="p-4 md:p-6">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-4">
-                        <Package className="h-5 w-5 text-gray-500" />
-                      </div>
-                      <h3 className="text-base md:text-lg font-medium text-gray-800">Formas de entrega</h3>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </div>
 
-            {/* Subscription Status */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-800">Mi suscripción</h2>
-                <Badge className="bg-green-100 text-green-800 px-3 py-1 text-sm font-medium rounded">ACTIVA</Badge>
-              </div>
-              <div className="mt-4 flex items-center text-gray-600">
-                <Info className="h-5 w-5 mr-2" />
-                <span>Ver información de mi suscripción</span>
-              </div>
-            </div>
+            {/* Subscription Status and About Section (Moved to bottom) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Subscription Status */}
+              <Card className="border rounded-lg p-4 md:p-6 admin-card">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-xl font-bold text-gray-800">Mi suscripción</h2>
+                  <Badge className="bg-green-100 text-green-800 px-3 py-1 text-sm font-medium rounded">ACTIVA</Badge>
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <Info className="h-5 w-5 mr-2" />
+                  <span>Ver información de mi suscripción</span>
+                </div>
+              </Card>
 
-            {/* About Section */}
-            <div className="admin-header text-white p-4 md:p-6 rounded-lg">
-              <h2 className="text-xl font-bold mb-4 md:mb-6">Conozca más sobre Autogestiva</h2>
-              <div className="space-y-4">
-                <div className="flex items-center">
-                  <ExternalLink className="h-5 w-5 mr-3" />
-                  <span>Visita nuestro sitio web</span>
+              {/* About Section */}
+              <Card className="admin-header p-4 md:p-6 rounded-lg">
+                <h2 className="text-xl font-bold mb-4 md:mb-6">Conozca más sobre Autogestiva</h2>
+                <div className="space-y-4">
+                  <div
+                    className="flex items-center cursor-pointer"
+                    onClick={() => window.open("https://www.autogestiva.com.ar", "_blank")}
+                  >
+                    <ExternalLink className="h-5 w-5 mr-3" />
+                    <span>Visita nuestro sitio web</span>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <ExternalLink className="h-5 w-5 mr-3" />
-                  <span>Visita nuestro Instagram</span>
-                </div>
-              </div>
+              </Card>
             </div>
           </>
         )
@@ -896,7 +808,7 @@ export function AdminPanel({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="admin-header text-white py-3 px-4 md:py-4 md:px-6 sticky top-0 z-50 shadow-md">
+      <header className="admin-header py-3 px-4 md:py-4 md:px-6 sticky top-0 z-50 shadow-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             {/* Botón de menú hamburguesa para móvil */}
@@ -921,15 +833,6 @@ export function AdminPanel({
               Ver tienda en modo cliente
             </Button>
           </div>
-        </div>
-
-        {/* Título de la sección actual - solo en móvil (visible solo en la página de inicio) */}
-        <div
-          className={`md:hidden text-sm font-medium text-center py-2 mt-4 transition-all duration-300 ${
-            showTitle ? "opacity-100 max-h-10" : "opacity-0 max-h-0 overflow-hidden mt-0 py-0"
-          }`}
-        >
-          {getSectionTitle()}
         </div>
       </header>
 

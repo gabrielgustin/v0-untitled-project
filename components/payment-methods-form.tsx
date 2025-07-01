@@ -6,6 +6,7 @@ import { useState } from "react"
 import { ArrowLeft, Eye, Plus, GripVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label" // Import Label for better accessibility
 
 interface PaymentMethod {
   id: string
@@ -42,16 +43,16 @@ export function PaymentMethodsForm({ onBack, onSave }: PaymentMethodsFormProps) 
   return (
     <div className="bg-white rounded-lg shadow-sm max-w-3xl mx-auto">
       <div className="p-4 border-b flex items-center">
-        <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
+        <Button variant="ghost" size="icon" onClick={onBack} className="mr-2 text-gray-800 hover:bg-gray-200">
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-xl font-bold">Métodos de pago</h1>
+        <h1 className="text-xl font-bold text-gray-800">Métodos de pago</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
         <div>
-          <h2 className="font-medium text-lg mb-2">Medios de pago</h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <h2 className="font-medium text-lg mb-2 text-gray-800">Medios de pago</h2>
+          <p className="text-sm text-gray-700 mb-4">
             A continuación, se listarán todos los medios de pagos disponibles. Podrás activarlos o desactivarlos,
             configurar recargos (se calcularán sobre el monto total del pedido), o agregar otros medios de pago
             personalizados.
@@ -59,17 +60,21 @@ export function PaymentMethodsForm({ onBack, onSave }: PaymentMethodsFormProps) 
 
           <div className="space-y-3">
             {paymentMethods.map((method) => (
-              <div key={method.id} className="flex items-center justify-between p-4 border rounded-md">
+              <div key={method.id} className="flex items-center justify-between p-4 border rounded-md bg-gray-50">
                 <div className="flex items-center">
                   <Eye className="h-5 w-5 text-[#2a4287] mr-3" />
-                  <span>{method.name}</span>
+                  <span className="text-gray-800 font-medium">{method.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch
+                    id={`switch-${method.id}`} // Add ID for accessibility
                     checked={method.enabled}
                     onCheckedChange={(checked) => handleToggleMethod(method.id, checked)}
                   />
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Label htmlFor={`switch-${method.id}`} className="sr-only">
+                    {method.enabled ? "Desactivar" : "Activar"} {method.name}
+                  </Label>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-600 hover:bg-gray-100">
                     <GripVertical className="h-4 w-4" />
                   </Button>
                 </div>
@@ -77,17 +82,17 @@ export function PaymentMethodsForm({ onBack, onSave }: PaymentMethodsFormProps) 
             ))}
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
-              className="border-[#2a4287] text-[#2a4287]"
+              className="border-[#2a4287] text-[#2a4287] hover:bg-[#2a4287] hover:text-white bg-transparent"
               onClick={handleAddMethod}
             >
               <Plus className="h-4 w-4 mr-2" />
               Agregar medio de pago
             </Button>
-            <Button type="button" variant="outline" className="ml-2">
+            <Button type="button" variant="outline" className="text-gray-700 hover:bg-gray-100 bg-transparent">
               <GripVertical className="h-4 w-4 mr-2" />
               Reordenar
             </Button>
@@ -95,10 +100,10 @@ export function PaymentMethodsForm({ onBack, onSave }: PaymentMethodsFormProps) 
         </div>
 
         <div className="flex justify-end gap-2 pt-4 border-t mt-6">
-          <Button variant="outline" type="button" onClick={onBack}>
+          <Button variant="outline" type="button" onClick={onBack} className="text-gray-700 font-medium bg-transparent">
             Cancelar
           </Button>
-          <Button type="submit" className="bg-[#2a4287] hover:bg-[#1e3370] text-white">
+          <Button type="submit" className="bg-[#2a4287] hover:bg-[#1e3370] text-white font-medium">
             Guardar
           </Button>
         </div>

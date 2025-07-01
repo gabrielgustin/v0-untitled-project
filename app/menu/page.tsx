@@ -26,8 +26,6 @@ import {
   getFeaturedProducts,
 } from "@/lib/products"
 import { DesktopNavigation } from "@/components/desktop-navigation"
-import { Toaster } from "@/components/ui/toaster"
-import { useToast } from "@/components/ui/use-toast"
 
 import { useSearchParams, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
@@ -83,7 +81,7 @@ const filterExcludedProducts = (products: Product[]): Product[] => {
 const filteredInitialProducts = filterExcludedProducts(initialProducts)
 
 export default function MenuPage() {
-  const { toast } = useToast()
+  // Eliminado: const { toast } = useToast()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { navigate } = useSmoothNavigation()
@@ -100,7 +98,7 @@ export default function MenuPage() {
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [storeName, setStoreName] = useState("CLUB MONTEBELLO")
   const [isAdmin, setIsAdmin] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<ProductCategory | "destacados" | null>(null)
+  // const [selectedCategory, setSelectedCategory] = useState<ProductCategory | "destacados" | null>(null) // Eliminado
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
   const [cartAnimation, setCartAnimation] = useState(false)
@@ -139,12 +137,12 @@ export default function MenuPage() {
     setUser({ username: "Admin", isLoggedIn: true })
     setShowAdminPanel(true)
 
-    // Mostrar notificación
-    toast({
-      title: "Modo administrador activado",
-      description: "Has ingresado al panel de administración",
-      duration: 3000,
-    })
+    // Eliminado: Mostrar notificación
+    // toast({
+    //   title: "Modo administrador activado",
+    //   description: "Has ingresado al panel de administración",
+    //   duration: 3000,
+    // })
   }
 
   // Añadir esta función después de la declaración de las referencias de categorías
@@ -459,9 +457,9 @@ export default function MenuPage() {
     handleCloseModal()
   }
 
-  const handleCategorySelect = (category: ProductCategory | "destacados" | null) => {
-    setSelectedCategory(category)
-  }
+  // const handleCategorySelect = (category: ProductCategory | "destacados" | null) => { // Eliminado
+  //   setSelectedCategory(category)
+  // }
 
   // Función para hacer scroll a la categoría seleccionada
   const scrollToCategory = (category: ProductCategory) => {
@@ -526,11 +524,11 @@ export default function MenuPage() {
   const vinosProducts = products.filter((product) => product.category === "vinos")
   const cocktailsProducts = products.filter((product) => product.category === "cocktails")
 
-  const filteredProducts = selectedCategory
-    ? selectedCategory === "destacados"
-      ? getFeaturedProducts()
-      : products.filter((product) => product.category === selectedCategory)
-    : products
+  // const filteredProducts = selectedCategory // Eliminado
+  //   ? selectedCategory === "destacados"
+  //     ? getFeaturedProducts()
+  //     : products.filter((product) => product.category === selectedCategory)
+  //   : products
 
   // Renderizar un estado de carga mientras se cargan los productos
   if (isLoading) {
@@ -658,7 +656,7 @@ export default function MenuPage() {
                 {isAdmin && (
                   <Button
                     variant="outline"
-                    className="mt-2 w-full border-montebello-gold/20 text-montebello-gold"
+                    className="mt-2 w-full border-montebello-gold/20 text-montebello-gold bg-transparent"
                     onClick={() => setShowAdminPanel(true)}
                   >
                     Panel de Administración
@@ -752,27 +750,161 @@ export default function MenuPage() {
         </header>
 
         <main className="px-4 lg:px-0 py-4">
-          {filteredProducts.length === 0 ? (
-            <motion.div
-              className="text-center text-montebello-light/70 py-12"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <p>No hay productos en esta categoría.</p>
-            </motion.div>
-          ) : (
-            <motion.div
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-            >
-              {filteredProducts.map((product) => (
-                <MenuItemCard key={product.id} {...product} isAdmin={isAdmin} onEdit={handleEditProduct} />
-              ))}
-            </motion.div>
-          )}
+          {/* Entradas Section */}
+          <div ref={entradasRef} className="mb-8">
+            <h2 className="text-2xl font-bold text-montebello-gold mb-4">{getCategoryTitle("entradas")}</h2>
+            {entradasProducts.length === 0 ? (
+              <motion.div
+                className="text-center text-montebello-light/70 py-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <p>No hay productos en esta categoría.</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
+                {entradasProducts.map((product) => (
+                  <MenuItemCard key={product.id} {...product} isAdmin={isAdmin} onEdit={handleEditProduct} />
+                ))}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Principales Section */}
+          <div ref={principalesRef} className="mb-8">
+            <h2 className="text-2xl font-bold text-montebello-gold mb-4">{getCategoryTitle("principales")}</h2>
+            {principalesProducts.length === 0 ? (
+              <motion.div
+                className="text-center text-montebello-light/70 py-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <p>No hay productos en esta categoría.</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
+                {principalesProducts.map((product) => (
+                  <MenuItemCard key={product.id} {...product} isAdmin={isAdmin} onEdit={handleEditProduct} />
+                ))}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Postres Section */}
+          <div ref={postresRef} className="mb-8">
+            <h2 className="text-2xl font-bold text-montebello-gold mb-4">{getCategoryTitle("postres")}</h2>
+            {postresProducts.length === 0 ? (
+              <motion.div
+                className="text-center text-montebello-light/70 py-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <p>No hay productos en esta categoría.</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
+                {postresProducts.map((product) => (
+                  <MenuItemCard key={product.id} {...product} isAdmin={isAdmin} onEdit={handleEditProduct} />
+                ))}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Bebidas Section */}
+          <div ref={bebidasRef} className="mb-8">
+            <h2 className="text-2xl font-bold text-montebello-gold mb-4">{getCategoryTitle("bebidas")}</h2>
+            {bebidasProducts.length === 0 ? (
+              <motion.div
+                className="text-center text-montebello-light/70 py-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <p>No hay productos en esta categoría.</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
+                {bebidasProducts.map((product) => (
+                  <MenuItemCard key={product.id} {...product} isAdmin={isAdmin} onEdit={handleEditProduct} />
+                ))}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Vinos Section */}
+          <div ref={vinosRef} className="mb-8">
+            <h2 className="text-2xl font-bold text-montebello-gold mb-4">{getCategoryTitle("vinos")}</h2>
+            {vinosProducts.length === 0 ? (
+              <motion.div
+                className="text-center text-montebello-light/70 py-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <p>No hay productos en esta categoría.</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
+                {vinosProducts.map((product) => (
+                  <MenuItemCard key={product.id} {...product} isAdmin={isAdmin} onEdit={handleEditProduct} />
+                ))}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Cocktails Section */}
+          <div ref={cocktailsRef} className="mb-8">
+            <h2 className="text-2xl font-bold text-montebello-gold mb-4">{getCategoryTitle("cocktails")}</h2>
+            {cocktailsProducts.length === 0 ? (
+              <motion.div
+                className="text-center text-montebello-light/70 py-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <p>No hay productos en esta categoría.</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
+                {cocktailsProducts.map((product) => (
+                  <MenuItemCard key={product.id} {...product} isAdmin={isAdmin} onEdit={handleEditProduct} />
+                ))}
+              </motion.div>
+            )}
+          </div>
         </main>
       </div>
 
@@ -862,8 +994,8 @@ export default function MenuPage() {
       {/* Botón para volver arriba */}
       <ScrollToTopButton />
 
-      {/* Toaster para notificaciones */}
-      <Toaster />
+      {/* Eliminado: Toaster para notificaciones */}
+      {/* <Toaster /> */}
     </div>
   )
 }
