@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils"
 import { MobilePreviewModal } from "./mobile-preview-modal"
 
 interface FloatingPreviewButtonProps {
-  // onClick: () => void // Esta prop ya no es necesaria
   className?: string
 }
 
@@ -27,14 +26,15 @@ export function FloatingPreviewButton({ className }: FloatingPreviewButtonProps)
       <Button
         onClick={handleOpenModal} // Llama al manejador interno para abrir el modal
         className={cn(
-          "fixed right-4 bottom-4 z-50 shadow-lg transition-all duration-300 flex items-center gap-2 hover:translate-y-[-2px] bg-montebello-navy text-white hidden sm:flex md:hidden",
+          "fixed right-4 bottom-4 z-50 shadow-lg transition-all duration-300 hover:translate-y-[-2px]",
+          "bg-montebello-navy text-white rounded-full w-14 h-14 flex items-center justify-center", // Estilos para hacerlo circular y de tamaño fijo
+          "md:hidden", // Ocultar en pantallas medianas (desktop) y superiores
           className,
         )}
         variant="default"
       >
-        <Eye className="h-4 w-4" />
-        <span className="hidden sm:inline">Ver tienda en modo cliente</span>
-        <span className="inline sm:hidden">Ver tienda</span>
+        <Eye className="h-6 w-6" /> {/* Icono más grande para el botón circular */}
+        <span className="sr-only">Ver tienda en modo cliente</span> {/* Texto solo para lectores de pantalla */}
       </Button>
 
       <MobilePreviewModal isOpen={isModalOpen} onClose={handleCloseModal} />

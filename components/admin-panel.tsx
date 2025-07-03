@@ -20,6 +20,7 @@ import {
   CoffeeIcon as Cocktail,
   X,
   ChevronLeft,
+  Eye,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -34,6 +35,7 @@ import { PaymentMethodsForm } from "@/components/payment-methods-form"
 import { DiscountCouponsForm } from "@/components/discount-coupons-form"
 import { QRCodeForm } from "@/components/qr-code-form"
 import { FloatingPreviewButton } from "@/components/floating-preview-button"
+import { MobilePreviewModal } from "./mobile-preview-modal" // Importa el modal
 import React from "react"
 
 interface AdminPanelProps {
@@ -62,10 +64,11 @@ export function AdminPanel({
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
   const [activeSection, setActiveSection] = useState("dashboard")
-  const [showPreviewModal, setShowPreviewModal] = useState(false)
+  const [showPreviewModal, setShowPreviewModal] = useState(false) // Este estado ya no se usa para el botón del header
   const [categories, setCategories] = useState<Category[]>([])
   const [activeConfigSection, setActiveConfigSection] = useState<string | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isDesktopPreviewModalOpen, setIsDesktopPreviewModalOpen] = useState(false) // Nuevo estado para el modal de escritorio
 
   // Cargar categorías predefinidas al iniciar
   useEffect(() => {
@@ -150,6 +153,7 @@ export function AdminPanel({
     window.location.reload()
   }
 
+  // Esta función ya no se usará para el botón del header, pero se mantiene para el FloatingPreviewButton
   const handleExitAdminMode = () => {
     // Guardar el estado actual en localStorage para asegurar que los cambios sean visibles
     localStorage.setItem("lastUpdate", Date.now().toString())
@@ -157,6 +161,14 @@ export function AdminPanel({
     // Añadir un timestamp a la URL para forzar una recarga fresca
     const timestamp = Date.now()
     window.open(`/menu?t=${timestamp}`, "_blank")
+  }
+
+  const handleOpenDesktopPreviewModal = () => {
+    setIsDesktopPreviewModalOpen(true)
+  }
+
+  const handleCloseDesktopPreviewModal = () => {
+    setIsDesktopPreviewModalOpen(false)
   }
 
   const handleSaveConfig = (data: any) => {
@@ -792,24 +804,21 @@ export function AdminPanel({
           {/* Botón de vista previa - solo en desktop */}
           <div className="hidden md:flex md:items-center">
             <Button
-              onClick={handleExitAdminMode}
+              onClick={handleOpenDesktopPreviewModal} // Llama al nuevo manejador para abrir el modal
               className="bg-white text-blue-700 hover:bg-gray-100 rounded-full px-6 py-2"
             >
+              <Eye className="h-5 w-5 mr-2" /> {/* Icono para el botón de escritorio */}
               Ver tienda en modo cliente
             </Button>
           </div>
         </div>
       </header>
-
       {/* Menú móvil */}
       {renderMobileMenu()}
-
       {/* Main Content */}
       <div className="container mx-auto py-4 px-4 md:py-8 md:px-4 pb-32 md:pb-8">{renderSection()}</div>
-
       {/* Botón flotante para vista previa en móvil - solo visible cuando no estamos en una sección de configuración */}
-      {!activeConfigSection && <FloatingPreviewButton onClick={handleExitAdminMode} />}
-
+      {!activeConfigSection && <FloatingPreviewButton />} {/* FloatingPreviewButton ya maneja su propio modal */}
       {/* Modals */}
       {showModal && (
         <ProductEditModal
@@ -822,7 +831,6 @@ export function AdminPanel({
           onDelete={onDeleteProduct}
         />
       )}
-
       {showCategoryModal && (
         <CategoryEditModal
           category={selectedCategory}
@@ -845,6 +853,8 @@ export function AdminPanel({
           categories={categories}
         />
       )}
+      {/* Modal de vista previa para escritorio */}
+      <MobilePreviewModal isOpen={isDesktopPreviewModalOpen} onClose={handleCloseDesktopPreviewModal} />
     </div>
   )
 }
