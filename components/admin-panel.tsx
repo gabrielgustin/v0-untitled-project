@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import {
   ExternalLink,
   Clock,
-  CreditCard,
   Tag,
   QrCode,
   Package,
@@ -321,17 +320,7 @@ export function AdminPanel({
                         <span>Horarios de atención</span>
                       </button>
                     </li>
-                    <li>
-                      <button
-                        className={`flex items-center w-full px-3 py-2 rounded-md ${
-                          activeConfigSection === "payment-methods" ? "admin-button" : "text-gray-700 hover:bg-gray-100"
-                        }`}
-                        onClick={() => setActiveConfigSection("payment-methods")}
-                      >
-                        <CreditCard className="h-5 w-5 mr-3" />
-                        <span>Métodos de pago</span>
-                      </button>
-                    </li>
+                    {/* Eliminado: Métodos de pago */}
                     <li>
                       <button
                         className={`flex items-center w-full px-3 py-2 rounded-md ${
@@ -386,7 +375,7 @@ export function AdminPanel({
           return <BusinessInfoForm onBack={() => setActiveConfigSection(null)} onSave={handleSaveConfig} />
         case "business-hours":
           return <BusinessHoursForm onBack={() => setActiveConfigSection(null)} onSave={handleSaveConfig} />
-        case "payment-methods":
+        case "payment-methods": // Este caso ya no debería ser alcanzable desde la UI
           return <PaymentMethodsForm onBack={() => setActiveConfigSection(null)} onSave={handleSaveConfig} />
         case "discount-coupons":
           return <DiscountCouponsForm onBack={() => setActiveConfigSection(null)} onSave={handleSaveConfig} />
@@ -720,21 +709,6 @@ export function AdminPanel({
                         <Clock className="h-5 w-5 admin-icon" />
                       </div>
                       <h3 className="text-base md:text-lg font-medium text-gray-800">Horarios de atención</h3>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Payment Methods */}
-                <Card
-                  className="border rounded-lg hover:shadow-md transition-shadow cursor-pointer admin-card"
-                  onClick={() => setActiveConfigSection("payment-methods")}
-                >
-                  <CardContent className="p-4 md:p-6">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-4">
-                        <CreditCard className="h-5 w-5 admin-icon" />
-                      </div>
-                      <h3 className="text-base md:text-lg font-medium text-gray-800">Métodos de pago</h3>
                     </div>
                   </CardContent>
                 </Card>
